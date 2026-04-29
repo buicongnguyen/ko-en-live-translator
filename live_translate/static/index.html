@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Korean to English Translator</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="eyebrow">Local GPU Speech Translation</div>
+        <h1>Live Korean to English</h1>
+        <p class="lede">
+          Speak Korean into your microphone and get near-real-time English
+          subtitles from a local Whisper pipeline.
+        </p>
+        <div class="status-row">
+          <span class="pill" id="connection-pill">Connecting</span>
+          <span class="pill subtle" id="state-pill">Idle</span>
+          <span class="pill subtle" id="model-pill">Model: loading</span>
+        </div>
+      </section>
+
+      <section class="panel controls">
+        <div>
+          <div class="panel-label">Capture</div>
+          <div class="panel-title">Microphone Session</div>
+        </div>
+        <div class="button-row">
+          <button id="start-button" class="primary">Start Listening</button>
+          <button id="stop-button" class="secondary" disabled>Stop</button>
+        </div>
+        <p class="helper" id="status-text">
+          Waiting for the local translator service.
+        </p>
+      </section>
+
+      <section class="subtitle-stack">
+        <article class="panel spotlight">
+          <div class="panel-label">Latest English</div>
+          <div id="latest-english" class="subtitle-text">
+            English translation will appear here.
+          </div>
+          <div class="meta-row">
+            <span id="latency-text">Latency: -</span>
+            <span id="audio-text">Audio: -</span>
+          </div>
+        </article>
+
+        <article class="panel source-panel" id="source-panel" hidden>
+          <div class="panel-label">Source Korean</div>
+          <div id="latest-source" class="source-text">
+            Korean transcript is disabled.
+          </div>
+        </article>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="history-head">
+          <div>
+            <div class="panel-label">Recent Lines</div>
+            <div class="panel-title">Translation Feed</div>
+          </div>
+        </div>
+        <div id="history" class="history-list"></div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+  </html>

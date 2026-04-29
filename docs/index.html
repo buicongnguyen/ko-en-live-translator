@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Korean to English Live Translator</title>
+    <meta
+      name="description"
+      content="GitHub Pages frontend for a Korean-to-English live subtitle translator powered by a GPU backend."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="eyebrow">GitHub Pages Frontend</div>
+        <h1>Live Korean to English, ready to demo on the web.</h1>
+        <p class="lede">
+          This static site is designed for `github.io`: it can showcase the
+          product with a live subtitle demo right away, and it can later connect
+          to a deployed GPU backend for real microphone translation.
+        </p>
+        <div class="status-row">
+          <span class="pill">GitHub Pages Ready</span>
+          <span class="pill subtle" id="connection-pill">Demo Mode</span>
+          <span class="pill subtle" id="backend-pill">Backend Optional</span>
+          <span class="pill subtle" id="state-pill">Showcase Ready</span>
+        </div>
+      </section>
+
+      <section class="page-grid">
+        <div class="main-column">
+          <article class="panel spotlight">
+            <div class="panel-label">Latest English</div>
+            <div id="latest-english" class="subtitle-text">
+              Press “Play Demo” to simulate the live subtitle experience.
+            </div>
+            <div class="meta-row">
+              <span id="latency-text">Latency: demo</span>
+              <span id="audio-text">Audio: demo</span>
+            </div>
+          </article>
+
+          <article class="panel source-panel" id="source-panel">
+            <div class="panel-label">Source Korean</div>
+            <div id="latest-source" class="source-text">
+              안녕하세요. 데모를 실행하면 한국어 원문과 영어 자막이 함께 보입니다.
+            </div>
+          </article>
+
+          <section class="panel history-panel">
+            <div class="history-head">
+              <div>
+                <div class="panel-label">Recent Lines</div>
+                <div class="panel-title">Translation Feed</div>
+              </div>
+            </div>
+            <div id="history" class="history-list"></div>
+          </section>
+        </div>
+
+        <aside class="side-column">
+          <section class="panel controls">
+            <div>
+              <div class="panel-label">Showcase</div>
+              <div class="panel-title">Presentation Controls</div>
+            </div>
+            <div class="button-grid">
+              <button id="demo-button" class="primary">Play Demo</button>
+              <button id="reset-button" class="secondary">Reset</button>
+              <button id="start-button" class="secondary" disabled>
+                Start Mic
+              </button>
+              <button id="stop-button" class="secondary" disabled>Stop</button>
+            </div>
+            <p class="helper" id="status-text">
+              Demo mode works on GitHub Pages without any server.
+            </p>
+          </section>
+
+          <section class="panel backend-panel">
+            <div class="panel-label">Backend Bridge</div>
+            <div class="panel-title">Connect a deployed translator</div>
+            <label class="field-label" for="backend-origin">Backend origin</label>
+            <input
+              id="backend-origin"
+              class="text-field"
+              type="text"
+              placeholder="https://your-backend.example.com"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <div class="button-row compact">
+              <button id="connect-button" class="primary">Connect</button>
+              <button id="disconnect-button" class="secondary" disabled>
+                Disconnect
+              </button>
+            </div>
+            <p class="helper">
+              `github.io` can host the frontend only. Real-time microphone
+              translation still needs an `https://` backend with `wss://`
+              websocket support.
+            </p>
+            <p class="helper warning">
+              A page on `https://username.github.io` cannot call plain
+              `http://127.0.0.1:8000` because browsers block mixed content.
+            </p>
+            <div id="endpoint-preview" class="endpoint-preview">
+              Health: /api/health · Socket: /ws
+            </div>
+          </section>
+
+          <section class="panel note-panel">
+            <div class="panel-label">Model Fit</div>
+            <div class="note-grid">
+              <article class="note-card">
+                <h2>`small`</h2>
+                <p>Best when you want the fastest subtitle updates.</p>
+                <span>About 2 GB VRAM in the reference guide</span>
+              </article>
+              <article class="note-card">
+                <h2>`medium`</h2>
+                <p>Better translation quality for an 8 GB laptop GPU.</p>
+                <span>About 5 GB VRAM in the reference guide</span>
+              </article>
+              <article class="note-card">
+                <h2>`turbo`</h2>
+                <p>Fast, but not the right choice for Korean-to-English translation.</p>
+                <span>OpenAI notes it is not trained for translation</span>
+              </article>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="panel architecture-panel">
+        <div class="section-head">
+          <div>
+            <div class="panel-label">Architecture</div>
+            <div class="panel-title">How the full version works</div>
+          </div>
+        </div>
+        <div class="card-grid">
+          <article class="feature-card">
+            <h2>Static web shell</h2>
+            <p>
+              The `docs/` site is what you publish to GitHub Pages. It handles
+              the product story, demo mode, and the future backend connection UI.
+            </p>
+          </article>
+          <article class="feature-card">
+            <h2>FastAPI + WebSocket</h2>
+            <p>
+              The real app streams microphone audio to a Python backend, which
+              segments speech and returns subtitle updates in near real time.
+            </p>
+          </article>
+          <article class="feature-card">
+            <h2>GPU translation</h2>
+            <p>
+              `faster-whisper` runs multilingual Whisper translation on the GPU,
+              making `small` and `medium` practical options for laptop hardware.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+  </html>
