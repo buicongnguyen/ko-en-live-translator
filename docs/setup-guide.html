@@ -480,6 +480,7 @@
           <section class="panel toc" aria-label="Contents">
             <div class="label">Contents</div>
             <a href="#choose">Choose the app shape</a>
+            <a href="#minimum-requirements">Minimum requirements</a>
             <a href="#install-resources">Install resources</a>
             <a href="#terminology">Terminology</a>
             <a href="#models">Model settings</a>
@@ -560,6 +561,115 @@
                 <div class="flow-node">Whisper translate</div>
                 <div class="flow-node">English subtitles</div>
               </div>
+            </div>
+          </section>
+
+          <section class="section" id="minimum-requirements">
+            <div class="section-head">
+              <div class="label">Requirements</div>
+              <h2>Minimum and recommended setup</h2>
+              <p>
+                These numbers separate official software minimums from
+                practical live-translation recommendations. The app may start on
+                weaker hardware, but live Korean-to-English subtitles need spare
+                CPU, RAM, VRAM, and thermal headroom.
+              </p>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Case</th>
+                    <th>Minimum to start</th>
+                    <th>Recommended for useful live translation</th>
+                    <th>Notes and source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Browser client</td>
+                    <td>Modern Chrome, Edge, Firefox, or Safari; microphone permission; HTTPS or localhost.</td>
+                    <td>Headset or close microphone, quiet room, and same LAN as the server when using Option A.</td>
+                    <td>MDN documents that <code>getUserMedia()</code> requires a secure context such as HTTPS or localhost.</td>
+                  </tr>
+                  <tr>
+                    <td>A1000-class local laptop</td>
+                    <td>NVIDIA driver, CUDA-capable GPU, 4 GB VRAM practical floor, Python 3.11/3.12 recommended, 8 GB system RAM.</td>
+                    <td>8 GB VRAM, 16 GB system RAM, plugged-in power mode, <code>small</code> first, then <code>medium</code> if stable.</td>
+                    <td>OpenAI lists <code>small</code> at about 2 GB VRAM and <code>medium</code> at about 5 GB; leave extra room for Windows, browser, and buffers.</td>
+                  </tr>
+                  <tr>
+                    <td>CPU fallback laptop</td>
+                    <td>x86-64 CPU with SSE 4.1 or ARM64, 8 GB RAM, <code>base</code> with CPU <code>int8</code>.</td>
+                    <td>8+ CPU threads, 16 GB RAM, <code>base</code> or <code>small</code>; expect slower subtitle updates.</td>
+                    <td>CTranslate2 lists x86-64 SSE 4.1 and ARM64 CPU support; faster-whisper can run CPU <code>int8</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>RTX 5090 LAN server</td>
+                    <td>NVIDIA GPU with enough VRAM for <code>large-v3</code>; 16 GB system RAM; wired or strong Wi-Fi LAN.</td>
+                    <td>RTX 5090, 32 GB system RAM, Ethernet, <code>large-v3</code>, CUDA <code>float16</code>, HTTPS reverse proxy.</td>
+                    <td>NVIDIA lists RTX 5090 with 32 GB GDDR7; OpenAI lists large-class Whisper at about 10 GB VRAM.</td>
+                  </tr>
+                  <tr>
+                    <td>Meeting/system audio helper</td>
+                    <td>Windows PC, microphone mode first, then WASAPI loopback for system audio.</td>
+                    <td>Desktop helper that captures Zoom, Teams, YouTube, or browser audio and sends PCM to the same backend.</td>
+                    <td>Microsoft's WASAPI loopback sample is the reference path for Windows system-audio capture.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Whisper model</th>
+                    <th>Official approximate VRAM</th>
+                    <th>Use in this project</th>
+                    <th>Practical guidance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>base</code></td>
+                    <td>About 1 GB</td>
+                    <td>CPU fallback or very weak GPU testing.</td>
+                    <td>Fastest fallback, but Korean-to-English quality is limited.</td>
+                  </tr>
+                  <tr>
+                    <td><code>small</code></td>
+                    <td>About 2 GB</td>
+                    <td>Default safe preset for A1000-class laptops.</td>
+                    <td>Best first test for low latency and low VRAM pressure.</td>
+                  </tr>
+                  <tr>
+                    <td><code>medium</code></td>
+                    <td>About 5 GB</td>
+                    <td>Quality mode for 8 GB laptop GPUs.</td>
+                    <td>Use <code>int8_float16</code>, <code>beam_size=1</code>, and watch <code>nvidia-smi</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><code>large-v3</code></td>
+                    <td>Large-class reference is about 10 GB</td>
+                    <td>Best fit for the RTX 5090 LAN server.</td>
+                    <td>Use on the server for better Korean recognition and translation stability.</td>
+                  </tr>
+                  <tr>
+                    <td><code>turbo</code></td>
+                    <td>About 6 GB</td>
+                    <td>Not recommended for this Korean-to-English translation app.</td>
+                    <td>OpenAI notes <code>turbo</code> is not trained for translation tasks.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout important">
+              Minimum VRAM is not the same as smooth live translation. If the
+              model barely fits, subtitles may lag, the GPU may throttle, or the
+              app may fail when the browser and Windows also use GPU memory.
             </div>
           </section>
 
@@ -1161,12 +1271,20 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
                 <p><a href="https://opennmt.net/CTranslate2/installation.html" target="_blank" rel="noreferrer">Installation notes for the inference engine used by faster-whisper</a></p>
               </article>
               <article class="source-card">
+                <h3>CTranslate2 hardware support</h3>
+                <p><a href="https://opennmt.net/CTranslate2/hardware_support.html" target="_blank" rel="noreferrer">CPU and NVIDIA GPU capability requirements</a></p>
+              </article>
+              <article class="source-card">
                 <h3>whisper.cpp</h3>
                 <p><a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noreferrer">Small CPU-friendly and quantized runtime option</a></p>
               </article>
               <article class="source-card">
                 <h3>NVIDIA RTX A1000</h3>
                 <p><a href="https://marketplace.nvidia.com/en-us/enterprise/laptops-workstations/nvidia-rtx-a1000/" target="_blank" rel="noreferrer">A1000 memory reference and workstation GPU context</a></p>
+              </article>
+              <article class="source-card">
+                <h3>NVIDIA RTX 5090</h3>
+                <p><a href="https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/" target="_blank" rel="noreferrer">RTX 5090 memory and AI hardware specification</a></p>
               </article>
               <article class="source-card">
                 <h3>Python for Windows</h3>
