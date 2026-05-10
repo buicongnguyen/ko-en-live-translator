@@ -481,6 +481,7 @@
             <div class="label">Contents</div>
             <a href="#choose">Choose the app shape</a>
             <a href="#models">Model settings</a>
+            <a href="#a1000-laptop">A1000 laptop path</a>
             <a href="#lan-server">LAN GPU server setup</a>
             <a href="#local-laptop">Local laptop setup</a>
             <a href="#audio">Meeting audio capture</a>
@@ -539,8 +540,8 @@
                 </p>
                 <div class="callout">
                   Use this for portable offline translation. Start with
-                  <code>small</code> or <code>medium</code> on an 8 GB laptop
-                  GPU.
+                  <code>small</code> on weaker laptop GPUs, then move to
+                  <code>medium</code> only after checking VRAM and thermals.
                 </div>
               </article>
             </div>
@@ -567,7 +568,9 @@
                 Whisper direct translation is the simplest first version:
                 Korean speech goes straight into English text. Add a separate
                 Korean transcript and text translator later if you need better
-                meaning preservation for difficult speech.
+                meaning preservation for difficult speech. On A1000-class
+                laptops, pick the model by available VRAM first, then tune for
+                quality.
               </p>
             </div>
 
@@ -583,22 +586,22 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Laptop fast mode</td>
+                    <td>A1000 conservative mode</td>
                     <td><code>small</code></td>
                     <td><code>faster-whisper</code></td>
-                    <td><code>cuda</code>, <code>int8_float16</code>, <code>beam_size=1</code></td>
+                    <td><code>cuda</code>, <code>int8_float16</code>, <code>beam_size=1</code>, source transcript off</td>
                   </tr>
                   <tr>
-                    <td>Laptop balanced mode</td>
+                    <td>A1000 quality mode</td>
                     <td><code>medium</code></td>
                     <td><code>faster-whisper</code></td>
-                    <td><code>cuda</code>, <code>int8_float16</code> or <code>float16</code></td>
+                    <td><code>cuda</code>, <code>int8_float16</code>, <code>beam_size=1-3</code>, only when VRAM is stable</td>
                   </tr>
                   <tr>
                     <td>CPU fallback</td>
-                    <td><code>base</code> or quantized <code>small</code></td>
-                    <td><code>whisper.cpp</code></td>
-                    <td>Lower quality, useful when CUDA is unavailable</td>
+                    <td><code>base</code> or <code>small</code></td>
+                    <td><code>faster-whisper</code> CPU <code>int8</code> or <code>whisper.cpp</code></td>
+                    <td>Lower quality and slower, useful when CUDA is unavailable</td>
                   </tr>
                   <tr>
                     <td>RTX 5090 LAN server</td>
@@ -614,6 +617,118 @@
               Avoid <code>turbo</code> for the first Korean-to-English
               translation build. OpenAI's Whisper documentation notes that
               <code>turbo</code> is not trained for translation tasks.
+            </div>
+
+            <div class="callout">
+              Some A1000 laptops ship with less VRAM than desktop/workstation
+              A1000 cards. Run <code>nvidia-smi</code> first and choose
+              <code>small</code> when the GPU has 4 GB or when other apps are
+              already using memory.
+            </div>
+          </section>
+
+          <section class="section" id="a1000-laptop">
+            <div class="section-head">
+              <div class="label">A1000 laptop path</div>
+              <h2>Setup for weaker local GPUs</h2>
+              <p>
+                The local laptop build should be conservative by default. The
+                browser, Python server, VAD, and Whisper model all run on the
+                same PC, so spare VRAM and heat matter more than peak benchmark
+                speed.
+              </p>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Check the GPU before choosing a model</h3>
+                  <p>
+                    Confirm the NVIDIA driver is visible, note total VRAM, and
+                    close heavy GPU apps before testing live translation.
+                  </p>
+                  <pre><code>nvidia-smi
+python --version</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Use the current faster-whisper CUDA path</h3>
+                  <p>
+                    Current faster-whisper/CTranslate2 GPU builds expect CUDA
+                    12 libraries, including cuBLAS for CUDA 12 and cuDNN 9.
+                    If Python cannot load CUDA DLLs, fix the CUDA runtime before
+                    changing app code.
+                  </p>
+                  <pre><code>python -m pip install --upgrade pip
+pip install -r requirements.txt
+python -c "import ctranslate2; print(ctranslate2.get_cuda_device_count())"</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Start with the safe A1000 preset</h3>
+                  <p>
+                    This keeps latency reasonable and avoids extra memory from a
+                    second Korean transcription pass.
+                  </p>
+                  <pre><code>$env:WHISPER_MODEL="small"
+$env:WHISPER_DEVICE="cuda"
+$env:WHISPER_COMPUTE_TYPE="int8_float16"
+$env:WHISPER_BEAM_SIZE="1"
+$env:SHOW_SOURCE_TEXT="false"
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Upgrade to medium only after a stable test</h3>
+                  <p>
+                    If <code>small</code> is stable for 10 to 15 minutes and
+                    translation quality is not enough, try <code>medium</code>
+                    with the same quantized compute type. Increase
+                    <code>WHISPER_BEAM_SIZE</code> only if latency is still
+                    acceptable.
+                  </p>
+                  <pre><code>$env:WHISPER_MODEL="medium"
+$env:WHISPER_DEVICE="cuda"
+$env:WHISPER_COMPUTE_TYPE="int8_float16"
+$env:WHISPER_BEAM_SIZE="1"
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">05</div>
+                <div class="step-body">
+                  <h3>Fallback when CUDA is not available</h3>
+                  <p>
+                    CPU mode is useful for installation checks and emergency
+                    offline use. It will usually feel slower than GPU mode, so
+                    use <code>base</code> first.
+                  </p>
+                  <pre><code>$env:WHISPER_MODEL="base"
+$env:WHISPER_DEVICE="cpu"
+$env:WHISPER_COMPUTE_TYPE="int8"
+$env:WHISPER_CPU_THREADS="8"
+python main.py</code></pre>
+                </div>
+              </article>
+            </div>
+
+            <div class="callout important">
+              If you see errors such as missing <code>cublas64_12.dll</code>
+              or cuDNN DLLs, install the CUDA 12/cuDNN 9 runtime libraries or
+              use a faster-whisper-compatible Windows runtime package. For older
+              CUDA/cuDNN combinations, the faster-whisper README documents
+              CTranslate2 downgrade pins.
             </div>
           </section>
 
@@ -730,14 +845,15 @@ pip install -r requirements.txt</code></pre>
               <article class="step">
                 <div class="step-number">02</div>
                 <div class="step-body">
-                  <h3>Start in balanced laptop mode</h3>
+                  <h3>Start in safe laptop mode</h3>
                   <p>
-                    Use <code>medium</code> first on an 8 GB NVIDIA laptop GPU.
-                    If latency is too high, switch to <code>small</code>.
+                    Use <code>small</code> first on an A1000-class laptop. Move
+                    to <code>medium</code> only after the safe preset is stable.
                   </p>
-                  <pre><code>$env:WHISPER_MODEL="medium"
+                  <pre><code>$env:WHISPER_MODEL="small"
 $env:WHISPER_DEVICE="cuda"
 $env:WHISPER_COMPUTE_TYPE="int8_float16"
+$env:WHISPER_BEAM_SIZE="1"
 python main.py</code></pre>
                 </div>
               </article>
@@ -759,17 +875,20 @@ python main.py</code></pre>
                 <div class="step-body">
                   <h3>Tune for speed or quality</h3>
                   <p>
-                    Use <code>small</code> when the subtitles feel late. Use
-                    <code>medium</code> with <code>beam_size=3</code> when the
-                    translation is too rough and the GPU has headroom.
+                    Use <code>base</code> on CPU when CUDA fails. Use
+                    <code>medium</code> with <code>WHISPER_BEAM_SIZE=1</code>
+                    when <code>small</code> is too rough and the GPU has
+                    headroom.
                   </p>
                   <pre><code># Fast preset
 $env:WHISPER_MODEL="small"
 $env:WHISPER_COMPUTE_TYPE="int8_float16"
+$env:WHISPER_BEAM_SIZE="1"
 
 # Quality preset
 $env:WHISPER_MODEL="medium"
-$env:WHISPER_COMPUTE_TYPE="float16"</code></pre>
+$env:WHISPER_COMPUTE_TYPE="int8_float16"
+$env:WHISPER_BEAM_SIZE="1"</code></pre>
                 </div>
               </article>
             </div>
@@ -853,8 +972,16 @@ $env:WHISPER_COMPUTE_TYPE="float16"</code></pre>
                 <p><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" rel="noreferrer">CUDA runtime and quantized inference path</a></p>
               </article>
               <article class="source-card">
+                <h3>CTranslate2</h3>
+                <p><a href="https://opennmt.net/CTranslate2/installation.html" target="_blank" rel="noreferrer">Installation notes for the inference engine used by faster-whisper</a></p>
+              </article>
+              <article class="source-card">
                 <h3>whisper.cpp</h3>
                 <p><a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noreferrer">Small CPU-friendly and quantized runtime option</a></p>
+              </article>
+              <article class="source-card">
+                <h3>NVIDIA RTX A1000</h3>
+                <p><a href="https://marketplace.nvidia.com/en-us/enterprise/laptops-workstations/nvidia-rtx-a1000/" target="_blank" rel="noreferrer">A1000 memory reference and workstation GPU context</a></p>
               </article>
               <article class="source-card">
                 <h3>MDN getUserMedia</h3>
