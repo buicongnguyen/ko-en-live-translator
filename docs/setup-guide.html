@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local Live Translation Setup Guide</title>
+    <meta
+      name="description"
+      content="Setup guide for Korean-to-English live translation using either a self-hosted LAN GPU server or a fully local laptop app with a browser interface."
+    />
+    <style>
+      :root {
+        --canvas: #f5f0e8;
+        --canvas-2: #e7edf0;
+        --ink: #181a1b;
+        --muted: #586066;
+        --line: rgba(24, 26, 27, 0.14);
+        --panel: rgba(255, 255, 255, 0.84);
+        --panel-strong: #ffffff;
+        --green: #0f6d66;
+        --green-dark: #054540;
+        --blue: #295a9b;
+        --orange: #c45d22;
+        --red: #a93628;
+        --shadow: 0 22px 70px rgba(25, 35, 40, 0.13);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(135deg, rgba(15, 109, 102, 0.14), transparent 34%),
+          linear-gradient(225deg, rgba(41, 90, 155, 0.14), transparent 30%),
+          linear-gradient(180deg, var(--canvas), var(--canvas-2));
+      }
+
+      a {
+        color: var(--green-dark);
+        font-weight: 800;
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.18em;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      code,
+      pre {
+        font-family: "Cascadia Code", "Consolas", monospace;
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 64px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 0 28px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 9px;
+        color: white;
+        background: linear-gradient(135deg, var(--green), var(--blue));
+        font-weight: 900;
+      }
+
+      .nav-link {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.68);
+        box-shadow: 0 8px 24px rgba(25, 35, 40, 0.08);
+        text-decoration: none;
+      }
+
+      .hero {
+        display: grid;
+        gap: 18px;
+        padding: 22px 0 30px;
+      }
+
+      .eyebrow,
+      .label,
+      .step-number {
+        text-transform: uppercase;
+        letter-spacing: 0.13em;
+        font-size: 0.74rem;
+        font-weight: 900;
+      }
+
+      .eyebrow,
+      .label {
+        color: var(--green);
+      }
+
+      h1 {
+        max-width: 980px;
+        font-size: clamp(2.45rem, 6vw, 4.9rem);
+        line-height: 0.98;
+      }
+
+      .lede {
+        max-width: 820px;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.68;
+      }
+
+      .quick-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 9px 13px;
+        color: var(--green-dark);
+        background: rgba(15, 109, 102, 0.12);
+        font-weight: 850;
+        font-size: 0.88rem;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.64fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 18px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .panel,
+      .route,
+      .step,
+      .source-card {
+        border: 1px solid rgba(255, 255, 255, 0.74);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .toc {
+        display: grid;
+        gap: 8px;
+      }
+
+      .toc a {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 7px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.56);
+        text-decoration: none;
+      }
+
+      .stack {
+        display: grid;
+        gap: 22px;
+      }
+
+      .section {
+        display: grid;
+        gap: 14px;
+      }
+
+      .section-head {
+        display: grid;
+        gap: 8px;
+      }
+
+      h2 {
+        font-size: clamp(1.55rem, 2.2vw, 2.1rem);
+      }
+
+      h3 {
+        font-size: 1.08rem;
+      }
+
+      .section p,
+      .step p,
+      .route p,
+      .source-card p,
+      .fineprint {
+        color: var(--muted);
+        line-height: 1.62;
+      }
+
+      .routes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .route {
+        padding: 18px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .route-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .badge {
+        flex: 0 0 auto;
+        border-radius: 999px;
+        padding: 6px 9px;
+        color: white;
+        background: var(--blue);
+        font-size: 0.72rem;
+        font-weight: 900;
+      }
+
+      .badge.local {
+        background: var(--orange);
+      }
+
+      .diagram {
+        display: grid;
+        gap: 10px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .flow-node {
+        min-height: 86px;
+        display: grid;
+        place-items: center;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 850;
+        background: var(--panel-strong);
+      }
+
+      .model-table {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.64);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 680px;
+      }
+
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--green-dark);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: rgba(15, 109, 102, 0.08);
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .steps {
+        display: grid;
+        gap: 12px;
+      }
+
+      .step {
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .step-number {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: white;
+        background: var(--green);
+      }
+
+      .step-body {
+        display: grid;
+        gap: 10px;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 0;
+        padding: 14px;
+        border-radius: 8px;
+        color: #ecf8f7;
+        background: #102326;
+        line-height: 1.55;
+      }
+
+      .callout {
+        padding: 14px 16px;
+        border-left: 4px solid var(--orange);
+        border-radius: 8px;
+        background: rgba(196, 93, 34, 0.1);
+        color: #57301a;
+        line-height: 1.55;
+      }
+
+      .callout.important {
+        border-left-color: var(--red);
+        background: rgba(169, 54, 40, 0.1);
+        color: #652017;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.58);
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .checklist strong {
+        color: var(--ink);
+      }
+
+      .sources {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .source-card {
+        padding: 16px;
+      }
+
+      .footer {
+        padding-top: 18px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .routes,
+        .sources {
+          grid-template-columns: 1fr;
+        }
+
+        .flow {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .shell {
+          width: min(100% - 20px, 1180px);
+          padding-top: 14px;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .step {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Guide navigation">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark">KO</span>
+          <strong>Live Translator Guide</strong>
+        </a>
+        <a class="nav-link" href="./index.html">Open demo app</a>
+      </nav>
+
+      <header class="hero">
+        <div class="eyebrow">Setup guide</div>
+        <h1>Two practical ways to run Korean-to-English live translation.</h1>
+        <p class="lede">
+          This guide explains how to build both versions: a local-network
+          self-hosted GPU server with a web app, and a small local PC app that
+          runs the model and browser interface on the same laptop.
+        </p>
+        <div class="quick-pills" aria-label="Recommended stack">
+          <span class="pill">faster-whisper</span>
+          <span class="pill">FastAPI WebSocket</span>
+          <span class="pill">Silero VAD</span>
+          <span class="pill">HTTPS for LAN microphones</span>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <section class="panel toc" aria-label="Contents">
+            <div class="label">Contents</div>
+            <a href="#choose">Choose the app shape</a>
+            <a href="#models">Model settings</a>
+            <a href="#lan-server">LAN GPU server setup</a>
+            <a href="#local-laptop">Local laptop setup</a>
+            <a href="#audio">Meeting audio capture</a>
+            <a href="#verify">Test checklist</a>
+            <a href="#sources">Research links</a>
+          </section>
+
+          <section class="panel">
+            <div class="label">Best first target</div>
+            <p class="fineprint">
+              Build the local laptop browser app first. It proves the model,
+              microphone capture, subtitles, and latency. Then reuse the same
+              web UI against the stronger RTX server.
+            </p>
+          </section>
+        </aside>
+
+        <div class="stack">
+          <section class="section" id="choose">
+            <div class="section-head">
+              <div class="label">Decision</div>
+              <h2>Choose between two app shapes</h2>
+              <p>
+                Both versions use the same core pipeline. The difference is
+                where the model runs and how browsers reach the audio backend.
+              </p>
+            </div>
+
+            <div class="routes">
+              <article class="route">
+                <div class="route-title">
+                  <h3>Option A: LAN GPU server + web app</h3>
+                  <span class="badge">Best quality</span>
+                </div>
+                <p>
+                  The RTX 5090 PC runs FastAPI and the AI model. Laptops,
+                  phones, or tablets open the web app from the local network and
+                  stream microphone audio to the server.
+                </p>
+                <div class="callout">
+                  Use this when you want the best Korean recognition and more
+                  stable translation with a larger model such as
+                  <code>large-v3</code>.
+                </div>
+              </article>
+
+              <article class="route">
+                <div class="route-title">
+                  <h3>Option B: Local PC + browser interface</h3>
+                  <span class="badge local">Small app</span>
+                </div>
+                <p>
+                  The laptop runs the backend and model locally. The browser UI
+                  opens at <code>http://127.0.0.1:8000</code>, captures the mic,
+                  and shows subtitles without another server.
+                </p>
+                <div class="callout">
+                  Use this for portable offline translation. Start with
+                  <code>small</code> or <code>medium</code> on an 8 GB laptop
+                  GPU.
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="diagram" aria-label="Translation pipeline diagram">
+              <div class="label">Shared pipeline</div>
+              <div class="flow">
+                <div class="flow-node">Audio input</div>
+                <div class="flow-node">16 kHz mono stream</div>
+                <div class="flow-node">VAD speech chunks</div>
+                <div class="flow-node">Whisper translate</div>
+                <div class="flow-node">English subtitles</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="models">
+            <div class="section-head">
+              <div class="label">Models</div>
+              <h2>Recommended model presets</h2>
+              <p>
+                Whisper direct translation is the simplest first version:
+                Korean speech goes straight into English text. Add a separate
+                Korean transcript and text translator later if you need better
+                meaning preservation for difficult speech.
+              </p>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Target</th>
+                    <th>Model</th>
+                    <th>Runtime</th>
+                    <th>Preset</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Laptop fast mode</td>
+                    <td><code>small</code></td>
+                    <td><code>faster-whisper</code></td>
+                    <td><code>cuda</code>, <code>int8_float16</code>, <code>beam_size=1</code></td>
+                  </tr>
+                  <tr>
+                    <td>Laptop balanced mode</td>
+                    <td><code>medium</code></td>
+                    <td><code>faster-whisper</code></td>
+                    <td><code>cuda</code>, <code>int8_float16</code> or <code>float16</code></td>
+                  </tr>
+                  <tr>
+                    <td>CPU fallback</td>
+                    <td><code>base</code> or quantized <code>small</code></td>
+                    <td><code>whisper.cpp</code></td>
+                    <td>Lower quality, useful when CUDA is unavailable</td>
+                  </tr>
+                  <tr>
+                    <td>RTX 5090 LAN server</td>
+                    <td><code>large-v3</code></td>
+                    <td><code>faster-whisper</code></td>
+                    <td><code>cuda</code>, <code>float16</code>, <code>beam_size=1-3</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout important">
+              Avoid <code>turbo</code> for the first Korean-to-English
+              translation build. OpenAI's Whisper documentation notes that
+              <code>turbo</code> is not trained for translation tasks.
+            </div>
+          </section>
+
+          <section class="section" id="lan-server">
+            <div class="section-head">
+              <div class="label">Option A</div>
+              <h2>Local-network self-hosted GPU server</h2>
+              <p>
+                This version makes the RTX 5090 PC the translation appliance.
+                Every device on the network can open the web interface and send
+                audio to the stronger model.
+              </p>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Prepare the server PC</h3>
+                  <p>
+                    Install current NVIDIA drivers, Python 3.11 or 3.12, Git,
+                    and FFmpeg. Give the PC a stable LAN address such as
+                    <code>192.168.1.50</code>.
+                  </p>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Create the Python backend</h3>
+                  <p>
+                    Use FastAPI for the HTTP app and WebSocket endpoint.
+                    Install GPU inference and audio utilities in a virtual
+                    environment.
+                  </p>
+                  <pre><code>python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install fastapi uvicorn[standard] faster-whisper silero-vad numpy soundfile</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Run the server on the LAN interface</h3>
+                  <p>
+                    Binding to <code>0.0.0.0</code> lets other devices on the
+                    network reach the backend.
+                  </p>
+                  <pre><code>$env:WHISPER_MODEL="large-v3"
+$env:WHISPER_DEVICE="cuda"
+$env:WHISPER_COMPUTE_TYPE="float16"
+uvicorn live_translate.app:app --host 0.0.0.0 --port 8000</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Add HTTPS for browser microphones</h3>
+                  <p>
+                    Browsers allow microphone capture only in secure contexts
+                    such as HTTPS or localhost. For phones and other laptops on
+                    the LAN, place Caddy, nginx, or another TLS reverse proxy in
+                    front of FastAPI and expose <code>wss://</code>.
+                  </p>
+                  <pre><code>https://translate.local
+  -> FastAPI health:  http://127.0.0.1:8000/api/health
+  -> FastAPI socket:  ws://127.0.0.1:8000/ws</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">05</div>
+                <div class="step-body">
+                  <h3>Connect the web app</h3>
+                  <p>
+                    Open the GitHub Pages or local static frontend, enter the
+                    backend origin such as <code>https://translate.local</code>,
+                    then start the microphone.
+                  </p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="local-laptop">
+            <div class="section-head">
+              <div class="label">Option B</div>
+              <h2>Local PC app with browser interface</h2>
+              <p>
+                This is the smallest useful version. The backend, model, and UI
+                all run on one laptop. It is easier to install, easier to debug,
+                and works even without a network server.
+              </p>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Install the local runtime</h3>
+                  <p>
+                    Use the same Python backend, but start with a lighter model
+                    on laptop hardware.
+                  </p>
+                  <pre><code>python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Start in balanced laptop mode</h3>
+                  <p>
+                    Use <code>medium</code> first on an 8 GB NVIDIA laptop GPU.
+                    If latency is too high, switch to <code>small</code>.
+                  </p>
+                  <pre><code>$env:WHISPER_MODEL="medium"
+$env:WHISPER_DEVICE="cuda"
+$env:WHISPER_COMPUTE_TYPE="int8_float16"
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Open the browser UI</h3>
+                  <p>
+                    Because the app is on the same machine, localhost is a
+                    secure browser context for microphone access.
+                  </p>
+                  <pre><code>http://127.0.0.1:8000</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Tune for speed or quality</h3>
+                  <p>
+                    Use <code>small</code> when the subtitles feel late. Use
+                    <code>medium</code> with <code>beam_size=3</code> when the
+                    translation is too rough and the GPU has headroom.
+                  </p>
+                  <pre><code># Fast preset
+$env:WHISPER_MODEL="small"
+$env:WHISPER_COMPUTE_TYPE="int8_float16"
+
+# Quality preset
+$env:WHISPER_MODEL="medium"
+$env:WHISPER_COMPUTE_TYPE="float16"</code></pre>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="audio">
+            <div class="section-head">
+              <div class="label">Audio capture</div>
+              <h2>Microphone first, meeting audio second</h2>
+              <p>
+                Microphone capture is the right MVP because browser APIs handle
+                it cleanly. Capturing Zoom, Teams, YouTube, or system audio
+                needs desktop-level capture.
+              </p>
+            </div>
+
+            <div class="routes">
+              <article class="route">
+                <h3>Microphone mode</h3>
+                <p>
+                  Works from the browser. Best for in-person translation, a
+                  speaker near the laptop, or a meeting played through speakers.
+                </p>
+              </article>
+              <article class="route">
+                <h3>System audio mode</h3>
+                <p>
+                  On Windows, use WASAPI loopback capture in a small desktop
+                  helper. That helper can stream PCM audio to the same backend
+                  used by the browser app.
+                </p>
+              </article>
+            </div>
+
+            <div class="callout">
+              A good product path is browser MVP first, then a Windows helper
+              for system audio and an always-on-top subtitle window.
+            </div>
+          </section>
+
+          <section class="section" id="verify">
+            <div class="section-head">
+              <div class="label">Verification</div>
+              <h2>Test checklist</h2>
+              <p>
+                Use this checklist before comparing the app against Transync AI
+                or another polished commercial translator.
+              </p>
+            </div>
+
+            <ul class="checklist">
+              <li><strong>Audio:</strong> microphone permission opens, waveform level changes, and silence does not trigger translation.</li>
+              <li><strong>Latency:</strong> normal Korean speech produces English within about 1.5 to 3 seconds on laptop mode.</li>
+              <li><strong>Accuracy:</strong> compare <code>small</code>, <code>medium</code>, and server <code>large-v3</code> with the same Korean sample.</li>
+              <li><strong>Network:</strong> another device can open the HTTPS web app and connect to the WebSocket without mixed-content errors.</li>
+              <li><strong>Recovery:</strong> unplugging the mic or losing the server connection shows a readable error and can reconnect.</li>
+              <li><strong>Thermals:</strong> run for 15 minutes and watch GPU memory, fan noise, and whether latency drifts upward.</li>
+            </ul>
+          </section>
+
+          <section class="section" id="sources">
+            <div class="section-head">
+              <div class="label">Research links</div>
+              <h2>References used for this plan</h2>
+              <p>
+                These are the key public references behind the setup choices.
+              </p>
+            </div>
+
+            <div class="sources">
+              <article class="source-card">
+                <h3>Transync AI</h3>
+                <p><a href="https://www.transyncai.com/" target="_blank" rel="noreferrer">Product benchmark for live translation UX</a></p>
+              </article>
+              <article class="source-card">
+                <h3>OpenAI Whisper</h3>
+                <p><a href="https://github.com/openai/whisper/blob/main/README.md" target="_blank" rel="noreferrer">Model sizes, VRAM guidance, and translation support</a></p>
+              </article>
+              <article class="source-card">
+                <h3>faster-whisper</h3>
+                <p><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" rel="noreferrer">CUDA runtime and quantized inference path</a></p>
+              </article>
+              <article class="source-card">
+                <h3>whisper.cpp</h3>
+                <p><a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noreferrer">Small CPU-friendly and quantized runtime option</a></p>
+              </article>
+              <article class="source-card">
+                <h3>MDN getUserMedia</h3>
+                <p><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia" target="_blank" rel="noreferrer">Browser microphone and secure-context behavior</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Microsoft WASAPI loopback</h3>
+                <p><a href="https://learn.microsoft.com/en-us/samples/microsoft/windows-classic-samples/applicationloopbackaudio-sample/" target="_blank" rel="noreferrer">Windows system and process audio capture reference</a></p>
+              </article>
+            </div>
+          </section>
+
+          <p class="footer">
+            Recommended build order: local laptop microphone subtitles first,
+            LAN GPU server second, Windows system-audio helper third.
+          </p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
