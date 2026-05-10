@@ -480,21 +480,24 @@
           <section class="panel toc" aria-label="Contents">
             <div class="label">Contents</div>
             <a href="#choose">Choose the app shape</a>
+            <a href="#install-resources">Install resources</a>
+            <a href="#terminology">Terminology</a>
             <a href="#models">Model settings</a>
             <a href="#a1000-laptop">A1000 laptop path</a>
             <a href="#lan-server">LAN GPU server setup</a>
             <a href="#local-laptop">Local laptop setup</a>
             <a href="#audio">Meeting audio capture</a>
             <a href="#verify">Test checklist</a>
-            <a href="#sources">Research links</a>
+            <a href="#sources">Official links</a>
           </section>
 
           <section class="panel">
             <div class="label">Best first target</div>
             <p class="fineprint">
-              Build the local laptop browser app first. It proves the model,
-              microphone capture, subtitles, and latency. Then reuse the same
-              web UI against the stronger RTX server.
+              Build the local laptop browser app first. Install Python, Git,
+              FFmpeg, NVIDIA driver, then test <code>small</code> with
+              <code>int8_float16</code>. After that, reuse the same web UI
+              against the stronger RTX server.
             </p>
           </section>
         </aside>
@@ -557,6 +560,184 @@
                 <div class="flow-node">Whisper translate</div>
                 <div class="flow-node">English subtitles</div>
               </div>
+            </div>
+          </section>
+
+          <section class="section" id="install-resources">
+            <div class="section-head">
+              <div class="label">Install resources</div>
+              <h2>What each download is for</h2>
+              <p>
+                Use official links first. Install the base tools before tuning
+                models, because most setup failures come from missing Python,
+                FFmpeg, CUDA libraries, or the NVIDIA driver.
+              </p>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Resource</th>
+                    <th>Official link</th>
+                    <th>Why it matters</th>
+                    <th>Check command</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Python 3.11 or 3.12</td>
+                    <td><a href="https://www.python.org/downloads/windows/" target="_blank" rel="noreferrer">python.org Windows downloads</a></td>
+                    <td>Runs the FastAPI backend and the AI inference package.</td>
+                    <td><code>python --version</code></td>
+                  </tr>
+                  <tr>
+                    <td>Git for Windows</td>
+                    <td><a href="https://git-scm.com/download/win" target="_blank" rel="noreferrer">git-scm.com/download/win</a></td>
+                    <td>Downloads the project and keeps the GitHub Pages guide updated.</td>
+                    <td><code>git --version</code></td>
+                  </tr>
+                  <tr>
+                    <td>FFmpeg</td>
+                    <td><a href="https://www.ffmpeg.org/download.html" target="_blank" rel="noreferrer">ffmpeg.org/download</a></td>
+                    <td>Lets audio tools decode, convert, and inspect media formats.</td>
+                    <td><code>ffmpeg -version</code></td>
+                  </tr>
+                  <tr>
+                    <td>NVIDIA driver</td>
+                    <td><a href="https://www.nvidia.com/Download/index.aspx" target="_blank" rel="noreferrer">NVIDIA official drivers</a></td>
+                    <td>Makes the A1000 or RTX 5090 visible to CUDA software.</td>
+                    <td><code>nvidia-smi</code></td>
+                  </tr>
+                  <tr>
+                    <td>CUDA runtime</td>
+                    <td><a href="https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html" target="_blank" rel="noreferrer">CUDA Windows install guide</a></td>
+                    <td>Provides GPU libraries such as cuBLAS used by CTranslate2.</td>
+                    <td><code>where cublas64_12.dll</code></td>
+                  </tr>
+                  <tr>
+                    <td>cuDNN</td>
+                    <td><a href="https://docs.nvidia.com/deeplearning/cudnn/backend/latest/installation/windows.html" target="_blank" rel="noreferrer">cuDNN Windows install guide</a></td>
+                    <td>Provides neural network kernels needed by current GPU builds.</td>
+                    <td><code>where cudnn64_9.dll</code></td>
+                  </tr>
+                  <tr>
+                    <td>faster-whisper</td>
+                    <td><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" rel="noreferrer">SYSTRAN/faster-whisper</a></td>
+                    <td>Runs Whisper models faster through the CTranslate2 engine.</td>
+                    <td><code>pip show faster-whisper</code></td>
+                  </tr>
+                  <tr>
+                    <td>Caddy or mkcert</td>
+                    <td><a href="https://caddyserver.com/docs/automatic-https" target="_blank" rel="noreferrer">Caddy HTTPS</a> / <a href="https://github.com/FiloSottile/mkcert" target="_blank" rel="noreferrer">mkcert</a></td>
+                    <td>Creates trusted HTTPS for LAN microphone use from other devices.</td>
+                    <td><code>https://translate.local</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout">
+              For the laptop-only app, HTTPS is not required because
+              <code>http://127.0.0.1</code> counts as a browser secure context.
+              For another phone or laptop on the LAN, use HTTPS and
+              <code>wss://</code>.
+            </div>
+          </section>
+
+          <section class="section" id="terminology">
+            <div class="section-head">
+              <div class="label">Terminology</div>
+              <h2>Vocabulary for this setup</h2>
+              <p>
+                These terms appear in commands and error messages. Knowing them
+                makes it much easier to decide whether a problem is audio,
+                network, model quality, or GPU setup.
+              </p>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Term</th>
+                    <th>Plain meaning</th>
+                    <th>In this project</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ASR</td>
+                    <td>Automatic speech recognition: speech into text.</td>
+                    <td>Whisper can transcribe Korean when <code>task=transcribe</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Speech translation</td>
+                    <td>Speech in one language directly into text in another language.</td>
+                    <td>Whisper uses <code>task=translate</code> for Korean speech to English text.</td>
+                  </tr>
+                  <tr>
+                    <td>VAD</td>
+                    <td>Voice activity detection: deciding when someone is speaking.</td>
+                    <td>Stops silence from being sent to the model and decides when a subtitle line is final.</td>
+                  </tr>
+                  <tr>
+                    <td>WebSocket</td>
+                    <td>A long-running browser-to-server connection.</td>
+                    <td>The browser streams audio chunks and receives subtitle updates over <code>/ws</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>HTTPS / WSS</td>
+                    <td>Encrypted web page and encrypted WebSocket.</td>
+                    <td>Needed when a phone or another laptop opens the app from the LAN.</td>
+                  </tr>
+                  <tr>
+                    <td>localhost / 127.0.0.1</td>
+                    <td>The same computer you are using.</td>
+                    <td>Use this for the local laptop app: <code>http://127.0.0.1:8000</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>LAN</td>
+                    <td>Local area network: devices on your home or office Wi-Fi/router.</td>
+                    <td>The RTX server might be <code>192.168.1.50</code>; clients connect to it.</td>
+                  </tr>
+                  <tr>
+                    <td>Reverse proxy</td>
+                    <td>A small web server that forwards browser traffic to the backend.</td>
+                    <td>Caddy can expose <code>https://translate.local</code> while FastAPI stays on port <code>8000</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>CUDA / cuDNN</td>
+                    <td>NVIDIA GPU runtime libraries for AI inference.</td>
+                    <td>Missing DLLs here usually mean the model cannot run on the GPU yet.</td>
+                  </tr>
+                  <tr>
+                    <td>CTranslate2</td>
+                    <td>The inference engine used by faster-whisper.</td>
+                    <td>It decides whether <code>cuda</code>, <code>int8_float16</code>, or CPU fallback is available.</td>
+                  </tr>
+                  <tr>
+                    <td>VRAM</td>
+                    <td>GPU memory.</td>
+                    <td>A1000 laptops should start with <code>small</code>; RTX 5090 can use <code>large-v3</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><code>compute_type</code></td>
+                    <td>The math precision used by the model.</td>
+                    <td><code>int8_float16</code> saves memory on laptop GPUs; <code>float16</code> fits better on the RTX server.</td>
+                  </tr>
+                  <tr>
+                    <td><code>beam_size</code></td>
+                    <td>How many decoding paths the model compares.</td>
+                    <td><code>1</code> is faster; <code>3</code> can improve text quality with more latency.</td>
+                  </tr>
+                  <tr>
+                    <td>WASAPI loopback</td>
+                    <td>Windows system-audio capture.</td>
+                    <td>Needed later for Zoom, Teams, YouTube, or meeting audio without using speakers.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 
@@ -763,7 +944,8 @@ python main.py</code></pre>
                   <p>
                     Use FastAPI for the HTTP app and WebSocket endpoint.
                     Install GPU inference and audio utilities in a virtual
-                    environment.
+                    environment. FastAPI's WebSocket guide explains the
+                    browser-to-server connection pattern.
                   </p>
                   <pre><code>python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -777,7 +959,8 @@ pip install fastapi uvicorn[standard] faster-whisper silero-vad numpy soundfile<
                   <h3>Run the server on the LAN interface</h3>
                   <p>
                     Binding to <code>0.0.0.0</code> lets other devices on the
-                    network reach the backend.
+                    network reach the backend. Uvicorn documents this through
+                    its <code>--host</code> setting.
                   </p>
                   <pre><code>$env:WHISPER_MODEL="large-v3"
 $env:WHISPER_DEVICE="cuda"
@@ -794,7 +977,8 @@ uvicorn live_translate.app:app --host 0.0.0.0 --port 8000</code></pre>
                     Browsers allow microphone capture only in secure contexts
                     such as HTTPS or localhost. For phones and other laptops on
                     the LAN, place Caddy, nginx, or another TLS reverse proxy in
-                    front of FastAPI and expose <code>wss://</code>.
+                    front of FastAPI and expose <code>wss://</code>. Caddy is a
+                    convenient first choice because it can handle local HTTPS.
                   </p>
                   <pre><code>https://translate.local
   -> FastAPI health:  http://127.0.0.1:8000/api/health
@@ -951,10 +1135,11 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
 
           <section class="section" id="sources">
             <div class="section-head">
-              <div class="label">Research links</div>
-              <h2>References used for this plan</h2>
+              <div class="label">Official links</div>
+              <h2>References and setup pages</h2>
               <p>
-                These are the key public references behind the setup choices.
+                These are the main public references and download pages behind
+                the setup choices.
               </p>
             </div>
 
@@ -982,6 +1167,46 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
               <article class="source-card">
                 <h3>NVIDIA RTX A1000</h3>
                 <p><a href="https://marketplace.nvidia.com/en-us/enterprise/laptops-workstations/nvidia-rtx-a1000/" target="_blank" rel="noreferrer">A1000 memory reference and workstation GPU context</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Python for Windows</h3>
+                <p><a href="https://www.python.org/downloads/windows/" target="_blank" rel="noreferrer">Official Python installer for the local backend runtime</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Git for Windows</h3>
+                <p><a href="https://git-scm.com/download/win" target="_blank" rel="noreferrer">Official Git installer for cloning and publishing the project</a></p>
+              </article>
+              <article class="source-card">
+                <h3>FFmpeg</h3>
+                <p><a href="https://www.ffmpeg.org/download.html" target="_blank" rel="noreferrer">Official FFmpeg download page for audio tooling</a></p>
+              </article>
+              <article class="source-card">
+                <h3>NVIDIA drivers</h3>
+                <p><a href="https://www.nvidia.com/Download/index.aspx" target="_blank" rel="noreferrer">Official driver search for RTX laptop and desktop GPUs</a></p>
+              </article>
+              <article class="source-card">
+                <h3>CUDA for Windows</h3>
+                <p><a href="https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html" target="_blank" rel="noreferrer">Official CUDA Toolkit installation guide for Windows</a></p>
+              </article>
+              <article class="source-card">
+                <h3>cuDNN for Windows</h3>
+                <p><a href="https://docs.nvidia.com/deeplearning/cudnn/backend/latest/installation/windows.html" target="_blank" rel="noreferrer">Official cuDNN installation guide for Windows</a></p>
+              </article>
+              <article class="source-card">
+                <h3>FastAPI WebSockets</h3>
+                <p><a href="https://fastapi.tiangolo.com/advanced/websockets/" target="_blank" rel="noreferrer">Official WebSocket endpoint documentation</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Uvicorn settings</h3>
+                <p><a href="https://www.uvicorn.org/settings/" target="_blank" rel="noreferrer">Official host and port setting reference</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Caddy HTTPS</h3>
+                <p><a href="https://caddyserver.com/docs/automatic-https" target="_blank" rel="noreferrer">Automatic HTTPS behavior for local and internal hosts</a></p>
+              </article>
+              <article class="source-card">
+                <h3>mkcert</h3>
+                <p><a href="https://github.com/FiloSottile/mkcert" target="_blank" rel="noreferrer">Local trusted certificate tool for development networks</a></p>
               </article>
               <article class="source-card">
                 <h3>MDN getUserMedia</h3>
