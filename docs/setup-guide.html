@@ -1517,12 +1517,23 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
 
             <ul class="checklist">
               <li><strong>Audio:</strong> microphone permission opens, waveform level changes, and silence does not trigger translation.</li>
+              <li><strong>Noise hallucination:</strong> leave the room quiet for 20 seconds; the transcript should not repeat phrases like <code>Thanks for watching</code> or <code>subscribe</code>.</li>
               <li><strong>Latency:</strong> normal Korean speech produces English within about 1.5 to 3 seconds on laptop mode.</li>
               <li><strong>Accuracy:</strong> compare <code>small</code>, <code>medium</code>, and server <code>large-v3</code> with the same Korean sample.</li>
               <li><strong>Network:</strong> another device can open the HTTPS web app and connect to the WebSocket without mixed-content errors.</li>
               <li><strong>Recovery:</strong> unplugging the mic or losing the server connection shows a readable error and can reconnect.</li>
               <li><strong>Thermals:</strong> run for 15 minutes and watch GPU memory, fan noise, and whether latency drifts upward.</li>
             </ul>
+
+            <div class="callout">
+              If silence still creates fake text, tighten the runtime filters:
+              <code>MIN_AUDIO_RMS=0.005</code>,
+              <code>NO_SPEECH_THRESHOLD=0.45</code>,
+              <code>END_SILENCE_MS=900</code>, and
+              <code>MIN_SPEECH_MS=650</code>. Whisper-style models can
+              hallucinate common internet phrases on noisy or very short audio,
+              so the best fix is to reject weak chunks before they reach the UI.
+            </div>
           </section>
 
           <section class="section" id="sources">

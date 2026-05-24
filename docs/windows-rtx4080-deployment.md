@@ -40,15 +40,22 @@ The health endpoint reported:
 
 ```json
 {
-  "app": "ko-en-live-translator",
+  "app": "live-speech-translator",
   "status": "ok",
   "runtime": {
     "model": "large-v3",
     "source_language": "ko",
+    "target_language": "en",
     "device": "cuda",
     "compute_type": "float16",
     "ready": true,
-    "show_source_text": true
+    "show_source_text": true,
+    "silence_filter": {
+      "min_audio_rms": 0.0035,
+      "no_speech_threshold": 0.55,
+      "log_prob_threshold": -1.0,
+      "compression_ratio_threshold": 2.4
+    }
   }
 }
 ```
@@ -86,6 +93,8 @@ $env:WHISPER_DEVICE="cuda"
 $env:WHISPER_COMPUTE_TYPE="float16"
 $env:WHISPER_BEAM_SIZE="1"
 $env:SHOW_SOURCE_TEXT="true"
+$env:MIN_AUDIO_RMS="0.0035"
+$env:NO_SPEECH_THRESHOLD="0.55"
 
 python main.py
 ```
@@ -103,6 +112,8 @@ $env:WHISPER_DEVICE="cuda"
 $env:WHISPER_COMPUTE_TYPE="float16"
 $env:WHISPER_BEAM_SIZE="1"
 $env:SHOW_SOURCE_TEXT="true"
+$env:MIN_AUDIO_RMS="0.0035"
+$env:NO_SPEECH_THRESHOLD="0.55"
 
 Start-Process `
   -FilePath ".venv\Scripts\python.exe" `
@@ -332,6 +343,23 @@ https://192.168.0.20:8443
 ```
 
 from another laptop after setting up HTTPS with Caddy and mkcert.
+
+If silence or room noise produces repeated fake text such as:
+
+```text
+Thanks for watching.
+Hãy subscribe cho kênh...
+```
+
+that is usually Whisper hallucinating on weak or non-speech audio, not an advertisement. The current backend rejects low-energy chunks, high no-speech probability segments, low-confidence segments, and several common hallucination phrases. If it still happens, restart the server with slightly stricter settings:
+
+```powershell
+$env:MIN_AUDIO_RMS="0.005"
+$env:NO_SPEECH_THRESHOLD="0.45"
+$env:END_SILENCE_MS="900"
+$env:MIN_SPEECH_MS="650"
+python main.py
+```
 
 If GPU memory becomes too high, use a lighter preset:
 

@@ -92,7 +92,17 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             if not text_message:
                 continue
 
-            payload = json.loads(text_message)
+            try:
+                payload = json.loads(text_message)
+            except json.JSONDecodeError:
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "message": "Invalid control message. Expected JSON.",
+                    }
+                )
+                continue
+
             message_type = payload.get("type")
             if message_type == "flush":
                 session.flush()
@@ -115,4 +125,7 @@ async def _forward_session_events(websocket: WebSocket, session: TranslationSess
         event = await asyncio.to_thread(session.result_queue.get)
         if event is None:
             return
-        await websocket.send_json(event)
+        try:
+            await websocket.send_json(event)
+        except (RuntimeError, WebSocketDisconnect):
+            return

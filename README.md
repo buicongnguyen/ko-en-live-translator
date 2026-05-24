@@ -4,9 +4,9 @@ This project is a local web app for near-real-time speech translation on a GPU-e
 
 ## GitHub Pages frontend
 
-There is now a static frontend in [docs/index.html](/C:/Users/n/source/repos/rambo_game/Transcribe_translate/docs/index.html) that is ready to publish with GitHub Pages.
-The setup guide for the two app shapes is in [docs/setup-guide.html](/C:/Users/n/source/repos/rambo_game/Transcribe_translate/docs/setup-guide.html).
-The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](/C:/Users/n/source/repos/rambo_game/Transcribe_translate/docs/windows-rtx4080-deployment.md).
+There is now a static frontend in [docs/index.html](docs/index.html) that is ready to publish with GitHub Pages.
+The setup guide for the two app shapes is in [docs/setup-guide.html](docs/setup-guide.html).
+The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](docs/windows-rtx4080-deployment.md).
 
 - It works as a polished demo on `github.io` with a built-in simulated live subtitle flow.
 - It can also connect to a separately deployed backend over `https://` and `wss://`.
@@ -75,6 +75,8 @@ $env:WHISPER_COMPUTE_TYPE="auto"
 $env:SOURCE_LANGUAGE="ko"
 $env:TARGET_LANGUAGE="en"
 $env:SHOW_SOURCE_TEXT="true"
+$env:MIN_AUDIO_RMS="0.0035"
+$env:NO_SPEECH_THRESHOLD="0.55"
 python main.py
 ```
 
@@ -90,6 +92,7 @@ python main.py
 - If your GPU runtime cannot load the selected compute mode, the app will automatically fall back to a safer mode.
 - `SOURCE_LANGUAGE=ko` and `TARGET_LANGUAGE=en` are startup defaults, but the browser can change the language pair per session.
 - `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show source text beside the translation. Set it to `false` only when you need the lowest possible latency.
+- `MIN_AUDIO_RMS`, `NO_SPEECH_THRESHOLD`, `LOG_PROB_THRESHOLD`, and `COMPRESSION_RATIO_THRESHOLD` help reject silence/noise chunks that Whisper may otherwise turn into fake phrases such as "thanks for watching".
 
 ## Optional non-English targets
 
