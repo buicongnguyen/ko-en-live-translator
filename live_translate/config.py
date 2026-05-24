@@ -31,11 +31,15 @@ class Settings:
     beam_size: int = int(os.getenv("WHISPER_BEAM_SIZE", "3"))
     cpu_threads: int = int(os.getenv("WHISPER_CPU_THREADS", "4"))
     show_source_text: bool = _env_bool("SHOW_SOURCE_TEXT", True)
+    min_audio_rms: float = float(os.getenv("MIN_AUDIO_RMS", "0.0035"))
+    no_speech_threshold: float = float(os.getenv("NO_SPEECH_THRESHOLD", "0.55"))
+    log_prob_threshold: float = float(os.getenv("LOG_PROB_THRESHOLD", "-1.0"))
+    compression_ratio_threshold: float = float(os.getenv("COMPRESSION_RATIO_THRESHOLD", "2.4"))
     sample_rate: int = 16000
     frame_ms: int = 30
     pre_roll_ms: int = int(os.getenv("PRE_ROLL_MS", "300"))
     end_silence_ms: int = int(os.getenv("END_SILENCE_MS", "700"))
-    min_speech_ms: int = int(os.getenv("MIN_SPEECH_MS", "360"))
+    min_speech_ms: int = int(os.getenv("MIN_SPEECH_MS", "520"))
     max_segment_ms: int = int(os.getenv("MAX_SEGMENT_MS", "7000"))
     vad_aggressiveness: int = int(os.getenv("VAD_AGGRESSIVENESS", "2"))
     model_cache_dir: Path | None = (

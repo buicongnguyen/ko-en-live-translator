@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Lock
 
 import ctranslate2
+import numpy as np
 from faster_whisper import WhisperModel
 
 from .config import Settings
@@ -28,6 +29,19 @@ class TranslationResult:
     target_language: str
     audio_seconds: float
     latency_seconds: float
+
+
+HALLUCINATION_PHRASES = (
+    "thanks for watching",
+    "thank you for watching",
+    "don't forget to subscribe",
+    "dont forget to subscribe",
+    "please subscribe",
+    "subscribe to",
+    "subscribe cho",
+    "la la school",
+    "hãy subscribe",
+)
 
 
 class WhisperTranslator:
@@ -52,6 +66,12 @@ class WhisperTranslator:
             "compute_type": self._runtime_compute_type or self.settings.compute_type,
             "ready": self._model is not None,
             "show_source_text": self.settings.show_source_text,
+            "silence_filter": {
+                "min_audio_rms": self.settings.min_audio_rms,
+                "no_speech_threshold": self.settings.no_speech_threshold,
+                "log_prob_threshold": self.settings.log_prob_threshold,
+                "compression_ratio_threshold": self.settings.compression_ratio_threshold,
+            },
         }
 
     def ensure_model(self) -> WhisperModel:
@@ -112,6 +132,11 @@ class WhisperTranslator:
         source_language: str | None = None,
         target_language: str | None = None,
     ) -> TranslationResult:
+        audio_rms = self._pcm_rms(pcm_bytes)
+        if audio_rms < self.settings.min_audio_rms:
+            raise NoSpeechDetectedError(
+                f"Skipped low-energy audio chunk. RMS={audio_rms:.4f}."
+            )
         model = self.ensure_model()
         started_at = time.perf_counter()
         source = normalize_source_language(source_language, self.settings.source_language)
@@ -160,6 +185,10 @@ class WhisperTranslator:
                         english_pivot,
                         target,
                     )
+                if not translated_text.strip():
+                    raise NoSpeechDetectedError("Skipped audio chunk without confident speech.")
+                if self._looks_like_hallucination(source_text, translated_text):
+                    raise NoSpeechDetectedError("Skipped likely silence/noise hallucination.")
             finally:
                 temp_path.unlink(missing_ok=True)
 
@@ -188,9 +217,20 @@ class WhisperTranslator:
             condition_on_previous_text=False,
             without_timestamps=True,
             temperature=0.0,
-            vad_filter=False,
+            vad_filter=True,
+            no_speech_threshold=self.settings.no_speech_threshold,
+            log_prob_threshold=self.settings.log_prob_threshold,
+            compression_ratio_threshold=self.settings.compression_ratio_threshold,
         )
-        return " ".join(segment.text.strip() for segment in segments if segment.text.strip()).strip()
+        accepted_text: list[str] = []
+        for segment in segments:
+            text = segment.text.strip()
+            if not text:
+                continue
+            if self._should_reject_segment(segment):
+                continue
+            accepted_text.append(text)
+        return " ".join(accepted_text).strip()
 
     def _resolve_device(self) -> str:
         if self.settings.device != "auto":
@@ -210,3 +250,44 @@ class WhisperTranslator:
     @staticmethod
     def _can_reuse_source_as_target(source_language: str, target_language: str) -> bool:
         return source_language != "auto" and source_language == target_language
+
+    def _should_reject_segment(self, segment) -> bool:
+        no_speech_prob = getattr(segment, "no_speech_prob", 0.0) or 0.0
+        avg_logprob = getattr(segment, "avg_logprob", 0.0) or 0.0
+        compression_ratio = getattr(segment, "compression_ratio", 0.0) or 0.0
+        if no_speech_prob > self.settings.no_speech_threshold:
+            return True
+        if avg_logprob < self.settings.log_prob_threshold:
+            return True
+        if compression_ratio > self.settings.compression_ratio_threshold:
+            return True
+        return self._text_has_hallucination_phrase(segment.text)
+
+    @staticmethod
+    def _pcm_rms(pcm_bytes: bytes) -> float:
+        if not pcm_bytes:
+            return 0.0
+        samples = np.frombuffer(pcm_bytes, dtype=np.int16)
+        if samples.size == 0:
+            return 0.0
+        return float(np.sqrt(np.mean((samples.astype(np.float32) / 32768.0) ** 2)))
+
+    @classmethod
+    def _looks_like_hallucination(
+        cls,
+        source_text: str | None,
+        translated_text: str,
+    ) -> bool:
+        return (
+            cls._text_has_hallucination_phrase(source_text or "")
+            or cls._text_has_hallucination_phrase(translated_text)
+        )
+
+    @staticmethod
+    def _text_has_hallucination_phrase(text: str) -> bool:
+        normalized = " ".join(text.lower().split())
+        return any(phrase in normalized for phrase in HALLUCINATION_PHRASES)
+
+
+class NoSpeechDetectedError(RuntimeError):
+    pass

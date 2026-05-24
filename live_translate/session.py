@@ -9,7 +9,7 @@ import webrtcvad
 
 from .config import Settings
 from .languages import normalize_source_language, normalize_target_language
-from .translator import WhisperTranslator
+from .translator import NoSpeechDetectedError, WhisperTranslator
 
 
 class VadSegmenter:
@@ -193,6 +193,14 @@ class TranslationSession:
                         "created_at": dt.datetime.now().strftime("%H:%M:%S"),
                     }
                 )
+        except NoSpeechDetectedError as exc:
+            self.result_queue.put(
+                {
+                    "type": "status",
+                    "state": "listening",
+                    "message": str(exc),
+                }
+            )
         except Exception as exc:
             self.result_queue.put({"type": "error", "message": str(exc)})
         finally:

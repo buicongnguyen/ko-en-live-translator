@@ -579,13 +579,14 @@ function publishTranslation(payload) {
 }
 
 function appendTranscript(payload) {
-  const sourceText =
-    payload.source_text ||
-    "Source transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
   const targetText = payload.translated_text || payload.english_text || "";
 
-  state.sourceLines.push(sourceText);
-  state.targetLines.push(targetText);
+  if (payload.source_text) {
+    state.sourceLines.push(payload.source_text);
+  }
+  if (targetText) {
+    state.targetLines.push(targetText);
+  }
   renderAllTranscripts();
   scrollTranscriptToBottom(ui.sourceTranscript);
   scrollTranscriptToBottom(ui.targetTranscript);
