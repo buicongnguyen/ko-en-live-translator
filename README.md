@@ -1,6 +1,6 @@
-# Live Korean-to-English Translator
+# Live Speech-to-English Translator
 
-This project is a local web app for near-real-time Korean-to-English speech translation on a GPU-equipped PC or laptop. The live UI is arranged like a meeting subtitle feed: each detected sentence shows Korean transcription first, then English translation directly underneath.
+This project is a local web app for near-real-time speech-to-English translation on a GPU-equipped PC or laptop. Choose a source language such as Korean, Japanese, Chinese, Vietnamese, Spanish, French, or auto-detect, then view the source transcript beside the English translation in compact scrollable text boxes.
 
 ## GitHub Pages frontend
 
@@ -27,8 +27,8 @@ For that reason, this app defaults to `medium` for better translation quality, w
 1. The browser captures microphone audio.
 2. Audio is downsampled to 16 kHz mono PCM and streamed to the backend over WebSocket.
 3. A VAD segmenter groups speech into utterances.
-4. Each utterance is translated from Korean speech into English with `faster-whisper`.
-5. The browser renders one sentence block at a time: Korean transcript on top, English translation below.
+4. Each utterance is translated from the selected source language into English with `faster-whisper`.
+5. The browser renders source transcript and English translation in two scrollable, copyable text boxes.
 
 ## Quick start
 
@@ -71,6 +71,7 @@ These environment variables let you tune the app for your hardware:
 $env:WHISPER_MODEL="small"
 $env:WHISPER_DEVICE="auto"
 $env:WHISPER_COMPUTE_TYPE="auto"
+$env:SOURCE_LANGUAGE="ko"
 $env:SHOW_SOURCE_TEXT="true"
 python main.py
 ```
@@ -85,4 +86,5 @@ python main.py
 
 - The first launch may take a while because the model weights need to be downloaded.
 - If your GPU runtime cannot load the selected compute mode, the app will automatically fall back to a safer mode.
-- `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show Korean above English. Set it to `false` only when you need the lowest possible latency.
+- `SOURCE_LANGUAGE=ko` is the startup default, but the browser can change the source language per session.
+- `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show source text beside English. Set it to `false` only when you need the lowest possible latency.

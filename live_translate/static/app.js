@@ -7,17 +7,20 @@ const state = {
   mutedNode: null,
   isCapturing: false,
   showSourceText: true,
-  koreanLines: [],
+  sourceLanguage: "ko",
+  sourceLines: [],
   englishLines: [],
 };
 
 const ui = {
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
+  sourceLanguage: document.getElementById("source-language"),
+  sourceLanguageLabel: document.getElementById("source-language-label"),
   statusText: document.getElementById("status-text"),
-  koreanTranscript: document.getElementById("korean-transcript"),
+  sourceTranscript: document.getElementById("source-transcript"),
   englishTranscript: document.getElementById("english-transcript"),
-  copyKoreanButton: document.getElementById("copy-korean-button"),
+  copySourceButton: document.getElementById("copy-source-button"),
   copyEnglishButton: document.getElementById("copy-english-button"),
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
@@ -29,7 +32,8 @@ const ui = {
 
 ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
-ui.copyKoreanButton.addEventListener("click", () => copyTranscript("korean"));
+ui.sourceLanguage.addEventListener("change", handleSourceLanguageChange);
+ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
 ui.copyEnglishButton.addEventListener("click", () => copyTranscript("english"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
@@ -39,6 +43,8 @@ boot().catch((error) => {
 });
 
 async function boot() {
+  restoreSourceLanguagePreference();
+  updateSourceLanguageUi();
   renderAllTranscripts();
   await fetchHealth();
   connectSocket();
@@ -59,6 +65,7 @@ function connectSocket() {
 
   socket.addEventListener("open", () => {
     setConnection("Connected");
+    sendLanguageSetting();
   });
 
   socket.addEventListener("message", (event) => {
@@ -193,7 +200,7 @@ async function startAudioPipeline(stream) {
   ui.startButton.disabled = true;
   ui.stopButton.disabled = false;
   setState("Listening");
-  setStatus("Listening for Korean speech.");
+  setStatus(`Listening for ${sourceLanguageName()} speech.`);
 }
 
 async function stopCapture() {
@@ -259,8 +266,14 @@ function handleServerEvent(payload) {
     } else if (stateName === "translating") {
       setStatus("Translating the latest utterance.");
     } else if (stateName === "listening") {
-      setMicrophoneAwareStatus("Listening for Korean speech.");
+      setMicrophoneAwareStatus(`Listening for ${sourceLanguageName()} speech.`);
     }
+    return;
+  }
+
+  if (payload.type === "language") {
+    applySourceLanguage(payload.source_language);
+    setMicrophoneAwareStatus(`Source language set to ${sourceLanguageName()}.`);
     return;
   }
 
@@ -278,23 +291,23 @@ function handleServerEvent(payload) {
 }
 
 function appendTranscript(payload) {
-  const koreanText =
+  const sourceText =
     payload.source_text ||
-    "Korean transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
+    "Source transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
   const englishText = payload.english_text || "";
 
-  state.koreanLines.push(koreanText);
+  state.sourceLines.push(sourceText);
   state.englishLines.push(englishText);
   renderAllTranscripts();
-  scrollTranscriptToBottom(ui.koreanTranscript);
+  scrollTranscriptToBottom(ui.sourceTranscript);
   scrollTranscriptToBottom(ui.englishTranscript);
 }
 
 function renderAllTranscripts() {
   renderTranscriptBox(
-    ui.koreanTranscript,
-    state.koreanLines,
-    koreanEmptyText()
+    ui.sourceTranscript,
+    state.sourceLines,
+    sourceEmptyText()
   );
   renderTranscriptBox(
     ui.englishTranscript,
@@ -303,12 +316,12 @@ function renderAllTranscripts() {
   );
 }
 
-function koreanEmptyText() {
+function sourceEmptyText() {
   if (!state.showSourceText) {
-    return "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
+    return "Source transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
   }
 
-  return "Korean transcript will appear here after you start listening.";
+  return "Source transcript will appear here after you start listening.";
 }
 
 function renderTranscriptBox(container, lines, emptyText) {
@@ -338,9 +351,9 @@ function scrollTranscriptToBottom(container) {
 }
 
 async function copyTranscript(language) {
-  const isKorean = language === "korean";
-  const lines = isKorean ? state.koreanLines : state.englishLines;
-  const label = isKorean ? "Korean" : "English";
+  const isSource = language === "source";
+  const lines = isSource ? state.sourceLines : state.englishLines;
+  const label = isSource ? sourceLanguageName() : "English";
   const text = lines.join("\n").trim();
 
   if (!text) {
@@ -380,7 +393,7 @@ async function writeClipboard(text) {
 }
 
 function clearTranscript() {
-  state.koreanLines = [];
+  state.sourceLines = [];
   state.englishLines = [];
   ui.latencyText.textContent = "Latency: -";
   ui.audioText.textContent = "Audio: -";
@@ -393,9 +406,69 @@ function applyRuntime(runtime) {
   const computeType = runtime.compute_type ?? "auto";
   ui.modelPill.textContent = `Model: ${runtime.model} · ${device} · ${computeType}`;
   state.showSourceText = Boolean(runtime.show_source_text);
-  if (state.koreanLines.length === 0) {
+  if (!window.localStorage.getItem("source-language")) {
+    applySourceLanguage(runtime.source_language);
+  }
+  if (state.sourceLines.length === 0) {
     renderAllTranscripts();
   }
+}
+
+function handleSourceLanguageChange() {
+  state.sourceLanguage = selectedSourceLanguage();
+  window.localStorage.setItem("source-language", state.sourceLanguage);
+  updateSourceLanguageUi();
+  if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
+    state.socket.send(JSON.stringify({ type: "flush" }));
+  }
+  sendLanguageSetting();
+  setStatus(`New speech will use ${sourceLanguageName()} as the source language.`);
+}
+
+function sendLanguageSetting() {
+  if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  state.socket.send(
+    JSON.stringify({
+      type: "set_language",
+      source_language: state.sourceLanguage,
+    })
+  );
+}
+
+function restoreSourceLanguagePreference() {
+  const storedLanguage = window.localStorage.getItem("source-language");
+  applySourceLanguage(storedLanguage || ui.sourceLanguage.value);
+}
+
+function applySourceLanguage(sourceLanguage) {
+  const option = languageOption(sourceLanguage) || languageOption("ko");
+  state.sourceLanguage = option.value;
+  ui.sourceLanguage.value = option.value;
+  updateSourceLanguageUi();
+}
+
+function selectedSourceLanguage() {
+  return ui.sourceLanguage.value || "ko";
+}
+
+function languageOption(value) {
+  return Array.from(ui.sourceLanguage.options).find(
+    (option) => option.value === value
+  );
+}
+
+function sourceLanguageName() {
+  const option = languageOption(state.sourceLanguage);
+  return option ? option.textContent : "Korean";
+}
+
+function updateSourceLanguageUi() {
+  const label = state.sourceLanguage === "auto" ? "Source" : sourceLanguageName();
+  ui.sourceLanguageLabel.textContent = label;
+  ui.copySourceButton.textContent = `Copy ${label}`;
 }
 
 function setConnection(text) {

@@ -11,6 +11,7 @@ import ctranslate2
 from faster_whisper import WhisperModel
 
 from .config import Settings
+from .languages import SOURCE_LANGUAGES, normalize_source_language, whisper_language_code
 
 
 @dataclass(slots=True)
@@ -33,7 +34,8 @@ class WhisperTranslator:
     def describe(self) -> dict[str, object]:
         return {
             "model": self.settings.whisper_model,
-            "source_language": self.settings.source_language,
+            "source_language": normalize_source_language(self.settings.source_language),
+            "supported_source_languages": SOURCE_LANGUAGES,
             "device": self._runtime_device or self.settings.device,
             "compute_type": self._runtime_compute_type or self.settings.compute_type,
             "ready": self._model is not None,
@@ -91,9 +93,15 @@ class WhisperTranslator:
 
             raise RuntimeError("Unable to load a Whisper model.") from last_error
 
-    def translate_pcm16(self, pcm_bytes: bytes, sample_rate: int) -> TranslationResult:
+    def translate_pcm16(
+        self,
+        pcm_bytes: bytes,
+        sample_rate: int,
+        source_language: str | None = None,
+    ) -> TranslationResult:
         model = self.ensure_model()
         started_at = time.perf_counter()
+        language = normalize_source_language(source_language, self.settings.source_language)
 
         with self._inference_lock:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
@@ -106,10 +114,20 @@ class WhisperTranslator:
                     wav_file.setframerate(sample_rate)
                     wav_file.writeframes(pcm_bytes)
 
-                english_text = self._run_transcribe(model, temp_path, task="translate")
+                english_text = self._run_transcribe(
+                    model,
+                    temp_path,
+                    task="translate",
+                    source_language=language,
+                )
                 source_text = None
                 if self.settings.show_source_text:
-                    source_text = self._run_transcribe(model, temp_path, task="transcribe")
+                    source_text = self._run_transcribe(
+                        model,
+                        temp_path,
+                        task="transcribe",
+                        source_language=language,
+                    )
             finally:
                 temp_path.unlink(missing_ok=True)
 
@@ -122,10 +140,16 @@ class WhisperTranslator:
             latency_seconds=latency_seconds,
         )
 
-    def _run_transcribe(self, model: WhisperModel, audio_path: Path, task: str) -> str:
+    def _run_transcribe(
+        self,
+        model: WhisperModel,
+        audio_path: Path,
+        task: str,
+        source_language: str,
+    ) -> str:
         segments, _info = model.transcribe(
             str(audio_path),
-            language=self.settings.source_language,
+            language=whisper_language_code(source_language),
             task=task,
             beam_size=self.settings.beam_size,
             condition_on_previous_text=False,

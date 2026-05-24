@@ -1,1 +1,1 @@
-"""Live Korean-to-English translation app."""
+"""Live speech-to-English translation app."""

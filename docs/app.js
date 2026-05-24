@@ -1,29 +1,45 @@
-const demoScript = [
-  {
-    ko: "안녕하세요. 오늘 회의는 세 시에 시작합니다.",
-    en: "Hello. Today's meeting starts at three o'clock.",
-    audio: 2.5,
-    latency: 0.74,
-  },
-  {
-    ko: "지금 화면에 보이는 자료를 같이 봐 주세요.",
-    en: "Please take a look at the material shown on the screen.",
-    audio: 2.2,
-    latency: 0.68,
-  },
-  {
-    ko: "질문이 있으면 언제든지 편하게 말씀해 주세요.",
-    en: "If you have any questions, please feel free to ask at any time.",
-    audio: 2.8,
-    latency: 0.81,
-  },
-  {
-    ko: "이 모델은 노트북 GPU에서도 실시간에 가깝게 동작할 수 있습니다.",
-    en: "This model can run close to real time even on a laptop GPU.",
-    audio: 3.1,
-    latency: 0.92,
-  },
-];
+const demoScripts = {
+  ko: [
+    ["안녕하세요. 오늘 회의는 세 시에 시작합니다.", "Hello. Today's meeting starts at three o'clock."],
+    ["지금 화면에 보이는 자료를 같이 봐 주세요.", "Please take a look at the material shown on the screen."],
+    ["질문이 있으면 언제든지 편하게 말씀해 주세요.", "If you have any questions, please feel free to ask at any time."],
+  ],
+  ja: [
+    ["こんにちは。今日の会議は三時に始まります。", "Hello. Today's meeting starts at three o'clock."],
+    ["画面に表示されている資料を一緒に見てください。", "Please look at the material shown on the screen with me."],
+    ["質問があれば、いつでも気軽に話してください。", "If you have any questions, please feel free to speak up at any time."],
+  ],
+  zh: [
+    ["你好。今天的会议三点开始。", "Hello. Today's meeting starts at three o'clock."],
+    ["请一起看屏幕上显示的资料。", "Please take a look at the material shown on the screen."],
+    ["如果有问题，请随时告诉我。", "If you have any questions, please let me know at any time."],
+  ],
+  vi: [
+    ["Xin chào. Cuộc họp hôm nay bắt đầu lúc ba giờ.", "Hello. Today's meeting starts at three o'clock."],
+    ["Vui lòng cùng xem tài liệu đang hiển thị trên màn hình.", "Please take a look at the material shown on the screen."],
+    ["Nếu có câu hỏi, bạn cứ thoải mái nói bất cứ lúc nào.", "If you have any questions, please feel free to ask at any time."],
+  ],
+  es: [
+    ["Hola. La reunión de hoy empieza a las tres.", "Hello. Today's meeting starts at three o'clock."],
+    ["Por favor, revisen el material que aparece en la pantalla.", "Please review the material shown on the screen."],
+    ["Si tienen preguntas, pueden hablar en cualquier momento.", "If you have any questions, you can speak at any time."],
+  ],
+  fr: [
+    ["Bonjour. La réunion d'aujourd'hui commence à trois heures.", "Hello. Today's meeting starts at three o'clock."],
+    ["Veuillez regarder le document affiché à l'écran.", "Please look at the document shown on the screen."],
+    ["Si vous avez des questions, vous pouvez parler à tout moment.", "If you have any questions, you can speak at any time."],
+  ],
+  de: [
+    ["Hallo. Die heutige Besprechung beginnt um drei Uhr.", "Hello. Today's meeting starts at three o'clock."],
+    ["Bitte sehen Sie sich das Material auf dem Bildschirm an.", "Please take a look at the material shown on the screen."],
+    ["Wenn Sie Fragen haben, können Sie jederzeit sprechen.", "If you have any questions, you can speak at any time."],
+  ],
+  en: [
+    ["Hello. Today's meeting starts at three o'clock.", "Hello. Today's meeting starts at three o'clock."],
+    ["Please take a look at the material shown on the screen.", "Please take a look at the material shown on the screen."],
+    ["If you have any questions, please feel free to ask at any time.", "If you have any questions, please feel free to ask at any time."],
+  ],
+};
 
 const state = {
   socket: null,
@@ -37,7 +53,8 @@ const state = {
   backendConnected: false,
   showSourceText: true,
   runtime: null,
-  koreanLines: [],
+  sourceLanguage: "ko",
+  sourceLines: [],
   englishLines: [],
 };
 
@@ -48,12 +65,14 @@ const ui = {
   disconnectButton: document.getElementById("disconnect-button"),
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
+  sourceLanguage: document.getElementById("source-language"),
+  sourceLanguageLabel: document.getElementById("source-language-label"),
   backendOrigin: document.getElementById("backend-origin"),
   endpointPreview: document.getElementById("endpoint-preview"),
   statusText: document.getElementById("status-text"),
-  koreanTranscript: document.getElementById("korean-transcript"),
+  sourceTranscript: document.getElementById("source-transcript"),
   englishTranscript: document.getElementById("english-transcript"),
-  copyKoreanButton: document.getElementById("copy-korean-button"),
+  copySourceButton: document.getElementById("copy-source-button"),
   copyEnglishButton: document.getElementById("copy-english-button"),
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
@@ -70,13 +89,16 @@ ui.disconnectButton.addEventListener("click", disconnectBackend);
 ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
 ui.backendOrigin.addEventListener("input", updateEndpointPreview);
-ui.copyKoreanButton.addEventListener("click", () => copyTranscript("korean"));
+ui.sourceLanguage.addEventListener("change", handleSourceLanguageChange);
+ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
 ui.copyEnglishButton.addEventListener("click", () => copyTranscript("english"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
 boot();
 
 function boot() {
+  restoreSourceLanguagePreference();
+  updateSourceLanguageUi();
   renderAllTranscripts();
   const params = new URLSearchParams(window.location.search);
   const storedOrigin = window.localStorage.getItem("backend-origin") ?? "";
@@ -109,13 +131,14 @@ async function playDemo() {
 
   clearTranscript({ silent: true });
 
-  for (const line of demoScript) {
+  for (const line of selectedDemoScript()) {
     if (!state.isDemoPlaying) {
       break;
     }
     publishTranslation({
       english_text: line.en,
-      source_text: line.ko,
+      source_text: line.source,
+      source_language: state.sourceLanguage,
       audio_seconds: line.audio,
       latency_seconds: line.latency,
       created_at: timeStamp(),
@@ -184,6 +207,7 @@ async function connectBackend() {
     }
 
     await openSocket(socketUrl);
+    sendLanguageSetting();
     state.backendConnected = true;
     state.isDemoPlaying = false;
     window.localStorage.setItem("backend-origin", origin);
@@ -262,7 +286,7 @@ async function startCapture() {
     state.isCapturing = true;
 
     setState("Listening");
-    setStatus("Listening for Korean speech through the connected backend.");
+    setStatus(`Listening for ${sourceLanguageName()} speech through the connected backend.`);
   } catch (error) {
     setState("Mic Blocked");
     setStatus(`Microphone could not start: ${error.message}`);
@@ -464,8 +488,14 @@ function handleServerEvent(payload) {
     } else if (stateName === "translating") {
       setStatus("Backend is translating the latest utterance.");
     } else if (stateName === "listening") {
-      setMicrophoneAwareStatus("Listening for Korean speech.");
+      setMicrophoneAwareStatus(`Listening for ${sourceLanguageName()} speech.`);
     }
+    return;
+  }
+
+  if (payload.type === "language") {
+    applySourceLanguage(payload.source_language);
+    setMicrophoneAwareStatus(`Source language set to ${sourceLanguageName()}.`);
     return;
   }
 
@@ -483,7 +513,10 @@ function handleServerEvent(payload) {
 function applyRuntime(runtime) {
   state.runtime = runtime;
   state.showSourceText = Boolean(runtime.show_source_text);
-  if (state.koreanLines.length === 0) {
+  if (!window.localStorage.getItem("source-language")) {
+    applySourceLanguage(runtime.source_language);
+  }
+  if (state.sourceLines.length === 0) {
     renderAllTranscripts();
   }
   setBackendStatus(backendLabel());
@@ -496,20 +529,20 @@ function publishTranslation(payload) {
 }
 
 function appendTranscript(payload) {
-  const koreanText =
+  const sourceText =
     payload.source_text ||
-    "Korean transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
+    "Source transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
   const englishText = payload.english_text || "";
 
-  state.koreanLines.push(koreanText);
+  state.sourceLines.push(sourceText);
   state.englishLines.push(englishText);
   renderAllTranscripts();
-  scrollTranscriptToBottom(ui.koreanTranscript);
+  scrollTranscriptToBottom(ui.sourceTranscript);
   scrollTranscriptToBottom(ui.englishTranscript);
 }
 
 function renderAllTranscripts() {
-  renderTranscriptBox(ui.koreanTranscript, state.koreanLines, koreanEmptyText());
+  renderTranscriptBox(ui.sourceTranscript, state.sourceLines, sourceEmptyText());
   renderTranscriptBox(
     ui.englishTranscript,
     state.englishLines,
@@ -517,12 +550,12 @@ function renderAllTranscripts() {
   );
 }
 
-function koreanEmptyText() {
+function sourceEmptyText() {
   if (!state.showSourceText) {
-    return "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
+    return "Source transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
   }
 
-  return "안녕하세요. 데모를 실행하면 한국어 원문이 여기에 쌓입니다.";
+  return `${sourceLanguageName()} transcript will appear here.`;
 }
 
 function renderTranscriptBox(container, lines, emptyText) {
@@ -552,9 +585,9 @@ function scrollTranscriptToBottom(container) {
 }
 
 async function copyTranscript(language) {
-  const isKorean = language === "korean";
-  const lines = isKorean ? state.koreanLines : state.englishLines;
-  const label = isKorean ? "Korean" : "English";
+  const isSource = language === "source";
+  const lines = isSource ? state.sourceLines : state.englishLines;
+  const label = isSource ? sourceLanguageName() : "English";
   const text = lines.join("\n").trim();
 
   if (!text) {
@@ -594,7 +627,7 @@ async function writeClipboard(text) {
 }
 
 function clearTranscript(options = {}) {
-  state.koreanLines = [];
+  state.sourceLines = [];
   state.englishLines = [];
   renderAllTranscripts();
 
@@ -603,6 +636,75 @@ function clearTranscript(options = {}) {
     ui.audioText.textContent = state.backendConnected ? "Audio: -" : "Audio: demo";
     setStatus("Transcript cleared.");
   }
+}
+
+function handleSourceLanguageChange() {
+  state.sourceLanguage = selectedSourceLanguage();
+  window.localStorage.setItem("source-language", state.sourceLanguage);
+  updateSourceLanguageUi();
+
+  if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
+    state.socket.send(JSON.stringify({ type: "flush" }));
+  }
+
+  sendLanguageSetting();
+  setStatus(`New speech will use ${sourceLanguageName()} as the source language.`);
+}
+
+function sendLanguageSetting() {
+  if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  state.socket.send(
+    JSON.stringify({
+      type: "set_language",
+      source_language: state.sourceLanguage,
+    })
+  );
+}
+
+function restoreSourceLanguagePreference() {
+  const storedLanguage = window.localStorage.getItem("source-language");
+  applySourceLanguage(storedLanguage || ui.sourceLanguage.value);
+}
+
+function applySourceLanguage(sourceLanguage) {
+  const option = languageOption(sourceLanguage) || languageOption("ko");
+  state.sourceLanguage = option.value;
+  ui.sourceLanguage.value = option.value;
+  updateSourceLanguageUi();
+}
+
+function selectedSourceLanguage() {
+  return ui.sourceLanguage.value || "ko";
+}
+
+function languageOption(value) {
+  return Array.from(ui.sourceLanguage.options).find(
+    (option) => option.value === value
+  );
+}
+
+function sourceLanguageName() {
+  const option = languageOption(state.sourceLanguage);
+  return option ? option.textContent : "Korean";
+}
+
+function updateSourceLanguageUi() {
+  const label = state.sourceLanguage === "auto" ? "Source" : sourceLanguageName();
+  ui.sourceLanguageLabel.textContent = label;
+  ui.copySourceButton.textContent = `Copy ${label}`;
+}
+
+function selectedDemoScript() {
+  const sampleRows = demoScripts[state.sourceLanguage] || demoScripts.ko;
+  return sampleRows.map(([source, en], index) => ({
+    source,
+    en,
+    audio: 2.3 + index * 0.25,
+    latency: 0.68 + index * 0.08,
+  }));
 }
 
 function refreshControls() {

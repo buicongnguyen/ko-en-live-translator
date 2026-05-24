@@ -8,6 +8,7 @@ from threading import Event, Thread
 import webrtcvad
 
 from .config import Settings
+from .languages import normalize_source_language
 from .translator import WhisperTranslator
 
 
@@ -76,8 +77,9 @@ class TranslationSession:
         self.translator = translator
         self.settings = settings
         self.segmenter = VadSegmenter(settings)
-        self.input_queue: Queue[tuple[str, bytes | None]] = Queue()
+        self.input_queue: Queue[tuple[str, bytes | str | None]] = Queue()
         self.result_queue: Queue[dict[str, object] | None] = Queue()
+        self.source_language = normalize_source_language(settings.source_language)
         self._pcm_buffer = bytearray()
         self._stop_event = Event()
         self._thread = Thread(target=self._run, daemon=True)
@@ -90,6 +92,9 @@ class TranslationSession:
 
     def flush(self) -> None:
         self.input_queue.put(("flush", None))
+
+    def set_source_language(self, source_language: str | None) -> None:
+        self.input_queue.put(("language", source_language))
 
     def stop(self) -> None:
         if self._stop_event.is_set():
@@ -123,6 +128,8 @@ class TranslationSession:
                 flushed = self.segmenter.flush()
                 if flushed:
                     self._translate_segment(flushed)
+            elif kind == "language":
+                self._set_source_language(payload if isinstance(payload, str) else None)
             elif kind == "stop":
                 self._flush_partial_frame()
                 flushed = self.segmenter.flush()
@@ -153,13 +160,18 @@ class TranslationSession:
     def _translate_segment(self, utterance: bytes) -> None:
         self.result_queue.put({"type": "status", "state": "translating"})
         try:
-            result = self.translator.translate_pcm16(utterance, self.settings.sample_rate)
+            result = self.translator.translate_pcm16(
+                utterance,
+                self.settings.sample_rate,
+                source_language=self.source_language,
+            )
             if result.english_text:
                 self.result_queue.put(
                     {
                         "type": "translation",
                         "english_text": result.english_text,
                         "source_text": result.source_text,
+                        "source_language": self.source_language,
                         "audio_seconds": round(result.audio_seconds, 2),
                         "latency_seconds": round(result.latency_seconds, 2),
                         "created_at": dt.datetime.now().strftime("%H:%M:%S"),
@@ -169,3 +181,15 @@ class TranslationSession:
             self.result_queue.put({"type": "error", "message": str(exc)})
         finally:
             self.result_queue.put({"type": "status", "state": "listening"})
+
+    def _set_source_language(self, source_language: str | None) -> None:
+        self.source_language = normalize_source_language(
+            source_language,
+            self.settings.source_language,
+        )
+        self.result_queue.put(
+            {
+                "type": "language",
+                "source_language": self.source_language,
+            }
+        )

@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Korean to English Live Translator</title>
+    <title>Live Speech to English Translator</title>
     <meta
       name="description"
-      content="GitHub Pages frontend for a Korean-to-English live subtitle translator powered by a GPU backend."
+      content="GitHub Pages frontend for a live speech-to-English subtitle translator powered by a GPU backend."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -14,11 +14,10 @@
     <main class="shell">
       <section class="hero">
         <div class="eyebrow">GitHub Pages Frontend</div>
-        <h1>Live Korean to English, ready to demo on the web.</h1>
+        <h1>Live speech to English, ready to demo.</h1>
         <p class="lede">
-          This static site is designed for `github.io`: it can showcase the
-          product with a live subtitle demo right away, and it can later connect
-          to a deployed GPU backend for real microphone translation.
+          Choose a source language, play the compact demo, or connect an HTTPS
+          GPU backend for real microphone translation.
         </p>
         <div class="status-row">
           <span class="pill">GitHub Pages Ready</span>
@@ -39,7 +38,7 @@
             <div class="transcript-head">
               <div>
                 <div class="panel-label">Live transcript</div>
-                <div class="panel-title">Korean and English text boxes</div>
+                <div class="panel-title">Source and English text boxes</div>
               </div>
               <button id="clear-transcript-button" class="secondary compact-button">
                 Clear text
@@ -47,21 +46,21 @@
             </div>
 
             <div class="transcript-grid">
-              <article class="transcript-box korean-box">
+              <article class="transcript-box source-box">
                 <div class="transcript-box-head">
                   <div>
-                    <div class="block-label">Korean</div>
+                    <div class="block-label" id="source-language-label">Korean</div>
                     <p>Original speech transcript. The newest line is highlighted.</p>
                   </div>
-                  <button id="copy-korean-button" class="secondary compact-button">
+                  <button id="copy-source-button" class="secondary compact-button">
                     Copy Korean
                   </button>
                 </div>
                 <div
-                  id="korean-transcript"
+                  id="source-transcript"
                   class="transcript-body"
                   role="textbox"
-                  aria-label="Korean transcript"
+                  aria-label="Source transcript"
                   tabindex="0"
                 >
                   <p class="empty-copy">
@@ -74,7 +73,7 @@
                 <div class="transcript-box-head">
                   <div>
                     <div class="block-label">English</div>
-                    <p>English translation, matched line-by-line with Korean.</p>
+                    <p>English translation, matched line-by-line with the source.</p>
                   </div>
                   <button id="copy-english-button" class="secondary compact-button">
                     Copy English
@@ -105,8 +104,35 @@
           <section class="panel controls">
             <div>
               <div class="panel-label">Showcase</div>
-              <div class="panel-title">Presentation Controls</div>
+              <div class="panel-title">Controls</div>
             </div>
+            <label class="language-control stacked" for="source-language">
+              <span>Source language</span>
+              <select id="source-language" class="select-field">
+                <option value="auto">Auto detect</option>
+                <option value="ko" selected>Korean</option>
+                <option value="ja">Japanese</option>
+                <option value="zh">Chinese</option>
+                <option value="vi">Vietnamese</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="th">Thai</option>
+                <option value="id">Indonesian</option>
+                <option value="ms">Malay</option>
+                <option value="tl">Tagalog</option>
+                <option value="tr">Turkish</option>
+                <option value="pl">Polish</option>
+                <option value="nl">Dutch</option>
+                <option value="uk">Ukrainian</option>
+              </select>
+            </label>
             <div class="button-grid">
               <button id="demo-button" class="primary">Play Demo</button>
               <button id="reset-button" class="secondary">Reset</button>
@@ -167,7 +193,7 @@
               </article>
               <article class="note-card">
                 <h2>`turbo`</h2>
-                <p>Fast, but not the right choice for Korean-to-English translation.</p>
+                <p>Fast, but not the right choice for translation to English.</p>
                 <span>OpenAI notes it is not trained for translation</span>
               </article>
             </div>
