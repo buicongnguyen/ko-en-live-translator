@@ -1,0 +1,4 @@
+https://192.168.0.20:8443 {
+  tls ./translate-local.pem ./translate-local-key.pem
+  reverse_proxy 127.0.0.1:8000
+}

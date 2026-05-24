@@ -200,6 +200,14 @@ Laptop browser microphone
   -> RTX 4080 SUPER Whisper large-v3
 ```
 
+Status from May 24, 2026: Caddy and mkcert were installed, a local certificate was created, and Caddy was started successfully. The host PC can open:
+
+```text
+https://192.168.0.20:8443/api/health
+```
+
+and receives a healthy `large-v3` CUDA response. Caddy is listening on port `8443`. If another laptop still says "site can't be reached", add the `8443` firewall rule from Administrator PowerShell.
+
 Install tools:
 
 ```powershell
@@ -211,14 +219,14 @@ Create a certificate on the host:
 
 ```powershell
 mkcert -install
-mkcert 192.168.0.20 localhost 127.0.0.1
+mkcert -cert-file https\translate-local.pem -key-file https\translate-local-key.pem 192.168.0.20 localhost 127.0.0.1
 ```
 
 Example `Caddyfile`:
 
 ```caddyfile
 https://192.168.0.20:8443 {
-  tls ./192.168.0.20+2.pem ./192.168.0.20+2-key.pem
+  tls ./translate-local.pem ./translate-local-key.pem
   reverse_proxy 127.0.0.1:8000
 }
 ```
@@ -229,10 +237,28 @@ Start Caddy from the folder containing the `Caddyfile` and certificate files:
 caddy run --config Caddyfile
 ```
 
+The Caddyfile used by this repo is saved at:
+
+```text
+https/Caddyfile
+```
+
 Open the HTTPS page from the laptop:
 
 ```text
 https://192.168.0.20:8443/
+```
+
+If the laptop still cannot reach the page, run this from PowerShell as Administrator on the host PC:
+
+```powershell
+New-NetFirewallRule `
+  -DisplayName "KO EN Live Translator HTTPS 8443" `
+  -Direction Inbound `
+  -Action Allow `
+  -Protocol TCP `
+  -LocalPort 8443 `
+  -Profile Private
 ```
 
 If the laptop does not trust the certificate, install the mkcert root CA on the laptop. On the host, find the CA folder with:
