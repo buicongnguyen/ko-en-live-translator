@@ -19,8 +19,15 @@ class Settings:
     cors_allow_origins: str = os.getenv("CORS_ALLOW_ORIGINS", "*")
     whisper_model: str = os.getenv("WHISPER_MODEL", "medium")
     source_language: str = os.getenv("SOURCE_LANGUAGE", "ko")
+    target_language: str = os.getenv("TARGET_LANGUAGE", "en")
     device: str = os.getenv("WHISPER_DEVICE", "auto")
     compute_type: str = os.getenv("WHISPER_COMPUTE_TYPE", "auto")
+    enable_text_translation: bool = _env_bool("ENABLE_TEXT_TRANSLATION", False)
+    text_translation_model: str = os.getenv(
+        "TEXT_TRANSLATION_MODEL",
+        "facebook/nllb-200-distilled-600M",
+    )
+    text_translation_device: str = os.getenv("TEXT_TRANSLATION_DEVICE", "auto")
     beam_size: int = int(os.getenv("WHISPER_BEAM_SIZE", "3"))
     cpu_threads: int = int(os.getenv("WHISPER_CPU_THREADS", "4"))
     show_source_text: bool = _env_bool("SHOW_SOURCE_TEXT", True)

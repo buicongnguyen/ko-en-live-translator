@@ -8,7 +8,7 @@ from threading import Event, Thread
 import webrtcvad
 
 from .config import Settings
-from .languages import normalize_source_language
+from .languages import normalize_source_language, normalize_target_language
 from .translator import WhisperTranslator
 
 
@@ -77,9 +77,10 @@ class TranslationSession:
         self.translator = translator
         self.settings = settings
         self.segmenter = VadSegmenter(settings)
-        self.input_queue: Queue[tuple[str, bytes | str | None]] = Queue()
+        self.input_queue: Queue[tuple[str, bytes | dict[str, str | None] | None]] = Queue()
         self.result_queue: Queue[dict[str, object] | None] = Queue()
         self.source_language = normalize_source_language(settings.source_language)
+        self.target_language = normalize_target_language(settings.target_language)
         self._pcm_buffer = bytearray()
         self._stop_event = Event()
         self._thread = Thread(target=self._run, daemon=True)
@@ -93,8 +94,20 @@ class TranslationSession:
     def flush(self) -> None:
         self.input_queue.put(("flush", None))
 
-    def set_source_language(self, source_language: str | None) -> None:
-        self.input_queue.put(("language", source_language))
+    def set_languages(
+        self,
+        source_language: str | None = None,
+        target_language: str | None = None,
+    ) -> None:
+        self.input_queue.put(
+            (
+                "language",
+                {
+                    "source_language": source_language,
+                    "target_language": target_language,
+                },
+            )
+        )
 
     def stop(self) -> None:
         if self._stop_event.is_set():
@@ -129,7 +142,7 @@ class TranslationSession:
                 if flushed:
                     self._translate_segment(flushed)
             elif kind == "language":
-                self._set_source_language(payload if isinstance(payload, str) else None)
+                self._set_languages(payload if isinstance(payload, dict) else {})
             elif kind == "stop":
                 self._flush_partial_frame()
                 flushed = self.segmenter.flush()
@@ -164,14 +177,17 @@ class TranslationSession:
                 utterance,
                 self.settings.sample_rate,
                 source_language=self.source_language,
+                target_language=self.target_language,
             )
-            if result.english_text:
+            if result.translated_text:
                 self.result_queue.put(
                     {
                         "type": "translation",
-                        "english_text": result.english_text,
+                        "translated_text": result.translated_text,
+                        "english_text": result.translated_text,
                         "source_text": result.source_text,
                         "source_language": self.source_language,
+                        "target_language": result.target_language,
                         "audio_seconds": round(result.audio_seconds, 2),
                         "latency_seconds": round(result.latency_seconds, 2),
                         "created_at": dt.datetime.now().strftime("%H:%M:%S"),
@@ -182,14 +198,19 @@ class TranslationSession:
         finally:
             self.result_queue.put({"type": "status", "state": "listening"})
 
-    def _set_source_language(self, source_language: str | None) -> None:
+    def _set_languages(self, payload: dict[str, str | None]) -> None:
         self.source_language = normalize_source_language(
-            source_language,
+            payload.get("source_language"),
             self.settings.source_language,
+        )
+        self.target_language = normalize_target_language(
+            payload.get("target_language"),
+            self.settings.target_language,
         )
         self.result_queue.put(
             {
                 "type": "language",
                 "source_language": self.source_language,
+                "target_language": self.target_language,
             }
         )

@@ -8,20 +8,23 @@ const state = {
   isCapturing: false,
   showSourceText: true,
   sourceLanguage: "ko",
+  targetLanguage: "en",
   sourceLines: [],
-  englishLines: [],
+  targetLines: [],
 };
 
 const ui = {
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
   sourceLanguage: document.getElementById("source-language"),
+  targetLanguage: document.getElementById("target-language"),
   sourceLanguageLabel: document.getElementById("source-language-label"),
+  targetLanguageLabel: document.getElementById("target-language-label"),
   statusText: document.getElementById("status-text"),
   sourceTranscript: document.getElementById("source-transcript"),
-  englishTranscript: document.getElementById("english-transcript"),
+  targetTranscript: document.getElementById("target-transcript"),
   copySourceButton: document.getElementById("copy-source-button"),
-  copyEnglishButton: document.getElementById("copy-english-button"),
+  copyTargetButton: document.getElementById("copy-target-button"),
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
@@ -33,8 +36,9 @@ const ui = {
 ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
 ui.sourceLanguage.addEventListener("change", handleSourceLanguageChange);
+ui.targetLanguage.addEventListener("change", handleTargetLanguageChange);
 ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
-ui.copyEnglishButton.addEventListener("click", () => copyTranscript("english"));
+ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
 boot().catch((error) => {
@@ -44,7 +48,8 @@ boot().catch((error) => {
 
 async function boot() {
   restoreSourceLanguagePreference();
-  updateSourceLanguageUi();
+  restoreTargetLanguagePreference();
+  updateLanguageUi();
   renderAllTranscripts();
   await fetchHealth();
   connectSocket();
@@ -200,7 +205,7 @@ async function startAudioPipeline(stream) {
   ui.startButton.disabled = true;
   ui.stopButton.disabled = false;
   setState("Listening");
-  setStatus(`Listening for ${sourceLanguageName()} speech.`);
+  setStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
 }
 
 async function stopCapture() {
@@ -264,16 +269,17 @@ function handleServerEvent(payload) {
     if (stateName === "warming_up") {
       setMicrophoneAwareStatus("Loading the local model. The first launch can take a while.");
     } else if (stateName === "translating") {
-      setStatus("Translating the latest utterance.");
+      setStatus(`Translating to ${targetLanguageName()}.`);
     } else if (stateName === "listening") {
-      setMicrophoneAwareStatus(`Listening for ${sourceLanguageName()} speech.`);
+      setMicrophoneAwareStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
     }
     return;
   }
 
   if (payload.type === "language") {
-    applySourceLanguage(payload.source_language);
-    setMicrophoneAwareStatus(`Source language set to ${sourceLanguageName()}.`);
+    applySourceLanguage(payload.source_language, { persist: false });
+    applyTargetLanguage(payload.target_language, { persist: false });
+    setMicrophoneAwareStatus(`Language pair set: ${sourceLanguageName()} to ${targetLanguageName()}.`);
     return;
   }
 
@@ -294,13 +300,13 @@ function appendTranscript(payload) {
   const sourceText =
     payload.source_text ||
     "Source transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
-  const englishText = payload.english_text || "";
+  const targetText = payload.translated_text || payload.english_text || "";
 
   state.sourceLines.push(sourceText);
-  state.englishLines.push(englishText);
+  state.targetLines.push(targetText);
   renderAllTranscripts();
   scrollTranscriptToBottom(ui.sourceTranscript);
-  scrollTranscriptToBottom(ui.englishTranscript);
+  scrollTranscriptToBottom(ui.targetTranscript);
 }
 
 function renderAllTranscripts() {
@@ -310,9 +316,9 @@ function renderAllTranscripts() {
     sourceEmptyText()
   );
   renderTranscriptBox(
-    ui.englishTranscript,
-    state.englishLines,
-    "English translation will appear here."
+    ui.targetTranscript,
+    state.targetLines,
+    `${targetLanguageName()} translation will appear here.`
   );
 }
 
@@ -352,8 +358,8 @@ function scrollTranscriptToBottom(container) {
 
 async function copyTranscript(language) {
   const isSource = language === "source";
-  const lines = isSource ? state.sourceLines : state.englishLines;
-  const label = isSource ? sourceLanguageName() : "English";
+  const lines = isSource ? state.sourceLines : state.targetLines;
+  const label = isSource ? sourceLanguageName() : targetLanguageName();
   const text = lines.join("\n").trim();
 
   if (!text) {
@@ -394,7 +400,7 @@ async function writeClipboard(text) {
 
 function clearTranscript() {
   state.sourceLines = [];
-  state.englishLines = [];
+  state.targetLines = [];
   ui.latencyText.textContent = "Latency: -";
   ui.audioText.textContent = "Audio: -";
   renderAllTranscripts();
@@ -407,7 +413,10 @@ function applyRuntime(runtime) {
   ui.modelPill.textContent = `Model: ${runtime.model} · ${device} · ${computeType}`;
   state.showSourceText = Boolean(runtime.show_source_text);
   if (!window.localStorage.getItem("source-language")) {
-    applySourceLanguage(runtime.source_language);
+    applySourceLanguage(runtime.source_language, { persist: false });
+  }
+  if (!window.localStorage.getItem("target-language")) {
+    applyTargetLanguage(runtime.target_language, { persist: false });
   }
   if (state.sourceLines.length === 0) {
     renderAllTranscripts();
@@ -417,12 +426,23 @@ function applyRuntime(runtime) {
 function handleSourceLanguageChange() {
   state.sourceLanguage = selectedSourceLanguage();
   window.localStorage.setItem("source-language", state.sourceLanguage);
-  updateSourceLanguageUi();
+  updateLanguageUi();
   if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
     state.socket.send(JSON.stringify({ type: "flush" }));
   }
   sendLanguageSetting();
-  setStatus(`New speech will use ${sourceLanguageName()} as the source language.`);
+  setStatus(`New speech will translate ${sourceLanguageName()} to ${targetLanguageName()}.`);
+}
+
+function handleTargetLanguageChange() {
+  state.targetLanguage = selectedTargetLanguage();
+  window.localStorage.setItem("target-language", state.targetLanguage);
+  updateLanguageUi();
+  if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
+    state.socket.send(JSON.stringify({ type: "flush" }));
+  }
+  sendLanguageSetting();
+  setStatus(`New speech will translate ${sourceLanguageName()} to ${targetLanguageName()}.`);
 }
 
 function sendLanguageSetting() {
@@ -434,41 +454,77 @@ function sendLanguageSetting() {
     JSON.stringify({
       type: "set_language",
       source_language: state.sourceLanguage,
+      target_language: state.targetLanguage,
     })
   );
 }
 
 function restoreSourceLanguagePreference() {
   const storedLanguage = window.localStorage.getItem("source-language");
-  applySourceLanguage(storedLanguage || ui.sourceLanguage.value);
+  applySourceLanguage(storedLanguage || ui.sourceLanguage.value, { persist: false });
 }
 
-function applySourceLanguage(sourceLanguage) {
-  const option = languageOption(sourceLanguage) || languageOption("ko");
+function restoreTargetLanguagePreference() {
+  const storedLanguage = window.localStorage.getItem("target-language");
+  applyTargetLanguage(storedLanguage || ui.targetLanguage.value, { persist: false });
+}
+
+function applySourceLanguage(sourceLanguage, options = {}) {
+  const option = sourceLanguageOption(sourceLanguage) || sourceLanguageOption("ko");
   state.sourceLanguage = option.value;
   ui.sourceLanguage.value = option.value;
-  updateSourceLanguageUi();
+  if (options.persist) {
+    window.localStorage.setItem("source-language", state.sourceLanguage);
+  }
+  updateLanguageUi();
+}
+
+function applyTargetLanguage(targetLanguage, options = {}) {
+  const option = targetLanguageOption(targetLanguage) || targetLanguageOption("en");
+  state.targetLanguage = option.value;
+  ui.targetLanguage.value = option.value;
+  if (options.persist) {
+    window.localStorage.setItem("target-language", state.targetLanguage);
+  }
+  updateLanguageUi();
 }
 
 function selectedSourceLanguage() {
   return ui.sourceLanguage.value || "ko";
 }
 
-function languageOption(value) {
+function selectedTargetLanguage() {
+  return ui.targetLanguage.value || "en";
+}
+
+function sourceLanguageOption(value) {
   return Array.from(ui.sourceLanguage.options).find(
     (option) => option.value === value
   );
 }
 
+function targetLanguageOption(value) {
+  return Array.from(ui.targetLanguage.options).find(
+    (option) => option.value === value
+  );
+}
+
 function sourceLanguageName() {
-  const option = languageOption(state.sourceLanguage);
+  const option = sourceLanguageOption(state.sourceLanguage);
   return option ? option.textContent : "Korean";
 }
 
-function updateSourceLanguageUi() {
+function targetLanguageName() {
+  const option = targetLanguageOption(state.targetLanguage);
+  return option ? option.textContent : "English";
+}
+
+function updateLanguageUi() {
   const label = state.sourceLanguage === "auto" ? "Source" : sourceLanguageName();
   ui.sourceLanguageLabel.textContent = label;
   ui.copySourceButton.textContent = `Copy ${label}`;
+  ui.targetLanguageLabel.textContent = targetLanguageName();
+  ui.copyTargetButton.textContent = `Copy ${targetLanguageName()}`;
 }
 
 function setConnection(text) {

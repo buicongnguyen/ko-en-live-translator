@@ -15,9 +15,9 @@
         <h1>Local live speech translation</h1>
         <p>
           LiveTranslate AI is a local-network web app for translating speech
-          into English with a GPU-backed Whisper model. The main page stays
+          between selected languages with a GPU-backed speech model. The main page stays
           focused on the two pieces people need during a conversation: source
-          transcript and English translation.
+          transcript and target translation.
         </p>
       </section>
 
@@ -28,16 +28,16 @@
             <li>The browser records microphone audio after permission is allowed.</li>
             <li>Audio streams to the local FastAPI server through WebSocket.</li>
             <li>The server segments speech and runs faster-whisper on the GPU.</li>
-            <li>The page appends source text and English translation in real time.</li>
+            <li>The page appends source text and target translation in real time.</li>
           </ol>
         </article>
 
         <article class="info-card">
           <h2>Language support</h2>
           <p>
-            The toolbar lets each browser session choose a source language such
-            as Korean, Japanese, Chinese, Vietnamese, Spanish, French, or Auto
-            detect. Translation output remains English.
+            The toolbar lets each browser session choose both source and target
+            language. Whisper can translate speech directly to English. Other
+            targets use a second text-translation model when enabled.
           </p>
         </article>
 

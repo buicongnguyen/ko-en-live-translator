@@ -11,13 +11,21 @@ import ctranslate2
 from faster_whisper import WhisperModel
 
 from .config import Settings
-from .languages import SOURCE_LANGUAGES, normalize_source_language, whisper_language_code
+from .languages import (
+    SOURCE_LANGUAGES,
+    TARGET_LANGUAGES,
+    normalize_source_language,
+    normalize_target_language,
+    whisper_language_code,
+)
+from .text_translator import TextTranslator
 
 
 @dataclass(slots=True)
 class TranslationResult:
-    english_text: str
+    translated_text: str
     source_text: str | None
+    target_language: str
     audio_seconds: float
     latency_seconds: float
 
@@ -30,12 +38,16 @@ class WhisperTranslator:
         self._inference_lock = Lock()
         self._runtime_device: str | None = None
         self._runtime_compute_type: str | None = None
+        self._text_translator = TextTranslator(settings)
 
     def describe(self) -> dict[str, object]:
         return {
             "model": self.settings.whisper_model,
             "source_language": normalize_source_language(self.settings.source_language),
+            "target_language": normalize_target_language(self.settings.target_language),
             "supported_source_languages": SOURCE_LANGUAGES,
+            "supported_target_languages": TARGET_LANGUAGES,
+            "text_translation": self._text_translator.describe(),
             "device": self._runtime_device or self.settings.device,
             "compute_type": self._runtime_compute_type or self.settings.compute_type,
             "ready": self._model is not None,
@@ -98,10 +110,12 @@ class WhisperTranslator:
         pcm_bytes: bytes,
         sample_rate: int,
         source_language: str | None = None,
+        target_language: str | None = None,
     ) -> TranslationResult:
         model = self.ensure_model()
         started_at = time.perf_counter()
-        language = normalize_source_language(source_language, self.settings.source_language)
+        source = normalize_source_language(source_language, self.settings.source_language)
+        target = normalize_target_language(target_language, self.settings.target_language)
 
         with self._inference_lock:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
@@ -114,19 +128,37 @@ class WhisperTranslator:
                     wav_file.setframerate(sample_rate)
                     wav_file.writeframes(pcm_bytes)
 
-                english_text = self._run_transcribe(
-                    model,
-                    temp_path,
-                    task="translate",
-                    source_language=language,
-                )
                 source_text = None
-                if self.settings.show_source_text:
+                if self.settings.show_source_text or self._can_reuse_source_as_target(source, target):
                     source_text = self._run_transcribe(
                         model,
                         temp_path,
                         task="transcribe",
-                        source_language=language,
+                        source_language=source,
+                    )
+                if target == "en":
+                    translated_text = self._run_transcribe(
+                        model,
+                        temp_path,
+                        task="translate",
+                        source_language=source,
+                    )
+                elif self._can_reuse_source_as_target(source, target):
+                    translated_text = source_text or ""
+                else:
+                    english_pivot = (
+                        source_text
+                        if source == "en" and source_text
+                        else self._run_transcribe(
+                            model,
+                            temp_path,
+                            task="translate",
+                            source_language=source,
+                        )
+                    )
+                    translated_text = self._text_translator.translate_from_english(
+                        english_pivot,
+                        target,
                     )
             finally:
                 temp_path.unlink(missing_ok=True)
@@ -134,8 +166,9 @@ class WhisperTranslator:
         latency_seconds = time.perf_counter() - started_at
         audio_seconds = len(pcm_bytes) / 2 / sample_rate
         return TranslationResult(
-            english_text=english_text,
+            translated_text=translated_text,
             source_text=source_text,
+            target_language=target,
             audio_seconds=audio_seconds,
             latency_seconds=latency_seconds,
         )
@@ -173,3 +206,7 @@ class WhisperTranslator:
         if device == "cuda":
             return "int8_float16"
         return "int8"
+
+    @staticmethod
+    def _can_reuse_source_as_target(source_language: str, target_language: str) -> bool:
+        return source_language != "auto" and source_language == target_language

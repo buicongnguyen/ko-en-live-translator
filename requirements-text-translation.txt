@@ -1,0 +1,6 @@
+# Optional: enables non-English target languages through a local NLLB text model.
+# Install this in addition to requirements.txt, then set ENABLE_TEXT_TRANSLATION=true.
+torch>=2.3
+transformers>=4.45
+sentencepiece>=0.2
+accelerate>=0.33

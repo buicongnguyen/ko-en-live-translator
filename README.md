@@ -1,6 +1,6 @@
-# Live Speech-to-English Translator
+# Live Speech Translator
 
-This project is a local web app for near-real-time speech-to-English translation on a GPU-equipped PC or laptop. Choose a source language such as Korean, Japanese, Chinese, Vietnamese, Spanish, French, or auto-detect, then view the source transcript beside the English translation in compact scrollable text boxes.
+This project is a local web app for near-real-time speech translation on a GPU-equipped PC or laptop. Choose a source language and a target language, then view the source transcript beside the translated text in compact scrollable text boxes.
 
 ## GitHub Pages frontend
 
@@ -27,8 +27,9 @@ For that reason, this app defaults to `medium` for better translation quality, w
 1. The browser captures microphone audio.
 2. Audio is downsampled to 16 kHz mono PCM and streamed to the backend over WebSocket.
 3. A VAD segmenter groups speech into utterances.
-4. Each utterance is translated from the selected source language into English with `faster-whisper`.
-5. The browser renders source transcript and English translation in two scrollable, copyable text boxes.
+4. Each utterance is translated from the selected source language to the selected target language.
+5. Whisper handles speech recognition and direct speech-to-English translation. Non-English targets can use an optional local text translation model after the English pivot.
+6. The browser renders source transcript and target translation in two scrollable, copyable text boxes.
 
 ## Quick start
 
@@ -72,6 +73,7 @@ $env:WHISPER_MODEL="small"
 $env:WHISPER_DEVICE="auto"
 $env:WHISPER_COMPUTE_TYPE="auto"
 $env:SOURCE_LANGUAGE="ko"
+$env:TARGET_LANGUAGE="en"
 $env:SHOW_SOURCE_TEXT="true"
 python main.py
 ```
@@ -86,5 +88,18 @@ python main.py
 
 - The first launch may take a while because the model weights need to be downloaded.
 - If your GPU runtime cannot load the selected compute mode, the app will automatically fall back to a safer mode.
-- `SOURCE_LANGUAGE=ko` is the startup default, but the browser can change the source language per session.
-- `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show source text beside English. Set it to `false` only when you need the lowest possible latency.
+- `SOURCE_LANGUAGE=ko` and `TARGET_LANGUAGE=en` are startup defaults, but the browser can change the language pair per session.
+- `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show source text beside the translation. Set it to `false` only when you need the lowest possible latency.
+
+## Optional non-English targets
+
+Whisper's built-in `translate` task outputs English. To translate speech into another target language, the backend first pivots through English and then uses a local text translation model.
+
+```powershell
+pip install -r requirements-text-translation.txt
+$env:ENABLE_TEXT_TRANSLATION="true"
+$env:TEXT_TRANSLATION_MODEL="facebook/nllb-200-distilled-600M"
+python main.py
+```
+
+Without this optional text translation stack, targets other than English will show a clear backend message instead of silently pretending to work.

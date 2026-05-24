@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Live Speech to English Translator",
+    title="Live Speech Translator",
     version="0.1.0",
     lifespan=lifespan,
 )
@@ -54,7 +54,7 @@ async def health() -> JSONResponse:
     translator: WhisperTranslator = app.state.translator
     return JSONResponse(
         {
-            "app": "ko-en-live-translator",
+            "app": "live-speech-translator",
             "status": "ok",
             "runtime": translator.describe(),
         }
@@ -97,7 +97,10 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             if message_type == "flush":
                 session.flush()
             elif message_type == "set_language":
-                session.set_source_language(payload.get("source_language"))
+                session.set_languages(
+                    source_language=payload.get("source_language"),
+                    target_language=payload.get("target_language"),
+                )
             elif message_type == "ping":
                 await websocket.send_json({"type": "pong"})
     except WebSocketDisconnect:

@@ -6,7 +6,7 @@
     <title>About LiveTranslate AI</title>
     <meta
       name="description"
-      content="About the local live speech-to-English translator and GPU backend setup."
+      content="About the local live speech translator and GPU backend setup."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -19,7 +19,7 @@
         <h1>Local live speech translation</h1>
         <p>
           LiveTranslate AI is a focused web interface for translating speech
-          into English with a self-hosted GPU backend. The main page avoids long
+          between selected languages with a self-hosted GPU backend. The main page avoids long
           product text so users can concentrate on the live transcript and
           translation panes.
         </p>
@@ -39,7 +39,7 @@
           <ol>
             <li>Select the source language in the top toolbar.</li>
             <li>Allow microphone access from the browser.</li>
-            <li>Read source speech on the left and English on the right.</li>
+            <li>Read source speech on the left and target translation on the right.</li>
             <li>Use the copy buttons to save either transcript.</li>
           </ol>
         </article>
@@ -48,8 +48,9 @@
           <h2>Model notes</h2>
           <p>
             The backend uses faster-whisper with multilingual Whisper models.
-            `medium` is a good quality target for stronger GPUs, while `small`
-            is useful when latency matters more.
+            Whisper translates speech directly to English. For targets such as
+            Vietnamese, use a second local text-translation model after speech
+            transcription.
           </p>
         </article>
 

@@ -1,43 +1,82 @@
-const demoScripts = {
+const demoSources = {
   ko: [
-    ["안녕하세요. 오늘 회의는 세 시에 시작합니다.", "Hello. Today's meeting starts at three o'clock."],
-    ["지금 화면에 보이는 자료를 같이 봐 주세요.", "Please take a look at the material shown on the screen."],
-    ["질문이 있으면 언제든지 편하게 말씀해 주세요.", "If you have any questions, please feel free to ask at any time."],
+    "안녕하세요. 오늘 회의는 세 시에 시작합니다.",
+    "지금 화면에 보이는 자료를 같이 봐 주세요.",
+    "질문이 있으면 언제든지 편하게 말씀해 주세요.",
   ],
   ja: [
-    ["こんにちは。今日の会議は三時に始まります。", "Hello. Today's meeting starts at three o'clock."],
-    ["画面に表示されている資料を一緒に見てください。", "Please look at the material shown on the screen with me."],
-    ["質問があれば、いつでも気軽に話してください。", "If you have any questions, please feel free to speak up at any time."],
+    "こんにちは。今日の会議は三時に始まります。",
+    "画面に表示されている資料を一緒に見てください。",
+    "質問があれば、いつでも気軽に話してください。",
   ],
   zh: [
-    ["你好。今天的会议三点开始。", "Hello. Today's meeting starts at three o'clock."],
-    ["请一起看屏幕上显示的资料。", "Please take a look at the material shown on the screen."],
-    ["如果有问题，请随时告诉我。", "If you have any questions, please let me know at any time."],
+    "你好。今天的会议三点开始。",
+    "请一起看屏幕上显示的资料。",
+    "如果有问题，请随时告诉我。",
   ],
   vi: [
-    ["Xin chào. Cuộc họp hôm nay bắt đầu lúc ba giờ.", "Hello. Today's meeting starts at three o'clock."],
-    ["Vui lòng cùng xem tài liệu đang hiển thị trên màn hình.", "Please take a look at the material shown on the screen."],
-    ["Nếu có câu hỏi, bạn cứ thoải mái nói bất cứ lúc nào.", "If you have any questions, please feel free to ask at any time."],
+    "Xin chào. Cuộc họp hôm nay bắt đầu lúc ba giờ.",
+    "Vui lòng cùng xem tài liệu đang hiển thị trên màn hình.",
+    "Nếu có câu hỏi, bạn cứ thoải mái nói bất cứ lúc nào.",
   ],
   es: [
-    ["Hola. La reunión de hoy empieza a las tres.", "Hello. Today's meeting starts at three o'clock."],
-    ["Por favor, revisen el material que aparece en la pantalla.", "Please review the material shown on the screen."],
-    ["Si tienen preguntas, pueden hablar en cualquier momento.", "If you have any questions, you can speak at any time."],
+    "Hola. La reunión de hoy empieza a las tres.",
+    "Por favor, revisen el material que aparece en la pantalla.",
+    "Si tienen preguntas, pueden hablar en cualquier momento.",
   ],
   fr: [
-    ["Bonjour. La réunion d'aujourd'hui commence à trois heures.", "Hello. Today's meeting starts at three o'clock."],
-    ["Veuillez regarder le document affiché à l'écran.", "Please look at the document shown on the screen."],
-    ["Si vous avez des questions, vous pouvez parler à tout moment.", "If you have any questions, you can speak at any time."],
+    "Bonjour. La réunion d'aujourd'hui commence à trois heures.",
+    "Veuillez regarder le document affiché à l'écran.",
+    "Si vous avez des questions, vous pouvez parler à tout moment.",
   ],
   de: [
-    ["Hallo. Die heutige Besprechung beginnt um drei Uhr.", "Hello. Today's meeting starts at three o'clock."],
-    ["Bitte sehen Sie sich das Material auf dem Bildschirm an.", "Please take a look at the material shown on the screen."],
-    ["Wenn Sie Fragen haben, können Sie jederzeit sprechen.", "If you have any questions, you can speak at any time."],
+    "Hallo. Die heutige Besprechung beginnt um drei Uhr.",
+    "Bitte sehen Sie sich das Material auf dem Bildschirm an.",
+    "Wenn Sie Fragen haben, können Sie jederzeit sprechen.",
   ],
   en: [
-    ["Hello. Today's meeting starts at three o'clock.", "Hello. Today's meeting starts at three o'clock."],
-    ["Please take a look at the material shown on the screen.", "Please take a look at the material shown on the screen."],
-    ["If you have any questions, please feel free to ask at any time.", "If you have any questions, please feel free to ask at any time."],
+    "Hello. Today's meeting starts at three o'clock.",
+    "Please take a look at the material shown on the screen.",
+    "If you have any questions, please feel free to ask at any time.",
+  ],
+};
+
+const demoTargets = {
+  en: demoSources.en,
+  vi: [
+    "Xin chào. Cuộc họp hôm nay bắt đầu lúc ba giờ.",
+    "Vui lòng xem tài liệu đang hiển thị trên màn hình.",
+    "Nếu có câu hỏi, bạn cứ thoải mái hỏi bất cứ lúc nào.",
+  ],
+  ko: [
+    "안녕하세요. 오늘 회의는 세 시에 시작합니다.",
+    "지금 화면에 보이는 자료를 같이 봐 주세요.",
+    "질문이 있으면 언제든지 편하게 말씀해 주세요.",
+  ],
+  ja: [
+    "こんにちは。今日の会議は三時に始まります。",
+    "画面に表示されている資料を見てください。",
+    "質問があれば、いつでも気軽に聞いてください。",
+  ],
+  zh: [
+    "你好。今天的会议三点开始。",
+    "请看屏幕上显示的资料。",
+    "如果有问题，请随时提问。",
+  ],
+  es: [
+    "Hola. La reunión de hoy empieza a las tres.",
+    "Por favor, revisa el material que aparece en la pantalla.",
+    "Si tienes preguntas, no dudes en hacerlas en cualquier momento.",
+  ],
+  fr: [
+    "Bonjour. La réunion d'aujourd'hui commence à trois heures.",
+    "Veuillez regarder le document affiché à l'écran.",
+    "Si vous avez des questions, n'hésitez pas à les poser à tout moment.",
+  ],
+  de: [
+    "Hallo. Die heutige Besprechung beginnt um drei Uhr.",
+    "Bitte sehen Sie sich das Material auf dem Bildschirm an.",
+    "Wenn Sie Fragen haben, können Sie sie jederzeit stellen.",
   ],
 };
 
@@ -54,8 +93,9 @@ const state = {
   showSourceText: true,
   runtime: null,
   sourceLanguage: "ko",
+  targetLanguage: "en",
   sourceLines: [],
-  englishLines: [],
+  targetLines: [],
 };
 
 const ui = {
@@ -66,14 +106,16 @@ const ui = {
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
   sourceLanguage: document.getElementById("source-language"),
+  targetLanguage: document.getElementById("target-language"),
   sourceLanguageLabel: document.getElementById("source-language-label"),
+  targetLanguageLabel: document.getElementById("target-language-label"),
   backendOrigin: document.getElementById("backend-origin"),
   endpointPreview: document.getElementById("endpoint-preview"),
   statusText: document.getElementById("status-text"),
   sourceTranscript: document.getElementById("source-transcript"),
-  englishTranscript: document.getElementById("english-transcript"),
+  targetTranscript: document.getElementById("target-transcript"),
   copySourceButton: document.getElementById("copy-source-button"),
-  copyEnglishButton: document.getElementById("copy-english-button"),
+  copyTargetButton: document.getElementById("copy-target-button"),
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
@@ -90,15 +132,17 @@ ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
 ui.backendOrigin.addEventListener("input", updateEndpointPreview);
 ui.sourceLanguage.addEventListener("change", handleSourceLanguageChange);
+ui.targetLanguage.addEventListener("change", handleTargetLanguageChange);
 ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
-ui.copyEnglishButton.addEventListener("click", () => copyTranscript("english"));
+ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
 boot();
 
 function boot() {
   restoreSourceLanguagePreference();
-  updateSourceLanguageUi();
+  restoreTargetLanguagePreference();
+  updateLanguageUi();
   renderAllTranscripts();
   const params = new URLSearchParams(window.location.search);
   const storedOrigin = window.localStorage.getItem("backend-origin") ?? "";
@@ -136,9 +180,11 @@ async function playDemo() {
       break;
     }
     publishTranslation({
-      english_text: line.en,
+      translated_text: line.target,
+      english_text: line.target,
       source_text: line.source,
       source_language: state.sourceLanguage,
+      target_language: state.targetLanguage,
       audio_seconds: line.audio,
       latency_seconds: line.latency,
       created_at: timeStamp(),
@@ -286,7 +332,7 @@ async function startCapture() {
     state.isCapturing = true;
 
     setState("Listening");
-    setStatus(`Listening for ${sourceLanguageName()} speech through the connected backend.`);
+    setStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
   } catch (error) {
     setState("Mic Blocked");
     setStatus(`Microphone could not start: ${error.message}`);
@@ -486,16 +532,17 @@ function handleServerEvent(payload) {
     if (stateName === "warming_up") {
       setMicrophoneAwareStatus("Backend is loading the speech model.");
     } else if (stateName === "translating") {
-      setStatus("Backend is translating the latest utterance.");
+      setStatus(`Backend is translating to ${targetLanguageName()}.`);
     } else if (stateName === "listening") {
-      setMicrophoneAwareStatus(`Listening for ${sourceLanguageName()} speech.`);
+      setMicrophoneAwareStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
     }
     return;
   }
 
   if (payload.type === "language") {
-    applySourceLanguage(payload.source_language);
-    setMicrophoneAwareStatus(`Source language set to ${sourceLanguageName()}.`);
+    applySourceLanguage(payload.source_language, { persist: false });
+    applyTargetLanguage(payload.target_language, { persist: false });
+    setMicrophoneAwareStatus(`Language pair set: ${sourceLanguageName()} to ${targetLanguageName()}.`);
     return;
   }
 
@@ -514,7 +561,10 @@ function applyRuntime(runtime) {
   state.runtime = runtime;
   state.showSourceText = Boolean(runtime.show_source_text);
   if (!window.localStorage.getItem("source-language")) {
-    applySourceLanguage(runtime.source_language);
+    applySourceLanguage(runtime.source_language, { persist: false });
+  }
+  if (!window.localStorage.getItem("target-language")) {
+    applyTargetLanguage(runtime.target_language, { persist: false });
   }
   if (state.sourceLines.length === 0) {
     renderAllTranscripts();
@@ -532,21 +582,21 @@ function appendTranscript(payload) {
   const sourceText =
     payload.source_text ||
     "Source transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
-  const englishText = payload.english_text || "";
+  const targetText = payload.translated_text || payload.english_text || "";
 
   state.sourceLines.push(sourceText);
-  state.englishLines.push(englishText);
+  state.targetLines.push(targetText);
   renderAllTranscripts();
   scrollTranscriptToBottom(ui.sourceTranscript);
-  scrollTranscriptToBottom(ui.englishTranscript);
+  scrollTranscriptToBottom(ui.targetTranscript);
 }
 
 function renderAllTranscripts() {
   renderTranscriptBox(ui.sourceTranscript, state.sourceLines, sourceEmptyText());
   renderTranscriptBox(
-    ui.englishTranscript,
-    state.englishLines,
-    "Press “Play Demo” to see the English translation here."
+    ui.targetTranscript,
+    state.targetLines,
+    `Press “Play demo” to see ${targetLanguageName()} here.`
   );
 }
 
@@ -586,8 +636,8 @@ function scrollTranscriptToBottom(container) {
 
 async function copyTranscript(language) {
   const isSource = language === "source";
-  const lines = isSource ? state.sourceLines : state.englishLines;
-  const label = isSource ? sourceLanguageName() : "English";
+  const lines = isSource ? state.sourceLines : state.targetLines;
+  const label = isSource ? sourceLanguageName() : targetLanguageName();
   const text = lines.join("\n").trim();
 
   if (!text) {
@@ -628,7 +678,7 @@ async function writeClipboard(text) {
 
 function clearTranscript(options = {}) {
   state.sourceLines = [];
-  state.englishLines = [];
+  state.targetLines = [];
   renderAllTranscripts();
 
   if (!options.silent) {
@@ -641,14 +691,27 @@ function clearTranscript(options = {}) {
 function handleSourceLanguageChange() {
   state.sourceLanguage = selectedSourceLanguage();
   window.localStorage.setItem("source-language", state.sourceLanguage);
-  updateSourceLanguageUi();
+  updateLanguageUi();
 
   if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
     state.socket.send(JSON.stringify({ type: "flush" }));
   }
 
   sendLanguageSetting();
-  setStatus(`New speech will use ${sourceLanguageName()} as the source language.`);
+  setStatus(`New speech will translate ${sourceLanguageName()} to ${targetLanguageName()}.`);
+}
+
+function handleTargetLanguageChange() {
+  state.targetLanguage = selectedTargetLanguage();
+  window.localStorage.setItem("target-language", state.targetLanguage);
+  updateLanguageUi();
+
+  if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
+    state.socket.send(JSON.stringify({ type: "flush" }));
+  }
+
+  sendLanguageSetting();
+  setStatus(`New speech will translate ${sourceLanguageName()} to ${targetLanguageName()}.`);
 }
 
 function sendLanguageSetting() {
@@ -660,48 +723,88 @@ function sendLanguageSetting() {
     JSON.stringify({
       type: "set_language",
       source_language: state.sourceLanguage,
+      target_language: state.targetLanguage,
     })
   );
 }
 
 function restoreSourceLanguagePreference() {
   const storedLanguage = window.localStorage.getItem("source-language");
-  applySourceLanguage(storedLanguage || ui.sourceLanguage.value);
+  applySourceLanguage(storedLanguage || ui.sourceLanguage.value, { persist: false });
 }
 
-function applySourceLanguage(sourceLanguage) {
-  const option = languageOption(sourceLanguage) || languageOption("ko");
+function restoreTargetLanguagePreference() {
+  const storedLanguage = window.localStorage.getItem("target-language");
+  applyTargetLanguage(storedLanguage || ui.targetLanguage.value, { persist: false });
+}
+
+function applySourceLanguage(sourceLanguage, options = {}) {
+  const option = sourceLanguageOption(sourceLanguage) || sourceLanguageOption("ko");
   state.sourceLanguage = option.value;
   ui.sourceLanguage.value = option.value;
-  updateSourceLanguageUi();
+  if (options.persist) {
+    window.localStorage.setItem("source-language", state.sourceLanguage);
+  }
+  updateLanguageUi();
+}
+
+function applyTargetLanguage(targetLanguage, options = {}) {
+  const option = targetLanguageOption(targetLanguage) || targetLanguageOption("en");
+  state.targetLanguage = option.value;
+  ui.targetLanguage.value = option.value;
+  if (options.persist) {
+    window.localStorage.setItem("target-language", state.targetLanguage);
+  }
+  updateLanguageUi();
 }
 
 function selectedSourceLanguage() {
   return ui.sourceLanguage.value || "ko";
 }
 
-function languageOption(value) {
+function selectedTargetLanguage() {
+  return ui.targetLanguage.value || "en";
+}
+
+function sourceLanguageOption(value) {
   return Array.from(ui.sourceLanguage.options).find(
     (option) => option.value === value
   );
 }
 
+function targetLanguageOption(value) {
+  return Array.from(ui.targetLanguage.options).find(
+    (option) => option.value === value
+  );
+}
+
 function sourceLanguageName() {
-  const option = languageOption(state.sourceLanguage);
+  const option = sourceLanguageOption(state.sourceLanguage);
   return option ? option.textContent : "Korean";
 }
 
-function updateSourceLanguageUi() {
+function targetLanguageName() {
+  const option = targetLanguageOption(state.targetLanguage);
+  return option ? option.textContent : "English";
+}
+
+function updateLanguageUi() {
   const label = state.sourceLanguage === "auto" ? "Source" : sourceLanguageName();
   ui.sourceLanguageLabel.textContent = label;
   ui.copySourceButton.textContent = `Copy ${label}`;
+  ui.targetLanguageLabel.textContent = targetLanguageName();
+  ui.copyTargetButton.textContent = `Copy ${targetLanguageName()}`;
 }
 
 function selectedDemoScript() {
-  const sampleRows = demoScripts[state.sourceLanguage] || demoScripts.ko;
-  return sampleRows.map(([source, en], index) => ({
+  const sourceRows = demoSources[state.sourceLanguage] || demoSources.ko;
+  const targetRows =
+    state.sourceLanguage === state.targetLanguage
+      ? sourceRows
+      : demoTargets[state.targetLanguage] || demoTargets.en;
+  return sourceRows.map((source, index) => ({
     source,
-    en,
+    target: targetRows[index] || demoTargets.en[index],
     audio: 2.3 + index * 0.25,
     latency: 0.68 + index * 0.08,
   }));

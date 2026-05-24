@@ -1,1 +1,1 @@
-"""Live speech-to-English translation app."""
+"""Live speech translation app."""
