@@ -6,6 +6,7 @@ This project is a local web app for near-real-time Korean-to-English speech tran
 
 There is now a static frontend in [docs/index.html](/C:/Users/n/source/repos/rambo_game/Transcribe_translate/docs/index.html) that is ready to publish with GitHub Pages.
 The setup guide for the two app shapes is in [docs/setup-guide.html](/C:/Users/n/source/repos/rambo_game/Transcribe_translate/docs/setup-guide.html).
+The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](/C:/Users/n/source/repos/rambo_game/Transcribe_translate/docs/windows-rtx4080-deployment.md).
 
 - It works as a polished demo on `github.io` with a built-in simulated live subtitle flow.
 - It can also connect to a separately deployed backend over `https://` and `wss://`.
