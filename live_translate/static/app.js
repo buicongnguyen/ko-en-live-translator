@@ -7,25 +7,31 @@ const state = {
   mutedNode: null,
   isCapturing: false,
   showSourceText: true,
+  koreanLines: [],
+  englishLines: [],
 };
 
 const ui = {
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
   statusText: document.getElementById("status-text"),
-  latestEnglish: document.getElementById("latest-english"),
-  latestSource: document.getElementById("latest-source"),
+  koreanTranscript: document.getElementById("korean-transcript"),
+  englishTranscript: document.getElementById("english-transcript"),
+  copyKoreanButton: document.getElementById("copy-korean-button"),
+  copyEnglishButton: document.getElementById("copy-english-button"),
+  clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
-  history: document.getElementById("history"),
   connectionPill: document.getElementById("connection-pill"),
   statePill: document.getElementById("state-pill"),
   modelPill: document.getElementById("model-pill"),
-  sourcePanel: document.getElementById("source-panel"),
 };
 
 ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
+ui.copyKoreanButton.addEventListener("click", () => copyTranscript("korean"));
+ui.copyEnglishButton.addEventListener("click", () => copyTranscript("english"));
+ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
 boot().catch((error) => {
   setStatus(`Startup error: ${error.message}`);
@@ -33,6 +39,7 @@ boot().catch((error) => {
 });
 
 async function boot() {
+  renderAllTranscripts();
   await fetchHealth();
   connectSocket();
   updateMicrophoneHint();
@@ -258,16 +265,9 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "translation") {
-    ui.latestEnglish.textContent = payload.english_text;
+    appendTranscript(payload);
     ui.latencyText.textContent = `Latency: ${payload.latency_seconds}s`;
     ui.audioText.textContent = `Audio: ${payload.audio_seconds}s`;
-    if (payload.source_text) {
-      ui.latestSource.textContent = payload.source_text;
-    } else {
-      ui.latestSource.textContent =
-        "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true on the host PC.";
-    }
-    prependHistory(payload);
     return;
   }
 
@@ -277,53 +277,115 @@ function handleServerEvent(payload) {
   }
 }
 
-function prependHistory(payload) {
-  const item = document.createElement("article");
-  item.className = "sentence-card history-item";
+function appendTranscript(payload) {
+  const koreanText =
+    payload.source_text ||
+    "Korean transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
+  const englishText = payload.english_text || "";
 
-  const sourceBlock = document.createElement("div");
-  sourceBlock.className = "sentence-block korean-block";
-  item.appendChild(sourceBlock);
+  state.koreanLines.push(koreanText);
+  state.englishLines.push(englishText);
+  renderAllTranscripts();
+  scrollTranscriptToBottom(ui.koreanTranscript);
+  scrollTranscriptToBottom(ui.englishTranscript);
+}
 
-  const sourceLabel = document.createElement("div");
-  sourceLabel.className = "block-label";
-  sourceLabel.textContent = "Korean";
-  sourceBlock.appendChild(sourceLabel);
+function renderAllTranscripts() {
+  renderTranscriptBox(
+    ui.koreanTranscript,
+    state.koreanLines,
+    koreanEmptyText()
+  );
+  renderTranscriptBox(
+    ui.englishTranscript,
+    state.englishLines,
+    "English translation will appear here."
+  );
+}
 
-  const source = document.createElement("div");
-  source.className = "history-source";
-  source.textContent =
-    payload.source_text ??
-    "Korean transcript unavailable. Enable SHOW_SOURCE_TEXT=true on the host PC.";
-  sourceBlock.appendChild(source);
-
-  const englishBlock = document.createElement("div");
-  englishBlock.className = "sentence-block english-block";
-  item.appendChild(englishBlock);
-
-  const englishLabel = document.createElement("div");
-  englishLabel.className = "block-label";
-  englishLabel.textContent = "English";
-  englishBlock.appendChild(englishLabel);
-
-  const english = document.createElement("div");
-  english.className = "history-english";
-  english.textContent = payload.english_text;
-  englishBlock.appendChild(english);
-
-  const meta = document.createElement("div");
-  meta.className = "history-meta";
-  meta.innerHTML = `
-    <span>${payload.created_at}</span>
-    <span>Latency ${payload.latency_seconds}s</span>
-    <span>Audio ${payload.audio_seconds}s</span>
-  `;
-  item.appendChild(meta);
-
-  ui.history.prepend(item);
-  while (ui.history.children.length > 18) {
-    ui.history.removeChild(ui.history.lastChild);
+function koreanEmptyText() {
+  if (!state.showSourceText) {
+    return "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
   }
+
+  return "Korean transcript will appear here after you start listening.";
+}
+
+function renderTranscriptBox(container, lines, emptyText) {
+  container.innerHTML = "";
+
+  if (lines.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-copy";
+    empty.textContent = emptyText;
+    container.appendChild(empty);
+    return;
+  }
+
+  lines.forEach((line, index) => {
+    const item = document.createElement("p");
+    item.className = "transcript-line";
+    if (index === lines.length - 1) {
+      item.classList.add("latest");
+    }
+    item.textContent = line;
+    container.appendChild(item);
+  });
+}
+
+function scrollTranscriptToBottom(container) {
+  container.scrollTop = container.scrollHeight;
+}
+
+async function copyTranscript(language) {
+  const isKorean = language === "korean";
+  const lines = isKorean ? state.koreanLines : state.englishLines;
+  const label = isKorean ? "Korean" : "English";
+  const text = lines.join("\n").trim();
+
+  if (!text) {
+    setStatus(`${label} text box is empty.`);
+    return;
+  }
+
+  try {
+    await writeClipboard(text);
+    setStatus(`${label} transcript copied to clipboard.`);
+  } catch (error) {
+    setStatus(`Could not copy ${label.toLowerCase()} transcript: ${error.message}`);
+  }
+}
+
+async function writeClipboard(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("copy command was blocked by the browser.");
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+function clearTranscript() {
+  state.koreanLines = [];
+  state.englishLines = [];
+  ui.latencyText.textContent = "Latency: -";
+  ui.audioText.textContent = "Audio: -";
+  renderAllTranscripts();
+  setStatus("Transcript cleared.");
 }
 
 function applyRuntime(runtime) {
@@ -331,9 +393,8 @@ function applyRuntime(runtime) {
   const computeType = runtime.compute_type ?? "auto";
   ui.modelPill.textContent = `Model: ${runtime.model} · ${device} · ${computeType}`;
   state.showSourceText = Boolean(runtime.show_source_text);
-  if (!state.showSourceText) {
-    ui.latestSource.textContent =
-      "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
+  if (state.koreanLines.length === 0) {
+    renderAllTranscripts();
   }
 }
 

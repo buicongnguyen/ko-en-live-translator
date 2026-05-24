@@ -37,6 +37,8 @@ const state = {
   backendConnected: false,
   showSourceText: true,
   runtime: null,
+  koreanLines: [],
+  englishLines: [],
 };
 
 const ui = {
@@ -49,15 +51,16 @@ const ui = {
   backendOrigin: document.getElementById("backend-origin"),
   endpointPreview: document.getElementById("endpoint-preview"),
   statusText: document.getElementById("status-text"),
-  latestEnglish: document.getElementById("latest-english"),
-  latestSource: document.getElementById("latest-source"),
+  koreanTranscript: document.getElementById("korean-transcript"),
+  englishTranscript: document.getElementById("english-transcript"),
+  copyKoreanButton: document.getElementById("copy-korean-button"),
+  copyEnglishButton: document.getElementById("copy-english-button"),
+  clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
-  history: document.getElementById("history"),
   connectionPill: document.getElementById("connection-pill"),
   backendPill: document.getElementById("backend-pill"),
   statePill: document.getElementById("state-pill"),
-  sourcePanel: document.getElementById("source-panel"),
 };
 
 ui.demoButton.addEventListener("click", playDemo);
@@ -67,10 +70,14 @@ ui.disconnectButton.addEventListener("click", disconnectBackend);
 ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
 ui.backendOrigin.addEventListener("input", updateEndpointPreview);
+ui.copyKoreanButton.addEventListener("click", () => copyTranscript("korean"));
+ui.copyEnglishButton.addEventListener("click", () => copyTranscript("english"));
+ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
 boot();
 
 function boot() {
+  renderAllTranscripts();
   const params = new URLSearchParams(window.location.search);
   const storedOrigin = window.localStorage.getItem("backend-origin") ?? "";
   const initialOrigin = params.get("backend") ?? storedOrigin;
@@ -92,7 +99,6 @@ async function playDemo() {
   state.backendConnected = false;
   state.runtime = null;
   state.showSourceText = true;
-  ui.sourcePanel.hidden = false;
   state.isDemoPlaying = true;
   refreshControls();
 
@@ -101,7 +107,7 @@ async function playDemo() {
   setState("Simulating");
   setStatus("Running the GitHub Pages subtitle demo.");
 
-  clearHistory();
+  clearTranscript({ silent: true });
 
   for (const line of demoScript) {
     if (!state.isDemoPlaying) {
@@ -131,13 +137,8 @@ function resetShowcase() {
   state.isDemoPlaying = false;
   if (!state.backendConnected) {
     state.showSourceText = true;
-    ui.sourcePanel.hidden = false;
   }
-  clearHistory();
-  ui.latestEnglish.textContent =
-    "Press “Play Demo” to see the English translation underneath.";
-  ui.latestSource.textContent =
-    "안녕하세요. 데모를 실행하면 한국어 원문이 먼저 보입니다.";
+  clearTranscript({ silent: true });
   ui.latencyText.textContent = "Latency: demo";
   ui.audioText.textContent = "Audio: demo";
   setStatus(
@@ -194,7 +195,6 @@ async function connectBackend() {
     state.backendConnected = false;
     state.runtime = null;
     state.showSourceText = true;
-    ui.sourcePanel.hidden = false;
     closeSocket();
     setConnection("Demo Mode");
     setBackendStatus("Backend Offline");
@@ -211,7 +211,6 @@ async function disconnectBackend() {
   state.backendConnected = false;
   state.runtime = null;
   state.showSourceText = true;
-  ui.sourcePanel.hidden = false;
   closeSocket();
   setConnection("Demo Mode");
   setBackendStatus("Backend Optional");
@@ -484,80 +483,126 @@ function handleServerEvent(payload) {
 function applyRuntime(runtime) {
   state.runtime = runtime;
   state.showSourceText = Boolean(runtime.show_source_text);
-  ui.sourcePanel.hidden = false;
-  if (!state.showSourceText) {
-    ui.latestSource.textContent =
-      "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true on the host PC.";
+  if (state.koreanLines.length === 0) {
+    renderAllTranscripts();
   }
   setBackendStatus(backendLabel());
 }
 
 function publishTranslation(payload) {
-  ui.latestEnglish.textContent = payload.english_text;
+  appendTranscript(payload);
   ui.latencyText.textContent = `Latency: ${payload.latency_seconds}s`;
   ui.audioText.textContent = `Audio: ${payload.audio_seconds}s`;
-
-  if (payload.source_text) {
-    ui.latestSource.textContent = payload.source_text;
-  } else if (!state.showSourceText) {
-    ui.latestSource.textContent =
-      "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true on the host PC.";
-  }
-
-  prependHistory(payload);
 }
 
-function prependHistory(payload) {
-  const item = document.createElement("article");
-  item.className = "sentence-card history-item";
+function appendTranscript(payload) {
+  const koreanText =
+    payload.source_text ||
+    "Korean transcript unavailable. Set SHOW_SOURCE_TEXT=true on the host PC.";
+  const englishText = payload.english_text || "";
 
-  const sourceBlock = document.createElement("div");
-  sourceBlock.className = "sentence-block korean-block";
-  item.appendChild(sourceBlock);
+  state.koreanLines.push(koreanText);
+  state.englishLines.push(englishText);
+  renderAllTranscripts();
+  scrollTranscriptToBottom(ui.koreanTranscript);
+  scrollTranscriptToBottom(ui.englishTranscript);
+}
 
-  const sourceLabel = document.createElement("div");
-  sourceLabel.className = "block-label";
-  sourceLabel.textContent = "Korean";
-  sourceBlock.appendChild(sourceLabel);
+function renderAllTranscripts() {
+  renderTranscriptBox(ui.koreanTranscript, state.koreanLines, koreanEmptyText());
+  renderTranscriptBox(
+    ui.englishTranscript,
+    state.englishLines,
+    "Press “Play Demo” to see the English translation here."
+  );
+}
 
-  const source = document.createElement("div");
-  source.className = "history-source";
-  source.textContent =
-    payload.source_text ??
-    "Korean transcript unavailable. Enable SHOW_SOURCE_TEXT=true on the host PC.";
-  sourceBlock.appendChild(source);
+function koreanEmptyText() {
+  if (!state.showSourceText) {
+    return "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
+  }
 
-  const englishBlock = document.createElement("div");
-  englishBlock.className = "sentence-block english-block";
-  item.appendChild(englishBlock);
+  return "안녕하세요. 데모를 실행하면 한국어 원문이 여기에 쌓입니다.";
+}
 
-  const englishLabel = document.createElement("div");
-  englishLabel.className = "block-label";
-  englishLabel.textContent = "English";
-  englishBlock.appendChild(englishLabel);
+function renderTranscriptBox(container, lines, emptyText) {
+  container.innerHTML = "";
 
-  const english = document.createElement("div");
-  english.className = "history-english";
-  english.textContent = payload.english_text;
-  englishBlock.appendChild(english);
+  if (lines.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-copy";
+    empty.textContent = emptyText;
+    container.appendChild(empty);
+    return;
+  }
 
-  const meta = document.createElement("div");
-  meta.className = "history-meta";
-  meta.innerHTML = `
-    <span>${payload.created_at}</span>
-    <span>Latency ${payload.latency_seconds}s</span>
-    <span>Audio ${payload.audio_seconds}s</span>
-  `;
-  item.appendChild(meta);
+  lines.forEach((line, index) => {
+    const item = document.createElement("p");
+    item.className = "transcript-line";
+    if (index === lines.length - 1) {
+      item.classList.add("latest");
+    }
+    item.textContent = line;
+    container.appendChild(item);
+  });
+}
 
-  ui.history.prepend(item);
-  while (ui.history.children.length > 18) {
-    ui.history.removeChild(ui.history.lastChild);
+function scrollTranscriptToBottom(container) {
+  container.scrollTop = container.scrollHeight;
+}
+
+async function copyTranscript(language) {
+  const isKorean = language === "korean";
+  const lines = isKorean ? state.koreanLines : state.englishLines;
+  const label = isKorean ? "Korean" : "English";
+  const text = lines.join("\n").trim();
+
+  if (!text) {
+    setStatus(`${label} text box is empty.`);
+    return;
+  }
+
+  try {
+    await writeClipboard(text);
+    setStatus(`${label} transcript copied to clipboard.`);
+  } catch (error) {
+    setStatus(`Could not copy ${label.toLowerCase()} transcript: ${error.message}`);
   }
 }
 
-function clearHistory() {
-  ui.history.innerHTML = "";
+async function writeClipboard(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("copy command was blocked by the browser.");
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+function clearTranscript(options = {}) {
+  state.koreanLines = [];
+  state.englishLines = [];
+  renderAllTranscripts();
+
+  if (!options.silent) {
+    ui.latencyText.textContent = state.backendConnected ? "Latency: -" : "Latency: demo";
+    ui.audioText.textContent = state.backendConnected ? "Audio: -" : "Audio: demo";
+    setStatus("Transcript cleared.");
+  }
 }
 
 function refreshControls() {

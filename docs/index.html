@@ -36,37 +36,69 @@
       <section class="page-grid">
         <div class="main-column">
           <article class="panel transcript-panel">
-            <div class="panel-label">Live sentence</div>
-            <div class="panel-title">Korean transcript + English translation</div>
-            <div class="sentence-card current-sentence">
-              <div class="sentence-block korean-block" id="source-panel">
-                <div class="block-label">Korean</div>
-                <div id="latest-source" class="source-text">
-                  안녕하세요. 데모를 실행하면 한국어 원문이 먼저 보입니다.
+            <div class="transcript-head">
+              <div>
+                <div class="panel-label">Live transcript</div>
+                <div class="panel-title">Korean and English text boxes</div>
+              </div>
+              <button id="clear-transcript-button" class="secondary compact-button">
+                Clear text
+              </button>
+            </div>
+
+            <div class="transcript-grid">
+              <article class="transcript-box korean-box">
+                <div class="transcript-box-head">
+                  <div>
+                    <div class="block-label">Korean</div>
+                    <p>Original speech transcript. The newest line is highlighted.</p>
+                  </div>
+                  <button id="copy-korean-button" class="secondary compact-button">
+                    Copy Korean
+                  </button>
                 </div>
-              </div>
-              <div class="sentence-block english-block">
-                <div class="block-label">English</div>
-                <div id="latest-english" class="subtitle-text">
-                  Press “Play Demo” to see the English translation underneath.
+                <div
+                  id="korean-transcript"
+                  class="transcript-body"
+                  role="textbox"
+                  aria-label="Korean transcript"
+                  tabindex="0"
+                >
+                  <p class="empty-copy">
+                    안녕하세요. 데모를 실행하면 한국어 원문이 여기에 쌓입니다.
+                  </p>
                 </div>
-              </div>
-              <div class="meta-row">
-                <span id="latency-text">Latency: demo</span>
-                <span id="audio-text">Audio: demo</span>
-              </div>
+              </article>
+
+              <article class="transcript-box english-box">
+                <div class="transcript-box-head">
+                  <div>
+                    <div class="block-label">English</div>
+                    <p>English translation, matched line-by-line with Korean.</p>
+                  </div>
+                  <button id="copy-english-button" class="secondary compact-button">
+                    Copy English
+                  </button>
+                </div>
+                <div
+                  id="english-transcript"
+                  class="transcript-body"
+                  role="textbox"
+                  aria-label="English translation"
+                  tabindex="0"
+                >
+                  <p class="empty-copy">
+                    Press “Play Demo” to see the English translation here.
+                  </p>
+                </div>
+              </article>
+            </div>
+
+            <div class="meta-row">
+              <span id="latency-text">Latency: demo</span>
+              <span id="audio-text">Audio: demo</span>
             </div>
           </article>
-
-          <section class="panel history-panel">
-            <div class="history-head">
-              <div>
-                <div class="panel-label">Sentence blocks</div>
-                <div class="panel-title">Conversation Feed</div>
-              </div>
-            </div>
-            <div id="history" class="history-list"></div>
-          </section>
         </div>
 
         <aside class="side-column">

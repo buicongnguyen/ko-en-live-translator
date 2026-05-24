@@ -13,8 +13,8 @@
         <h1>Live Korean to English</h1>
         <p class="lede">
           Open this page from the host PC, allow microphone access, then speak
-          Korean. Each detected sentence appears as a Korean transcript with an
-          English translation directly underneath.
+          Korean. The transcript stays in two scrollable text boxes so the page
+          remains compact while the newest speech is highlighted.
         </p>
         <div class="status-row">
           <span class="pill" id="connection-pill">Connecting</span>
@@ -38,40 +38,66 @@
       </section>
 
       <section class="panel transcript-panel">
-        <div class="history-head">
+        <div class="transcript-head">
           <div>
-            <div class="panel-label">Live sentence</div>
-            <div class="panel-title">Korean transcript + English translation</div>
+            <div class="panel-label">Live transcript</div>
+            <div class="panel-title">Korean and English text boxes</div>
           </div>
+          <button id="clear-transcript-button" class="secondary compact-button">
+            Clear text
+          </button>
         </div>
-        <article class="sentence-card current-sentence">
-          <div class="sentence-block korean-block" id="source-panel">
-            <div class="block-label">Korean</div>
-            <div id="latest-source" class="source-text">
-              Microphone transcript will appear here after you start listening.
-            </div>
-          </div>
-          <div class="sentence-block english-block">
-            <div class="block-label">English</div>
-            <div id="latest-english" class="subtitle-text">
-              English translation will appear under the Korean sentence.
-            </div>
-          </div>
-          <div class="meta-row">
-            <span id="latency-text">Latency: -</span>
-            <span id="audio-text">Audio: -</span>
-          </div>
-        </article>
-      </section>
 
-      <section class="panel history-panel">
-        <div class="history-head">
-          <div>
-            <div class="panel-label">Sentence blocks</div>
-            <div class="panel-title">Conversation Feed</div>
-          </div>
+        <div class="transcript-grid">
+          <article class="transcript-box korean-box">
+            <div class="transcript-box-head">
+              <div>
+                <div class="block-label">Korean</div>
+                <p>Original speech transcript. The newest line is highlighted.</p>
+              </div>
+              <button id="copy-korean-button" class="secondary compact-button">
+                Copy Korean
+              </button>
+            </div>
+            <div
+              id="korean-transcript"
+              class="transcript-body"
+              role="textbox"
+              aria-label="Korean transcript"
+              tabindex="0"
+            >
+              <p class="empty-copy">
+                Korean transcript will appear here after you start listening.
+              </p>
+            </div>
+          </article>
+
+          <article class="transcript-box english-box">
+            <div class="transcript-box-head">
+              <div>
+                <div class="block-label">English</div>
+                <p>English translation, matched line-by-line with Korean.</p>
+              </div>
+              <button id="copy-english-button" class="secondary compact-button">
+                Copy English
+              </button>
+            </div>
+            <div
+              id="english-transcript"
+              class="transcript-body"
+              role="textbox"
+              aria-label="English translation"
+              tabindex="0"
+            >
+              <p class="empty-copy">English translation will appear here.</p>
+            </div>
+          </article>
         </div>
-        <div id="history" class="history-list"></div>
+
+        <div class="meta-row">
+          <span id="latency-text">Latency: -</span>
+          <span id="audio-text">Audio: -</span>
+        </div>
       </section>
     </main>
 
