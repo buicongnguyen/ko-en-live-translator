@@ -484,6 +484,7 @@
             <a href="#install-resources">Install resources</a>
             <a href="#terminology">Terminology</a>
             <a href="#models">Model settings</a>
+            <a href="#modern-models">Modern model options</a>
             <a href="#a1000-laptop">A1000 laptop path</a>
             <a href="#rtx4080-lan">RTX 4080 Super LAN guide</a>
             <a href="#lan-server">LAN GPU server setup</a>
@@ -930,6 +931,87 @@
               A1000 cards. Run <code>nvidia-smi</code> first and choose
               <code>small</code> when the GPU has 4 GB or when other apps are
               already using memory.
+            </div>
+          </section>
+
+          <section class="section" id="modern-models">
+            <div class="section-head">
+              <div class="label">Modern options</div>
+              <h2>Better model research for smoother live translation</h2>
+              <p>
+                For this project, "better" means two different things. One is
+                better Korean-to-English translation quality. The other is a
+                smoother live subtitle feel, where text appears quickly but
+                does not change too much after it is shown. The latest research
+                points to improving the streaming policy first, then testing
+                new model branches.
+              </p>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Option</th>
+                    <th>What it improves</th>
+                    <th>Fit for your hardware</th>
+                    <th>Recommendation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>faster-whisper</code> + <code>large-v3</code></td>
+                    <td>Best practical direct Korean speech to English text path in this repo.</td>
+                    <td>Excellent on RTX 4080 Super; use <code>small</code> or <code>medium</code> on A1000.</td>
+                    <td>Keep as the default server model. Use <code>beam_size=1</code> for latency, <code>3</code> for quality.</td>
+                  </tr>
+                  <tr>
+                    <td>SimulStreaming or Whisper-Streaming policy</td>
+                    <td>Live smoothness: stable partial captions, less awkward chunking, lower perceived delay.</td>
+                    <td>Good match for RTX 4080 Super server. Also usable with smaller A1000 models.</td>
+                    <td>Best next upgrade. It changes how audio chunks are committed, not only which model is loaded.</td>
+                  </tr>
+                  <tr>
+                    <td>SeamlessM4T v2 Large</td>
+                    <td>Translation-native speech-to-text translation model with Korean speech and text support.</td>
+                    <td>Test on RTX 4080 Super only. It is heavier than the current faster-whisper stack.</td>
+                    <td>Research branch. Good candidate to compare quality, but check license and latency before using it broadly.</td>
+                  </tr>
+                  <tr>
+                    <td>Voxtral Mini 4B Realtime + text translator</td>
+                    <td>Very low-latency Korean transcription, then a second model translates Korean text to English.</td>
+                    <td>RTX 4080 Super has the right class of VRAM; A1000 is not the right first target.</td>
+                    <td>Research branch for smooth captions. Use only if you are comfortable adding vLLM or Transformers 5.</td>
+                  </tr>
+                  <tr>
+                    <td>Qwen3-ASR + OPUS-MT or NLLB</td>
+                    <td>Modern Korean ASR plus separate Korean-to-English machine translation.</td>
+                    <td>Possible on RTX 4080 Super; maybe test <code>0.6B</code> ASR on stronger A1000 laptops.</td>
+                    <td>Useful experiment if direct Whisper translation misses Korean details, but it adds pipeline latency.</td>
+                  </tr>
+                  <tr>
+                    <td>NVIDIA Parakeet / Canary family</td>
+                    <td>Strong modern ASR and speech models in supported languages.</td>
+                    <td>Good NVIDIA stack, but Korean-to-English coverage is the issue.</td>
+                    <td>Do not use as the main Korean translator today unless a specific Korean translation model card supports the exact task.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout important">
+              Best current plan: keep <code>large-v3</code> on the RTX 4080
+              Super server, then add SimulStreaming-style commit logic. After
+              that, benchmark SeamlessM4T v2 and Voxtral/Qwen ASR cascades
+              against the same Korean test clips.
+            </div>
+
+            <div class="callout">
+              ASR-only models are not a drop-in replacement for
+              <code>task=translate</code>. They first produce Korean text, then
+              need a text translation model such as OPUS-MT Korean-to-English
+              or NLLB. This can improve meaning, but every extra model adds
+              latency and another place for errors.
             </div>
           </section>
 
@@ -1459,6 +1541,38 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
               <article class="source-card">
                 <h3>faster-whisper</h3>
                 <p><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" rel="noreferrer">CUDA runtime and quantized inference path</a></p>
+              </article>
+              <article class="source-card">
+                <h3>SimulStreaming</h3>
+                <p><a href="https://github.com/ufal/SimulStreaming" target="_blank" rel="noreferrer">Modern simultaneous streaming policy for Whisper-style models</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Whisper-Streaming</h3>
+                <p><a href="https://github.com/ufal/whisper_streaming" target="_blank" rel="noreferrer">LocalAgreement streaming approach for Whisper transcription and translation</a></p>
+              </article>
+              <article class="source-card">
+                <h3>SeamlessM4T v2 Large</h3>
+                <p><a href="https://huggingface.co/facebook/seamless-m4t-v2-large" target="_blank" rel="noreferrer">Meta speech-to-text translation model with Korean support</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Voxtral Mini Realtime</h3>
+                <p><a href="https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602" target="_blank" rel="noreferrer">Streaming ASR research branch for low-latency Korean transcription</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Qwen3-ASR</h3>
+                <p><a href="https://huggingface.co/Qwen/Qwen3-ASR-1.7B" target="_blank" rel="noreferrer">Modern Korean ASR option for a cascaded translator</a></p>
+              </article>
+              <article class="source-card">
+                <h3>OPUS-MT Korean-English</h3>
+                <p><a href="https://huggingface.co/Helsinki-NLP/opus-mt-ko-en" target="_blank" rel="noreferrer">Small Korean-to-English text translation model</a></p>
+              </article>
+              <article class="source-card">
+                <h3>NLLB distilled 600M</h3>
+                <p><a href="https://huggingface.co/facebook/nllb-200-distilled-600M" target="_blank" rel="noreferrer">Multilingual text translation option for ASR cascade experiments</a></p>
+              </article>
+              <article class="source-card">
+                <h3>NVIDIA Parakeet v3</h3>
+                <p><a href="https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3" target="_blank" rel="noreferrer">Modern ASR model, useful to compare coverage limits</a></p>
               </article>
               <article class="source-card">
                 <h3>webrtcvad-wheels</h3>
