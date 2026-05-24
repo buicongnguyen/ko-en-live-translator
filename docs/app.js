@@ -78,6 +78,7 @@ function boot() {
     ui.backendOrigin.value = initialOrigin;
   }
   updateEndpointPreview();
+  updateMicrophoneHint();
   refreshControls();
 }
 
@@ -227,14 +228,7 @@ async function startCapture() {
   try {
     setStatus("Waiting for browser microphone permission.");
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        channelCount: 1,
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-      },
-    });
+    const stream = await requestMicrophoneStream();
 
     const audioContext = new AudioContext();
     const sourceNode = audioContext.createMediaStreamSource(stream);
@@ -276,6 +270,61 @@ async function startCapture() {
   } finally {
     refreshControls();
   }
+}
+
+function updateMicrophoneHint() {
+  if (canRequestMicrophone()) {
+    return;
+  }
+
+  setStatus(microphoneUnavailableMessage());
+}
+
+async function requestMicrophoneStream() {
+  if (!window.isSecureContext) {
+    throw new Error(
+      "browser microphone access requires HTTPS or localhost. On the host PC use http://127.0.0.1:8000. From another laptop, set up HTTPS and open https://192.168.0.20:8443."
+    );
+  }
+
+  if (!canRequestMicrophone()) {
+    throw new Error(
+      "this browser did not expose microphone access for this page. Use Chrome or Edge over localhost or HTTPS."
+    );
+  }
+
+  return navigator.mediaDevices.getUserMedia({
+    audio: {
+      channelCount: 1,
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    },
+  });
+}
+
+function canRequestMicrophone() {
+  return Boolean(
+    navigator.mediaDevices &&
+      typeof navigator.mediaDevices.getUserMedia === "function"
+  );
+}
+
+function setMicrophoneAwareStatus(text) {
+  if (canRequestMicrophone()) {
+    setStatus(text);
+    return;
+  }
+
+  updateMicrophoneHint();
+}
+
+function microphoneUnavailableMessage() {
+  if (!window.isSecureContext) {
+    return "Microphone access is blocked because this page is not HTTPS or localhost. Use http://127.0.0.1:8000 on the host PC, or use HTTPS for another laptop.";
+  }
+
+  return "Microphone access is not available in this browser. Use Chrome or Edge over localhost or HTTPS.";
 }
 
 async function stopCapture() {
@@ -397,13 +446,13 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "hello") {
-    setStatus(payload.message);
+    setMicrophoneAwareStatus(payload.message);
     return;
   }
 
   if (payload.type === "ready") {
     setState("Backend Ready");
-    setStatus("Backend model is ready. Start microphone capture when you want.");
+    setMicrophoneAwareStatus("Backend model is ready. Start microphone capture when you want.");
     return;
   }
 
@@ -412,11 +461,11 @@ function handleServerEvent(payload) {
     setState(toTitleCase(stateName));
 
     if (stateName === "warming_up") {
-      setStatus("Backend is loading the speech model.");
+      setMicrophoneAwareStatus("Backend is loading the speech model.");
     } else if (stateName === "translating") {
       setStatus("Backend is translating the latest utterance.");
     } else if (stateName === "listening") {
-      setStatus("Listening for Korean speech.");
+      setMicrophoneAwareStatus("Listening for Korean speech.");
     }
     return;
   }

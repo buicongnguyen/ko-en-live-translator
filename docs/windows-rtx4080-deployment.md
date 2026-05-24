@@ -281,6 +281,32 @@ Test-NetConnection -ComputerName 192.168.0.20 -Port 8000
 
 If the page loads but the microphone does not work on the laptop, switch from HTTP to HTTPS as described above.
 
+If pressing `Start Listening` shows this error:
+
+```text
+Microphone could not start: Cannot read properties of undefined (reading 'getUserMedia')
+```
+
+the browser did not expose the microphone API for that page. The most common cause is opening the host PC from another laptop with plain LAN HTTP:
+
+```text
+http://192.168.0.20:8000
+```
+
+Use one of these instead:
+
+```text
+http://127.0.0.1:8000
+```
+
+on the host PC, or:
+
+```text
+https://192.168.0.20:8443
+```
+
+from another laptop after setting up HTTPS with Caddy and mkcert.
+
 If GPU memory becomes too high, use a lighter preset:
 
 ```powershell

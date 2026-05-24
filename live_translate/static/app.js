@@ -35,6 +35,7 @@ boot().catch((error) => {
 async function boot() {
   await fetchHealth();
   connectSocket();
+  updateMicrophoneHint();
 }
 
 async function fetchHealth() {
@@ -85,20 +86,68 @@ async function startCapture() {
 
     setStatus("Waiting for browser microphone permission.");
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        channelCount: 1,
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-      },
-    });
+    const stream = await requestMicrophoneStream();
 
     await startAudioPipeline(stream);
   } catch (error) {
     setState("Mic Blocked");
     setStatus(`Microphone could not start: ${error.message}`);
   }
+}
+
+function updateMicrophoneHint() {
+  if (canRequestMicrophone()) {
+    return;
+  }
+
+  setStatus(microphoneUnavailableMessage());
+}
+
+async function requestMicrophoneStream() {
+  if (!window.isSecureContext) {
+    throw new Error(
+      "browser microphone access requires HTTPS or localhost. On this host PC use http://127.0.0.1:8000. From another laptop, set up HTTPS and open https://192.168.0.20:8443."
+    );
+  }
+
+  if (!canRequestMicrophone()) {
+    throw new Error(
+      "this browser did not expose microphone access for this page. Use Chrome or Edge over localhost or HTTPS."
+    );
+  }
+
+  return navigator.mediaDevices.getUserMedia({
+    audio: {
+      channelCount: 1,
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    },
+  });
+}
+
+function canRequestMicrophone() {
+  return Boolean(
+    navigator.mediaDevices &&
+      typeof navigator.mediaDevices.getUserMedia === "function"
+  );
+}
+
+function setMicrophoneAwareStatus(text) {
+  if (canRequestMicrophone()) {
+    setStatus(text);
+    return;
+  }
+
+  updateMicrophoneHint();
+}
+
+function microphoneUnavailableMessage() {
+  if (!window.isSecureContext) {
+    return "Microphone access is blocked because this page is not HTTPS or localhost. Use http://127.0.0.1:8000 on the host PC, or use HTTPS for another laptop.";
+  }
+
+  return "Microphone access is not available in this browser. Use Chrome or Edge over localhost or HTTPS.";
 }
 
 async function startAudioPipeline(stream) {
@@ -185,13 +234,13 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "hello") {
-    setStatus(payload.message);
+    setMicrophoneAwareStatus(payload.message);
     return;
   }
 
   if (payload.type === "ready") {
     setState("Ready");
-    setStatus("Model is ready. You can start talking.");
+    setMicrophoneAwareStatus("Model is ready. You can start talking.");
     return;
   }
 
@@ -199,11 +248,11 @@ function handleServerEvent(payload) {
     const stateName = payload.state ?? "Working";
     setState(toTitleCase(stateName));
     if (stateName === "warming_up") {
-      setStatus("Loading the local model. The first launch can take a while.");
+      setMicrophoneAwareStatus("Loading the local model. The first launch can take a while.");
     } else if (stateName === "translating") {
       setStatus("Translating the latest utterance.");
     } else if (stateName === "listening") {
-      setStatus("Listening for Korean speech.");
+      setMicrophoneAwareStatus("Listening for Korean speech.");
     }
     return;
   }
