@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About LiveTranslate AI</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="content-shell">
+      <a class="nav-link back-link" href="/">Back to translator</a>
+
+      <section class="about-hero">
+        <div class="block-label">About</div>
+        <h1>Local live speech translation</h1>
+        <p>
+          LiveTranslate AI is a local-network web app for translating speech
+          into English with a GPU-backed Whisper model. The main page stays
+          focused on the two pieces people need during a conversation: source
+          transcript and English translation.
+        </p>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card">
+          <h2>How it works</h2>
+          <ol>
+            <li>The browser records microphone audio after permission is allowed.</li>
+            <li>Audio streams to the local FastAPI server through WebSocket.</li>
+            <li>The server segments speech and runs faster-whisper on the GPU.</li>
+            <li>The page appends source text and English translation in real time.</li>
+          </ol>
+        </article>
+
+        <article class="info-card">
+          <h2>Language support</h2>
+          <p>
+            The toolbar lets each browser session choose a source language such
+            as Korean, Japanese, Chinese, Vietnamese, Spanish, French, or Auto
+            detect. Translation output remains English.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Hardware target</h2>
+          <p>
+            The recommended local server is an NVIDIA GPU PC. RTX 4080 Super can
+            run larger models comfortably, while smaller laptop GPUs can use
+            smaller models or int8 modes for lower latency.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Privacy shape</h2>
+          <p>
+            In the local-network setup, microphone audio goes from the browser
+            to your own host PC. No cloud backend is required for the core
+            translation service.
+          </p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

@@ -6,234 +6,145 @@
     <title>Live Speech to English Translator</title>
     <meta
       name="description"
-      content="GitHub Pages frontend for a live speech-to-English subtitle translator powered by a GPU backend."
+      content="Focused web interface for a live speech-to-English subtitle translator powered by a GPU backend."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="shell">
-      <section class="hero">
-        <div class="eyebrow">GitHub Pages Frontend</div>
-        <h1>Live speech to English, ready to demo.</h1>
-        <p class="lede">
-          Choose a source language, play the compact demo, or connect an HTTPS
-          GPU backend for real microphone translation.
-        </p>
-        <div class="status-row">
-          <span class="pill">GitHub Pages Ready</span>
-          <span class="pill subtle" id="connection-pill">Demo Mode</span>
-          <span class="pill subtle" id="backend-pill">Backend Optional</span>
-          <span class="pill subtle" id="state-pill">Showcase Ready</span>
+    <main class="translator-shell">
+      <header class="topbar">
+        <a class="brand" href="./">
+          <span class="brand-name">LiveTranslate AI</span>
+          <span class="brand-subtitle">Speech to English</span>
+        </a>
+
+        <div class="toolbar">
+          <label class="language-control" for="source-language">
+            <span>Source</span>
+            <select id="source-language" class="select-field">
+              <option value="auto">Auto detect</option>
+              <option value="ko" selected>Korean</option>
+              <option value="ja">Japanese</option>
+              <option value="zh">Chinese</option>
+              <option value="vi">Vietnamese</option>
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="it">Italian</option>
+              <option value="pt">Portuguese</option>
+              <option value="ru">Russian</option>
+              <option value="ar">Arabic</option>
+              <option value="hi">Hindi</option>
+              <option value="th">Thai</option>
+              <option value="id">Indonesian</option>
+              <option value="ms">Malay</option>
+              <option value="tl">Tagalog</option>
+              <option value="tr">Turkish</option>
+              <option value="pl">Polish</option>
+              <option value="nl">Dutch</option>
+              <option value="uk">Ukrainian</option>
+            </select>
+          </label>
+
+          <div class="button-row">
+            <button id="demo-button" class="primary">Play demo</button>
+            <button id="reset-button" class="secondary">Reset</button>
+            <button id="start-button" class="secondary" disabled>Start mic</button>
+            <button id="stop-button" class="secondary" disabled>Stop</button>
+            <button id="clear-transcript-button" class="secondary">Clear</button>
+          </div>
+
+          <div class="status-cluster" aria-label="Translator status">
+            <span class="pill" id="connection-pill">Demo Mode</span>
+            <span class="pill subtle" id="backend-pill">Backend Optional</span>
+            <span class="pill subtle" id="state-pill">Showcase Ready</span>
+          </div>
+
+          <nav class="top-links" aria-label="Project links">
+            <a class="nav-link" href="./about.html">About</a>
+            <a class="nav-link" href="./setup-guide.html">Setup</a>
+          </nav>
         </div>
-        <div class="guide-link-row">
-          <a class="guide-link" href="./setup-guide.html">
-            Read the local server and laptop setup guide
-          </a>
-        </div>
-      </section>
+      </header>
 
-      <section class="page-grid">
-        <div class="main-column">
-          <article class="panel transcript-panel">
-            <div class="transcript-head">
-              <div>
-                <div class="panel-label">Live transcript</div>
-                <div class="panel-title">Source and English text boxes</div>
-              </div>
-              <button id="clear-transcript-button" class="secondary compact-button">
-                Clear text
-              </button>
-            </div>
-
-            <div class="transcript-grid">
-              <article class="transcript-box source-box">
-                <div class="transcript-box-head">
-                  <div>
-                    <div class="block-label" id="source-language-label">Korean</div>
-                    <p>Original speech transcript. The newest line is highlighted.</p>
-                  </div>
-                  <button id="copy-source-button" class="secondary compact-button">
-                    Copy Korean
-                  </button>
-                </div>
-                <div
-                  id="source-transcript"
-                  class="transcript-body"
-                  role="textbox"
-                  aria-label="Source transcript"
-                  tabindex="0"
-                >
-                  <p class="empty-copy">
-                    안녕하세요. 데모를 실행하면 한국어 원문이 여기에 쌓입니다.
-                  </p>
-                </div>
-              </article>
-
-              <article class="transcript-box english-box">
-                <div class="transcript-box-head">
-                  <div>
-                    <div class="block-label">English</div>
-                    <p>English translation, matched line-by-line with the source.</p>
-                  </div>
-                  <button id="copy-english-button" class="secondary compact-button">
-                    Copy English
-                  </button>
-                </div>
-                <div
-                  id="english-transcript"
-                  class="transcript-body"
-                  role="textbox"
-                  aria-label="English translation"
-                  tabindex="0"
-                >
-                  <p class="empty-copy">
-                    Press “Play Demo” to see the English translation here.
-                  </p>
-                </div>
-              </article>
-            </div>
-
-            <div class="meta-row">
-              <span id="latency-text">Latency: demo</span>
-              <span id="audio-text">Audio: demo</span>
-            </div>
-          </article>
-        </div>
-
-        <aside class="side-column">
-          <section class="panel controls">
-            <div>
-              <div class="panel-label">Showcase</div>
-              <div class="panel-title">Controls</div>
-            </div>
-            <label class="language-control stacked" for="source-language">
-              <span>Source language</span>
-              <select id="source-language" class="select-field">
-                <option value="auto">Auto detect</option>
-                <option value="ko" selected>Korean</option>
-                <option value="ja">Japanese</option>
-                <option value="zh">Chinese</option>
-                <option value="vi">Vietnamese</option>
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="it">Italian</option>
-                <option value="pt">Portuguese</option>
-                <option value="ru">Russian</option>
-                <option value="ar">Arabic</option>
-                <option value="hi">Hindi</option>
-                <option value="th">Thai</option>
-                <option value="id">Indonesian</option>
-                <option value="ms">Malay</option>
-                <option value="tl">Tagalog</option>
-                <option value="tr">Turkish</option>
-                <option value="pl">Polish</option>
-                <option value="nl">Dutch</option>
-                <option value="uk">Ukrainian</option>
-              </select>
-            </label>
-            <div class="button-grid">
-              <button id="demo-button" class="primary">Play Demo</button>
-              <button id="reset-button" class="secondary">Reset</button>
-              <button id="start-button" class="secondary" disabled>
-                Start Mic
-              </button>
-              <button id="stop-button" class="secondary" disabled>Stop</button>
-            </div>
-            <p class="helper" id="status-text">
-              Demo mode works on GitHub Pages without any server.
-            </p>
-          </section>
-
-          <section class="panel backend-panel">
-            <div class="panel-label">Backend Bridge</div>
-            <div class="panel-title">Connect a deployed translator</div>
-            <label class="field-label" for="backend-origin">Backend origin</label>
-            <input
-              id="backend-origin"
-              class="text-field"
-              type="text"
-              placeholder="https://your-backend.example.com"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <div class="button-row compact">
-              <button id="connect-button" class="primary">Connect</button>
-              <button id="disconnect-button" class="secondary" disabled>
-                Disconnect
-              </button>
-            </div>
-            <p class="helper">
-              `github.io` can host the frontend only. Real-time microphone
-              translation still needs an `https://` backend with `wss://`
-              websocket support.
-            </p>
-            <p class="helper warning">
-              A page on `https://username.github.io` cannot call plain
-              `http://127.0.0.1:8000` because browsers block mixed content.
-            </p>
-            <div id="endpoint-preview" class="endpoint-preview">
-              Health: /api/health · Socket: /ws
-            </div>
-          </section>
-
-          <section class="panel note-panel">
-            <div class="panel-label">Model Fit</div>
-            <div class="note-grid">
-              <article class="note-card">
-                <h2>`small`</h2>
-                <p>Best when you want the fastest subtitle updates.</p>
-                <span>About 2 GB VRAM in the reference guide</span>
-              </article>
-              <article class="note-card">
-                <h2>`medium`</h2>
-                <p>Better translation quality for an 8 GB laptop GPU.</p>
-                <span>About 5 GB VRAM in the reference guide</span>
-              </article>
-              <article class="note-card">
-                <h2>`turbo`</h2>
-                <p>Fast, but not the right choice for translation to English.</p>
-                <span>OpenAI notes it is not trained for translation</span>
-              </article>
-            </div>
-          </section>
-        </aside>
-      </section>
-
-      <section class="panel architecture-panel">
-        <div class="section-head">
-          <div>
-            <div class="panel-label">Architecture</div>
-            <div class="panel-title">How the full version works</div>
+      <details class="backend-drawer">
+        <summary>Backend connection</summary>
+        <div class="backend-content">
+          <label class="field-label" for="backend-origin">Backend origin</label>
+          <input
+            id="backend-origin"
+            class="text-field"
+            type="text"
+            placeholder="https://your-backend.example.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <div class="button-row compact">
+            <button id="connect-button" class="primary">Connect</button>
+            <button id="disconnect-button" class="secondary" disabled>
+              Disconnect
+            </button>
+          </div>
+          <div id="endpoint-preview" class="endpoint-preview">
+            Health: /api/health · Socket: /ws
           </div>
         </div>
-        <div class="card-grid">
-          <article class="feature-card">
-            <h2>Static web shell</h2>
-            <p>
-              The `docs/` site is what you publish to GitHub Pages. It handles
-              the product story, demo mode, and the future backend connection UI.
+      </details>
+
+      <section class="status-strip" aria-live="polite">
+        <span id="status-text">Demo mode works on GitHub Pages without any server.</span>
+        <span id="latency-text">Latency: demo</span>
+        <span id="audio-text">Audio: demo</span>
+      </section>
+
+      <section class="translation-workspace" aria-label="Live translation">
+        <article class="translation-column source-box">
+          <div class="column-toolbar">
+            <div>
+              <div class="block-label" id="source-language-label">Korean</div>
+              <h1>Source transcript</h1>
+            </div>
+            <button id="copy-source-button" class="secondary compact-button">
+              Copy Korean
+            </button>
+          </div>
+          <div
+            id="source-transcript"
+            class="transcript-body"
+            role="textbox"
+            aria-label="Source transcript"
+            tabindex="0"
+          >
+            <p class="empty-copy">
+              Korean transcript will appear here when you play the demo.
             </p>
-          </article>
-          <article class="feature-card">
-            <h2>FastAPI + WebSocket</h2>
-            <p>
-              The real app streams microphone audio to a Python backend, which
-              segments speech and returns subtitle updates in near real time.
-            </p>
-          </article>
-          <article class="feature-card">
-            <h2>GPU translation</h2>
-            <p>
-              `faster-whisper` runs multilingual Whisper translation on the GPU,
-              making `small` and `medium` practical options for laptop hardware.
-            </p>
-          </article>
-        </div>
+          </div>
+        </article>
+
+        <article class="translation-column english-box">
+          <div class="column-toolbar">
+            <div>
+              <div class="block-label">English</div>
+              <h1>Translation</h1>
+            </div>
+            <button id="copy-english-button" class="secondary compact-button">
+              Copy English
+            </button>
+          </div>
+          <div
+            id="english-transcript"
+            class="transcript-body"
+            role="textbox"
+            aria-label="English translation"
+            tabindex="0"
+          >
+            <p class="empty-copy">Press “Play demo” to see English here.</p>
+          </div>
+        </article>
       </section>
     </main>
 
     <script src="./app.js"></script>
   </body>
-  </html>
+</html>

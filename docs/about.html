@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About LiveTranslate AI</title>
+    <meta
+      name="description"
+      content="About the local live speech-to-English translator and GPU backend setup."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="content-shell">
+      <a class="nav-link back-link" href="./">Back to translator</a>
+
+      <section class="about-hero">
+        <div class="block-label">About</div>
+        <h1>Local live speech translation</h1>
+        <p>
+          LiveTranslate AI is a focused web interface for translating speech
+          into English with a self-hosted GPU backend. The main page avoids long
+          product text so users can concentrate on the live transcript and
+          translation panes.
+        </p>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card">
+          <h2>Two ways to use it</h2>
+          <ul>
+            <li>GitHub Pages demo: runs a simulated translation showcase in the browser.</li>
+            <li>Local GPU backend: streams microphone audio to your Windows PC over HTTPS/WSS.</li>
+          </ul>
+        </article>
+
+        <article class="info-card">
+          <h2>Translation flow</h2>
+          <ol>
+            <li>Select the source language in the top toolbar.</li>
+            <li>Allow microphone access from the browser.</li>
+            <li>Read source speech on the left and English on the right.</li>
+            <li>Use the copy buttons to save either transcript.</li>
+          </ol>
+        </article>
+
+        <article class="info-card">
+          <h2>Model notes</h2>
+          <p>
+            The backend uses faster-whisper with multilingual Whisper models.
+            `medium` is a good quality target for stronger GPUs, while `small`
+            is useful when latency matters more.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Setup guide</h2>
+          <p>
+            For the RTX 4080 Super host PC and laptop browser setup, use the
+            detailed setup guide.
+          </p>
+          <p>
+            <a class="nav-link" href="./setup-guide.html">Open setup guide</a>
+          </p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
