@@ -485,6 +485,7 @@
             <a href="#terminology">Terminology</a>
             <a href="#models">Model settings</a>
             <a href="#a1000-laptop">A1000 laptop path</a>
+            <a href="#rtx4080-lan">RTX 4080 Super LAN guide</a>
             <a href="#lan-server">LAN GPU server setup</a>
             <a href="#local-laptop">Local laptop setup</a>
             <a href="#audio">Meeting audio capture</a>
@@ -521,9 +522,9 @@
                   <span class="badge">Best quality</span>
                 </div>
                 <p>
-                  The RTX 5090 PC runs FastAPI and the AI model. Laptops,
-                  phones, or tablets open the web app from the local network and
-                  stream microphone audio to the server.
+                  The RTX 4080 Super or RTX 5090 PC runs FastAPI and the AI
+                  model. Laptops, phones, or tablets open the web app from the
+                  local network and stream microphone audio to the server.
                 </p>
                 <div class="callout">
                   Use this when you want the best Korean recognition and more
@@ -604,6 +605,12 @@
                     <td>x86-64 CPU with SSE 4.1 or ARM64, 8 GB RAM, <code>base</code> with CPU <code>int8</code>.</td>
                     <td>8+ CPU threads, 16 GB RAM, <code>base</code> or <code>small</code>; expect slower subtitle updates.</td>
                     <td>CTranslate2 lists x86-64 SSE 4.1 and ARM64 CPU support; faster-whisper can run CPU <code>int8</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>RTX 4080 Super LAN server</td>
+                    <td>16 GB VRAM GPU, 16 GB system RAM, NVIDIA driver, Python, LAN access, and HTTPS for laptop microphone clients.</td>
+                    <td>32 GB system RAM, Ethernet, <code>large-v3</code>, CUDA <code>float16</code>, Caddy HTTPS reverse proxy.</td>
+                    <td>NVIDIA lists RTX 4080 Super with 16 GB GDDR6X; OpenAI lists large-class Whisper at about 10 GB VRAM.</td>
                   </tr>
                   <tr>
                     <td>RTX 5090 LAN server</td>
@@ -895,6 +902,12 @@
                     <td>Lower quality and slower, useful when CUDA is unavailable</td>
                   </tr>
                   <tr>
+                    <td>RTX 4080 Super LAN server</td>
+                    <td><code>large-v3</code></td>
+                    <td><code>faster-whisper</code></td>
+                    <td><code>cuda</code>, <code>float16</code>, <code>beam_size=1-3</code>, HTTPS endpoint for laptop clients</td>
+                  </tr>
+                  <tr>
                     <td>RTX 5090 LAN server</td>
                     <td><code>large-v3</code></td>
                     <td><code>faster-whisper</code></td>
@@ -1020,6 +1033,180 @@ python main.py</code></pre>
               use a faster-whisper-compatible Windows runtime package. For older
               CUDA/cuDNN combinations, the faster-whisper README documents
               CTranslate2 downgrade pins.
+            </div>
+          </section>
+
+          <section class="section" id="rtx4080-lan">
+            <div class="section-head">
+              <div class="label">RTX 4080 Super LAN guide</div>
+              <h2>Server PC opens the website, laptop uses its microphone</h2>
+              <p>
+                This is the exact home-network setup: the RTX 4080 Super PC runs
+                the model and hosts the web app, while another laptop opens the
+                site, grants microphone permission, and streams Korean speech to
+                the server for English subtitles.
+              </p>
+            </div>
+
+            <div class="diagram" aria-label="RTX 4080 Super LAN flow">
+              <div class="label">Local network flow</div>
+              <div class="flow">
+                <div class="flow-node">Laptop microphone</div>
+                <div class="flow-node">HTTPS page on LAN</div>
+                <div class="flow-node">WebSocket audio stream</div>
+                <div class="flow-node">RTX 4080 Super server</div>
+                <div class="flow-node">English subtitles</div>
+              </div>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Prepare the RTX 4080 Super server</h3>
+                  <p>
+                    Install the NVIDIA driver, Python, Git, FFmpeg, CUDA 12
+                    runtime, and cuDNN 9. The RTX 4080 Super has enough VRAM for
+                    <code>large-v3</code>, but keep other GPU-heavy apps closed
+                    during live translation.
+                  </p>
+                  <pre><code>nvidia-smi
+python --version
+git --version
+ffmpeg -version</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Install and test the translator backend</h3>
+                  <p>
+                    Run the Python backend on the server first. This command
+                    binds FastAPI to every network interface, so other computers
+                    can reach it after the firewall allows the port.
+                  </p>
+                  <pre><code>git clone https://github.com/buicongnguyen/ko-en-live-translator.git
+cd ko-en-live-translator
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+$env:APP_HOST="0.0.0.0"
+$env:APP_PORT="8000"
+$env:WHISPER_MODEL="large-v3"
+$env:WHISPER_DEVICE="cuda"
+$env:WHISPER_COMPUTE_TYPE="float16"
+$env:WHISPER_BEAM_SIZE="1"
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Find the server LAN address and open the firewall</h3>
+                  <p>
+                    Give the server a stable address in the router, or note its
+                    current IPv4 address. Allow TCP port <code>8000</code> for
+                    the backend and <code>443</code> or <code>8443</code> for
+                    HTTPS.
+                  </p>
+                  <pre><code>ipconfig
+netsh advfirewall firewall add rule name="KO Translator Backend 8000" dir=in action=allow protocol=TCP localport=8000
+netsh advfirewall firewall add rule name="KO Translator HTTPS 8443" dir=in action=allow protocol=TCP localport=8443</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Add HTTPS for the laptop microphone</h3>
+                  <p>
+                    A laptop opening <code>http://192.168.x.x:8000</code> is not
+                    the same as localhost, so browser microphone access may be
+                    blocked. Use HTTPS with a LAN hostname such as
+                    <code>translate.local</code> and reverse proxy to the
+                    FastAPI backend.
+                  </p>
+                  <pre><code># Example Caddyfile on the server
+translate.local:8443 {
+  tls internal
+  reverse_proxy 127.0.0.1:8000
+}</code></pre>
+                  <div class="callout">
+                    With <code>tls internal</code>, install or trust Caddy's
+                    local root certificate on the client laptop. Otherwise the
+                    browser will still treat the page as unsafe for microphone
+                    capture.
+                  </div>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">05</div>
+                <div class="step-body">
+                  <h3>Make the laptop resolve the server hostname</h3>
+                  <p>
+                    Use your router's local DNS if it supports custom hostnames.
+                    For a quick Windows test, add a hosts-file entry on the
+                    client laptop that points <code>translate.local</code> to the
+                    server IP.
+                  </p>
+                  <pre><code># Run PowerShell as Administrator on the client laptop
+Add-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value "192.168.1.50 translate.local"
+ping translate.local</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">06</div>
+                <div class="step-body">
+                  <h3>Open the website from the other laptop</h3>
+                  <p>
+                    On the client laptop, open the HTTPS address, allow
+                    microphone permission, and speak Korean near that laptop.
+                    The audio should stream to the RTX 4080 Super server and the
+                    browser should receive English subtitle lines.
+                  </p>
+                  <pre><code>https://translate.local:8443
+https://translate.local:8443/api/health</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">07</div>
+                <div class="step-body">
+                  <h3>Tune the server for latency or quality</h3>
+                  <p>
+                    Start with <code>beam_size=1</code>. If subtitles are fast
+                    but translation is rough, try <code>beam_size=3</code>. If
+                    the server is shared with other GPU work, step down to
+                    <code>medium</code>.
+                  </p>
+                  <pre><code># Faster
+$env:WHISPER_MODEL="large-v3"
+$env:WHISPER_COMPUTE_TYPE="float16"
+$env:WHISPER_BEAM_SIZE="1"
+
+# More careful decoding
+$env:WHISPER_MODEL="large-v3"
+$env:WHISPER_COMPUTE_TYPE="float16"
+$env:WHISPER_BEAM_SIZE="3"
+
+# Lighter fallback
+$env:WHISPER_MODEL="medium"
+$env:WHISPER_COMPUTE_TYPE="int8_float16"
+$env:WHISPER_BEAM_SIZE="1"</code></pre>
+                </div>
+              </article>
+            </div>
+
+            <div class="callout important">
+              If the health URL works but microphone permission does not appear,
+              the client browser is probably not treating the page as a trusted
+              secure context. Fix HTTPS certificate trust first; changing the AI
+              model will not solve that browser security issue.
             </div>
           </section>
 
@@ -1281,6 +1468,10 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
               <article class="source-card">
                 <h3>NVIDIA RTX A1000</h3>
                 <p><a href="https://marketplace.nvidia.com/en-us/enterprise/laptops-workstations/nvidia-rtx-a1000/" target="_blank" rel="noreferrer">A1000 memory reference and workstation GPU context</a></p>
+              </article>
+              <article class="source-card">
+                <h3>NVIDIA RTX 4080 Super</h3>
+                <p><a href="https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4080-family/" target="_blank" rel="noreferrer">Official RTX 4080 Super and RTX 4080 family page</a></p>
               </article>
               <article class="source-card">
                 <h3>NVIDIA RTX 5090</h3>
