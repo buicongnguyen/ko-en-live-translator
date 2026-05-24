@@ -1,6 +1,6 @@
 # Live Korean-to-English Translator
 
-This project is a local web app for near-real-time Korean-to-English speech translation on a GPU-equipped PC or laptop.
+This project is a local web app for near-real-time Korean-to-English speech translation on a GPU-equipped PC or laptop. The live UI is arranged like a meeting subtitle feed: each detected sentence shows Korean transcription first, then English translation directly underneath.
 
 ## GitHub Pages frontend
 
@@ -27,7 +27,7 @@ For that reason, this app defaults to `medium` for better translation quality, w
 2. Audio is downsampled to 16 kHz mono PCM and streamed to the backend over WebSocket.
 3. A VAD segmenter groups speech into utterances.
 4. Each utterance is translated from Korean speech into English with `faster-whisper`.
-5. The browser renders the translated English text as a live subtitle feed.
+5. The browser renders one sentence block at a time: Korean transcript on top, English translation below.
 
 ## Quick start
 
@@ -84,4 +84,4 @@ python main.py
 
 - The first launch may take a while because the model weights need to be downloaded.
 - If your GPU runtime cannot load the selected compute mode, the app will automatically fall back to a safer mode.
-- `SHOW_SOURCE_TEXT=true` runs an extra transcription pass to display Korean text, so it increases latency.
+- `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show Korean above English. Set it to `false` only when you need the lowest possible latency.

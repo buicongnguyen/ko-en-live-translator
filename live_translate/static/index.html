@@ -12,8 +12,9 @@
         <div class="eyebrow">Local GPU Speech Translation</div>
         <h1>Live Korean to English</h1>
         <p class="lede">
-          Speak Korean into your microphone and get near-real-time English
-          subtitles from a local Whisper pipeline.
+          Open this page from the host PC, allow microphone access, then speak
+          Korean. Each detected sentence appears as a Korean transcript with an
+          English translation directly underneath.
         </p>
         <div class="status-row">
           <span class="pill" id="connection-pill">Connecting</span>
@@ -36,22 +37,29 @@
         </p>
       </section>
 
-      <section class="subtitle-stack">
-        <article class="panel spotlight">
-          <div class="panel-label">Latest English</div>
-          <div id="latest-english" class="subtitle-text">
-            English translation will appear here.
+      <section class="panel transcript-panel">
+        <div class="history-head">
+          <div>
+            <div class="panel-label">Live sentence</div>
+            <div class="panel-title">Korean transcript + English translation</div>
+          </div>
+        </div>
+        <article class="sentence-card current-sentence">
+          <div class="sentence-block korean-block" id="source-panel">
+            <div class="block-label">Korean</div>
+            <div id="latest-source" class="source-text">
+              Microphone transcript will appear here after you start listening.
+            </div>
+          </div>
+          <div class="sentence-block english-block">
+            <div class="block-label">English</div>
+            <div id="latest-english" class="subtitle-text">
+              English translation will appear under the Korean sentence.
+            </div>
           </div>
           <div class="meta-row">
             <span id="latency-text">Latency: -</span>
             <span id="audio-text">Audio: -</span>
-          </div>
-        </article>
-
-        <article class="panel source-panel" id="source-panel" hidden>
-          <div class="panel-label">Source Korean</div>
-          <div id="latest-source" class="source-text">
-            Korean transcript is disabled.
           </div>
         </article>
       </section>
@@ -59,8 +67,8 @@
       <section class="panel history-panel">
         <div class="history-head">
           <div>
-            <div class="panel-label">Recent Lines</div>
-            <div class="panel-title">Translation Feed</div>
+            <div class="panel-label">Sentence blocks</div>
+            <div class="panel-title">Conversation Feed</div>
           </div>
         </div>
         <div id="history" class="history-list"></div>

@@ -6,7 +6,7 @@ const state = {
   processorNode: null,
   mutedNode: null,
   isCapturing: false,
-  showSourceText: false,
+  showSourceText: true,
 };
 
 const ui = {
@@ -77,20 +77,31 @@ async function startCapture() {
     return;
   }
 
-  if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
-    connectSocket();
-    await waitForSocket();
+  try {
+    if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+      connectSocket();
+      await waitForSocket();
+    }
+
+    setStatus("Waiting for browser microphone permission.");
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
+
+    await startAudioPipeline(stream);
+  } catch (error) {
+    setState("Mic Blocked");
+    setStatus(`Microphone could not start: ${error.message}`);
   }
+}
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      channelCount: 1,
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-  });
-
+async function startAudioPipeline(stream) {
   const audioContext = new AudioContext();
   const sourceNode = audioContext.createMediaStreamSource(stream);
   const processorNode = audioContext.createScriptProcessor(2048, 1, 1);
@@ -201,8 +212,11 @@ function handleServerEvent(payload) {
     ui.latestEnglish.textContent = payload.english_text;
     ui.latencyText.textContent = `Latency: ${payload.latency_seconds}s`;
     ui.audioText.textContent = `Audio: ${payload.audio_seconds}s`;
-    if (state.showSourceText && payload.source_text) {
+    if (payload.source_text) {
       ui.latestSource.textContent = payload.source_text;
+    } else {
+      ui.latestSource.textContent =
+        "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true on the host PC.";
     }
     prependHistory(payload);
     return;
@@ -216,19 +230,37 @@ function handleServerEvent(payload) {
 
 function prependHistory(payload) {
   const item = document.createElement("article");
-  item.className = "history-item";
+  item.className = "sentence-card history-item";
+
+  const sourceBlock = document.createElement("div");
+  sourceBlock.className = "sentence-block korean-block";
+  item.appendChild(sourceBlock);
+
+  const sourceLabel = document.createElement("div");
+  sourceLabel.className = "block-label";
+  sourceLabel.textContent = "Korean";
+  sourceBlock.appendChild(sourceLabel);
+
+  const source = document.createElement("div");
+  source.className = "history-source";
+  source.textContent =
+    payload.source_text ??
+    "Korean transcript unavailable. Enable SHOW_SOURCE_TEXT=true on the host PC.";
+  sourceBlock.appendChild(source);
+
+  const englishBlock = document.createElement("div");
+  englishBlock.className = "sentence-block english-block";
+  item.appendChild(englishBlock);
+
+  const englishLabel = document.createElement("div");
+  englishLabel.className = "block-label";
+  englishLabel.textContent = "English";
+  englishBlock.appendChild(englishLabel);
 
   const english = document.createElement("div");
   english.className = "history-english";
   english.textContent = payload.english_text;
-  item.appendChild(english);
-
-  if (state.showSourceText && payload.source_text) {
-    const source = document.createElement("div");
-    source.className = "history-source";
-    source.textContent = payload.source_text;
-    item.appendChild(source);
-  }
+  englishBlock.appendChild(english);
 
   const meta = document.createElement("div");
   meta.className = "history-meta";
@@ -250,7 +282,10 @@ function applyRuntime(runtime) {
   const computeType = runtime.compute_type ?? "auto";
   ui.modelPill.textContent = `Model: ${runtime.model} · ${device} · ${computeType}`;
   state.showSourceText = Boolean(runtime.show_source_text);
-  ui.sourcePanel.hidden = !state.showSourceText;
+  if (!state.showSourceText) {
+    ui.latestSource.textContent =
+      "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
+  }
 }
 
 function setConnection(text) {

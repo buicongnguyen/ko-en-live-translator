@@ -23,7 +23,7 @@ class Settings:
     compute_type: str = os.getenv("WHISPER_COMPUTE_TYPE", "auto")
     beam_size: int = int(os.getenv("WHISPER_BEAM_SIZE", "3"))
     cpu_threads: int = int(os.getenv("WHISPER_CPU_THREADS", "4"))
-    show_source_text: bool = _env_bool("SHOW_SOURCE_TEXT", False)
+    show_source_text: bool = _env_bool("SHOW_SOURCE_TEXT", True)
     sample_rate: int = 16000
     frame_ms: int = 30
     pre_roll_ms: int = int(os.getenv("PRE_ROLL_MS", "300"))

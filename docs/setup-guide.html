@@ -1064,14 +1064,17 @@ python -c "import ctranslate2; print(ctranslate2.get_cuda_device_count())"</code
                 <div class="step-body">
                   <h3>Start with the safe A1000 preset</h3>
                   <p>
-                    This keeps latency reasonable and avoids extra memory from a
-                    second Korean transcription pass.
+                    This keeps latency reasonable while still showing the
+                    Korean transcript above the English translation. If the
+                    laptop is too slow, temporarily set
+                    <code>SHOW_SOURCE_TEXT=false</code> to skip the extra
+                    Korean transcription pass.
                   </p>
                   <pre><code>$env:WHISPER_MODEL="small"
 $env:WHISPER_DEVICE="cuda"
 $env:WHISPER_COMPUTE_TYPE="int8_float16"
 $env:WHISPER_BEAM_SIZE="1"
-$env:SHOW_SOURCE_TEXT="false"
+$env:SHOW_SOURCE_TEXT="true"
 python main.py</code></pre>
                 </div>
               </article>
@@ -1276,16 +1279,19 @@ https://translate.local:8443/api/health</code></pre>
 $env:WHISPER_MODEL="large-v3"
 $env:WHISPER_COMPUTE_TYPE="float16"
 $env:WHISPER_BEAM_SIZE="1"
+$env:SHOW_SOURCE_TEXT="true"
 
 # More careful decoding
 $env:WHISPER_MODEL="large-v3"
 $env:WHISPER_COMPUTE_TYPE="float16"
 $env:WHISPER_BEAM_SIZE="3"
+$env:SHOW_SOURCE_TEXT="true"
 
 # Lighter fallback
 $env:WHISPER_MODEL="medium"
 $env:WHISPER_COMPUTE_TYPE="int8_float16"
-$env:WHISPER_BEAM_SIZE="1"</code></pre>
+$env:WHISPER_BEAM_SIZE="1"
+$env:SHOW_SOURCE_TEXT="true"</code></pre>
                 </div>
               </article>
             </div>

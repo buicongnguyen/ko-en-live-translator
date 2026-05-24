@@ -146,6 +146,7 @@ h1 {
   backdrop-filter: blur(14px);
 }
 
+.transcript-panel,
 .spotlight,
 .source-panel,
 .history-panel,
@@ -161,8 +162,49 @@ h1 {
     linear-gradient(180deg, rgba(255, 250, 240, 0.95), rgba(246, 241, 231, 0.95));
 }
 
+.transcript-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.sentence-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.current-sentence {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 240, 0.95), rgba(246, 241, 231, 0.95));
+}
+
+.sentence-block {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.korean-block {
+  background: rgba(15, 109, 102, 0.08);
+}
+
+.english-block {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.block-label {
+  margin-bottom: 8px;
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
 .subtitle-text {
-  margin-top: 14px;
   font-size: clamp(1.55rem, 3vw, 2.8rem);
   line-height: 1.16;
   font-weight: 800;
@@ -170,10 +212,10 @@ h1 {
 }
 
 .source-text {
-  margin-top: 14px;
-  font-size: 1.04rem;
-  line-height: 1.75;
-  color: var(--muted);
+  font-size: clamp(1.18rem, 2vw, 1.9rem);
+  line-height: 1.45;
+  color: var(--text);
+  font-weight: 760;
 }
 
 .meta-row {
@@ -284,13 +326,6 @@ button:disabled {
   gap: 14px;
 }
 
-.history-item {
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.58);
-  border: 1px solid var(--line);
-}
-
 .history-english {
   font-size: 1rem;
   line-height: 1.55;
@@ -298,14 +333,14 @@ button:disabled {
 }
 
 .history-source {
-  margin-top: 8px;
-  font-size: 0.95rem;
+  font-size: 1.04rem;
   line-height: 1.55;
-  color: var(--muted);
+  color: var(--text);
+  font-weight: 760;
 }
 
 .history-meta {
-  margin-top: 10px;
+  margin-top: 2px;
   font-size: 0.82rem;
   display: flex;
   gap: 12px;
@@ -368,6 +403,7 @@ button:disabled {
     padding-top: 24px;
   }
 
+  .transcript-panel,
   .spotlight,
   .source-panel,
   .history-panel,

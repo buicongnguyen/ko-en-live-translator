@@ -134,9 +134,9 @@ function resetShowcase() {
   }
   clearHistory();
   ui.latestEnglish.textContent =
-    "Press “Play Demo” to simulate the live subtitle experience.";
+    "Press “Play Demo” to see the English translation underneath.";
   ui.latestSource.textContent =
-    "안녕하세요. 데모를 실행하면 한국어 원문과 영어 자막이 함께 보입니다.";
+    "안녕하세요. 데모를 실행하면 한국어 원문이 먼저 보입니다.";
   ui.latencyText.textContent = "Latency: demo";
   ui.audioText.textContent = "Audio: demo";
   setStatus(
@@ -224,50 +224,58 @@ async function startCapture() {
     return;
   }
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      channelCount: 1,
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-  });
+  try {
+    setStatus("Waiting for browser microphone permission.");
 
-  const audioContext = new AudioContext();
-  const sourceNode = audioContext.createMediaStreamSource(stream);
-  const processorNode = audioContext.createScriptProcessor(2048, 1, 1);
-  const mutedNode = audioContext.createGain();
-  mutedNode.gain.value = 0;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
 
-  processorNode.onaudioprocess = (event) => {
-    const output = event.outputBuffer.getChannelData(0);
-    output.fill(0);
+    const audioContext = new AudioContext();
+    const sourceNode = audioContext.createMediaStreamSource(stream);
+    const processorNode = audioContext.createScriptProcessor(2048, 1, 1);
+    const mutedNode = audioContext.createGain();
+    mutedNode.gain.value = 0;
 
-    if (!state.isCapturing || !state.socket || state.socket.readyState !== WebSocket.OPEN) {
-      return;
-    }
+    processorNode.onaudioprocess = (event) => {
+      const output = event.outputBuffer.getChannelData(0);
+      output.fill(0);
 
-    const channelData = event.inputBuffer.getChannelData(0);
-    const pcm16 = downsampleTo16BitPcm(channelData, audioContext.sampleRate, 16000);
-    if (pcm16.length > 0) {
-      state.socket.send(pcm16.buffer);
-    }
-  };
+      if (!state.isCapturing || !state.socket || state.socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
 
-  sourceNode.connect(processorNode);
-  processorNode.connect(mutedNode);
-  mutedNode.connect(audioContext.destination);
+      const channelData = event.inputBuffer.getChannelData(0);
+      const pcm16 = downsampleTo16BitPcm(channelData, audioContext.sampleRate, 16000);
+      if (pcm16.length > 0) {
+        state.socket.send(pcm16.buffer);
+      }
+    };
 
-  state.audioContext = audioContext;
-  state.mediaStream = stream;
-  state.sourceNode = sourceNode;
-  state.processorNode = processorNode;
-  state.mutedNode = mutedNode;
-  state.isCapturing = true;
+    sourceNode.connect(processorNode);
+    processorNode.connect(mutedNode);
+    mutedNode.connect(audioContext.destination);
 
-  setState("Listening");
-  setStatus("Listening for Korean speech through the connected backend.");
-  refreshControls();
+    state.audioContext = audioContext;
+    state.mediaStream = stream;
+    state.sourceNode = sourceNode;
+    state.processorNode = processorNode;
+    state.mutedNode = mutedNode;
+    state.isCapturing = true;
+
+    setState("Listening");
+    setStatus("Listening for Korean speech through the connected backend.");
+  } catch (error) {
+    setState("Mic Blocked");
+    setStatus(`Microphone could not start: ${error.message}`);
+  } finally {
+    refreshControls();
+  }
 }
 
 async function stopCapture() {
@@ -427,7 +435,11 @@ function handleServerEvent(payload) {
 function applyRuntime(runtime) {
   state.runtime = runtime;
   state.showSourceText = Boolean(runtime.show_source_text);
-  ui.sourcePanel.hidden = !state.showSourceText;
+  ui.sourcePanel.hidden = false;
+  if (!state.showSourceText) {
+    ui.latestSource.textContent =
+      "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true on the host PC.";
+  }
   setBackendStatus(backendLabel());
 }
 
@@ -439,7 +451,8 @@ function publishTranslation(payload) {
   if (payload.source_text) {
     ui.latestSource.textContent = payload.source_text;
   } else if (!state.showSourceText) {
-    ui.latestSource.textContent = "Source transcript is disabled on this backend.";
+    ui.latestSource.textContent =
+      "Korean transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true on the host PC.";
   }
 
   prependHistory(payload);
@@ -447,19 +460,37 @@ function publishTranslation(payload) {
 
 function prependHistory(payload) {
   const item = document.createElement("article");
-  item.className = "history-item";
+  item.className = "sentence-card history-item";
+
+  const sourceBlock = document.createElement("div");
+  sourceBlock.className = "sentence-block korean-block";
+  item.appendChild(sourceBlock);
+
+  const sourceLabel = document.createElement("div");
+  sourceLabel.className = "block-label";
+  sourceLabel.textContent = "Korean";
+  sourceBlock.appendChild(sourceLabel);
+
+  const source = document.createElement("div");
+  source.className = "history-source";
+  source.textContent =
+    payload.source_text ??
+    "Korean transcript unavailable. Enable SHOW_SOURCE_TEXT=true on the host PC.";
+  sourceBlock.appendChild(source);
+
+  const englishBlock = document.createElement("div");
+  englishBlock.className = "sentence-block english-block";
+  item.appendChild(englishBlock);
+
+  const englishLabel = document.createElement("div");
+  englishLabel.className = "block-label";
+  englishLabel.textContent = "English";
+  englishBlock.appendChild(englishLabel);
 
   const english = document.createElement("div");
   english.className = "history-english";
   english.textContent = payload.english_text;
-  item.appendChild(english);
-
-  if (payload.source_text) {
-    const source = document.createElement("div");
-    source.className = "history-source";
-    source.textContent = payload.source_text;
-    item.appendChild(source);
-  }
+  englishBlock.appendChild(english);
 
   const meta = document.createElement("div");
   meta.className = "history-meta";

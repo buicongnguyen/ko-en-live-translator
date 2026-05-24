@@ -35,29 +35,34 @@
 
       <section class="page-grid">
         <div class="main-column">
-          <article class="panel spotlight">
-            <div class="panel-label">Latest English</div>
-            <div id="latest-english" class="subtitle-text">
-              Press “Play Demo” to simulate the live subtitle experience.
-            </div>
-            <div class="meta-row">
-              <span id="latency-text">Latency: demo</span>
-              <span id="audio-text">Audio: demo</span>
-            </div>
-          </article>
-
-          <article class="panel source-panel" id="source-panel">
-            <div class="panel-label">Source Korean</div>
-            <div id="latest-source" class="source-text">
-              안녕하세요. 데모를 실행하면 한국어 원문과 영어 자막이 함께 보입니다.
+          <article class="panel transcript-panel">
+            <div class="panel-label">Live sentence</div>
+            <div class="panel-title">Korean transcript + English translation</div>
+            <div class="sentence-card current-sentence">
+              <div class="sentence-block korean-block" id="source-panel">
+                <div class="block-label">Korean</div>
+                <div id="latest-source" class="source-text">
+                  안녕하세요. 데모를 실행하면 한국어 원문이 먼저 보입니다.
+                </div>
+              </div>
+              <div class="sentence-block english-block">
+                <div class="block-label">English</div>
+                <div id="latest-english" class="subtitle-text">
+                  Press “Play Demo” to see the English translation underneath.
+                </div>
+              </div>
+              <div class="meta-row">
+                <span id="latency-text">Latency: demo</span>
+                <span id="audio-text">Audio: demo</span>
+              </div>
             </div>
           </article>
 
           <section class="panel history-panel">
             <div class="history-head">
               <div>
-                <div class="panel-label">Recent Lines</div>
-                <div class="panel-title">Translation Feed</div>
+                <div class="panel-label">Sentence blocks</div>
+                <div class="panel-title">Conversation Feed</div>
               </div>
             </div>
             <div id="history" class="history-list"></div>
