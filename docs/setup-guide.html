@@ -479,6 +479,8 @@
         <aside class="sidebar">
           <section class="panel toc" aria-label="Contents">
             <div class="label">Contents</div>
+            <a href="#definitions-first">Definitions first</a>
+            <a href="#deployment-process">Deployment process</a>
             <a href="#choose">Choose the app shape</a>
             <a href="#minimum-requirements">Minimum requirements</a>
             <a href="#install-resources">Install resources</a>
@@ -497,15 +499,184 @@
           <section class="panel">
             <div class="label">Best first target</div>
             <p class="fineprint">
-              Build the local laptop browser app first. Install Python, Git,
-              FFmpeg, NVIDIA driver, then test <code>small</code> with
-              <code>int8_float16</code>. After that, reuse the same web UI
-              against the stronger RTX server.
+              Build the local PC browser app first, then move the backend to the
+              RTX server and open the HTTPS page from a laptop or smartphone.
+              The phone is only the microphone/browser client; the PC GPU runs
+              the AI model.
             </p>
           </section>
         </aside>
 
         <div class="stack">
+          <section class="section" id="definitions-first">
+            <div class="section-head">
+              <div class="label">Definitions first</div>
+              <h2>The pieces in plain words</h2>
+              <p>
+                Read these terms first. Most setup problems become easier once
+                you know which part is the AI server, which part is the browser
+                client, and why HTTPS matters for a phone microphone.
+              </p>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Term</th>
+                    <th>Meaning</th>
+                    <th>Example in this project</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Host PC / AI server</td>
+                    <td>The Windows PC that runs Python, FastAPI, and the Whisper model on the GPU.</td>
+                    <td>Your RTX 4080 Super PC at <code>192.168.0.20</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Client device</td>
+                    <td>The browser device that opens the website and sends microphone audio.</td>
+                    <td>A smartphone, laptop, tablet, or the host PC browser.</td>
+                  </tr>
+                  <tr>
+                    <td>Backend</td>
+                    <td>The Python service that receives audio and returns transcript/translation events.</td>
+                    <td><code>http://127.0.0.1:8000/api/health</code> and <code>/ws</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Frontend / web app</td>
+                    <td>The HTML, CSS, and JavaScript page the user sees.</td>
+                    <td>The page with source text, English translation, and <code>Start mic</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>LAN</td>
+                    <td>Your local Wi-Fi/router network.</td>
+                    <td>Phone and PC must be on the same Wi-Fi unless you use a public HTTPS host.</td>
+                  </tr>
+                  <tr>
+                    <td>HTTPS / WSS</td>
+                    <td>Secure web page and secure WebSocket.</td>
+                    <td>Required for smartphone or second-laptop microphone access.</td>
+                  </tr>
+                  <tr>
+                    <td>Caddy / reverse proxy</td>
+                    <td>A small HTTPS server that forwards browser traffic to FastAPI.</td>
+                    <td><code>https://192.168.0.20:8443</code> forwards to <code>http://127.0.0.1:8000</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Whisper model</td>
+                    <td>The local speech model that transcribes Korean and translates to English.</td>
+                    <td><code>medium</code> for laptop tests, <code>large-v3</code> for the RTX server.</td>
+                  </tr>
+                  <tr>
+                    <td>VAD</td>
+                    <td>Voice activity detection. It decides when a speech sentence starts and ends.</td>
+                    <td>Prevents silence from becoming fake translation text.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section" id="deployment-process">
+            <div class="section-head">
+              <div class="label">Deploy process</div>
+              <h2>Recommended order to deploy and test</h2>
+              <p>
+                Use this order when you want the RTX PC to host the website and
+                a smartphone or another laptop to use its microphone.
+              </p>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Run locally on the host PC first</h3>
+                  <p>
+                    Start the backend and open <code>http://127.0.0.1:8000</code>
+                    on the same PC. This confirms Python, CUDA, the model, and
+                    microphone capture work before adding network complexity.
+                  </p>
+                  <pre><code>python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Bind the backend to the LAN</h3>
+                  <p>
+                    Restart FastAPI on <code>0.0.0.0</code> so other devices can
+                    reach it, then test the health URL from the host PC and from
+                    another device.
+                  </p>
+                  <pre><code>$env:APP_HOST="0.0.0.0"
+$env:APP_PORT="8000"
+$env:WHISPER_MODEL="large-v3"
+$env:WHISPER_DEVICE="cuda"
+$env:WHISPER_COMPUTE_TYPE="float16"
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Open firewall ports</h3>
+                  <p>
+                    Allow TCP <code>8000</code> for direct health checks and TCP
+                    <code>8443</code> for the HTTPS website. Run this from an
+                    Administrator PowerShell window on the host PC.
+                  </p>
+                  <pre><code>New-NetFirewallRule -DisplayName "Live Translator 8000" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8000 -Profile Private
+New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8443 -Profile Private</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Add HTTPS for phone and laptop microphones</h3>
+                  <p>
+                    Browsers usually block microphone access on plain LAN HTTP.
+                    Use Caddy or another reverse proxy so the client opens
+                    <code>https://192.168.0.20:8443</code> while FastAPI stays on
+                    <code>http://127.0.0.1:8000</code>.
+                  </p>
+                  <pre><code>https://192.168.0.20:8443 {
+  tls ./translate-local.pem ./translate-local-key.pem
+  reverse_proxy 127.0.0.1:8000
+}</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">05</div>
+                <div class="step-body">
+                  <h3>Open from the smartphone</h3>
+                  <p>
+                    Put the phone on the same Wi-Fi, open
+                    <code>https://192.168.0.20:8443</code>, accept or trust the
+                    certificate, press <code>Start mic</code>, and allow
+                    microphone permission. The phone sends audio; the RTX PC
+                    returns Korean transcript and English translation.
+                  </p>
+                </div>
+              </article>
+            </div>
+
+            <div class="callout important">
+              GitHub Pages can show the guide and demo UI, but it cannot run the
+              Python GPU backend. For real live translation, keep the backend on
+              the RTX PC and connect to it over HTTPS/WSS.
+            </div>
+          </section>
+
           <section class="section" id="choose">
             <div class="section-head">
               <div class="label">Decision</div>

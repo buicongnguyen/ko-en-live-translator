@@ -2,6 +2,17 @@
 
 This project is a local web app for near-real-time speech translation on a GPU-equipped PC or laptop. Choose a source language and a target language, then view the source transcript beside the translated text in compact scrollable text boxes.
 
+## Definitions
+
+- **Host PC / AI server:** the Windows PC that runs Python, FastAPI, and the Whisper model on the GPU.
+- **Client device:** the phone, laptop, tablet, or browser that opens the website and sends microphone audio.
+- **Backend:** the Python service with `/api/health` and `/ws`; it receives audio and returns transcript/translation events.
+- **Frontend / web app:** the HTML, CSS, and JavaScript page with `Start mic`, source transcript, and translated text.
+- **LAN:** your local Wi-Fi/router network, for example a PC at `192.168.0.20` and a phone on the same Wi-Fi.
+- **HTTPS / WSS:** secure web page and secure WebSocket. Phone and second-laptop microphones usually require this.
+- **Reverse proxy:** Caddy or another small web server that exposes HTTPS and forwards traffic to FastAPI.
+- **VAD:** voice activity detection. It decides when a speech sentence starts and ends.
+
 ## GitHub Pages frontend
 
 There is now a static frontend in [docs/index.html](docs/index.html) that is ready to publish with GitHub Pages.
@@ -13,6 +24,18 @@ The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deploy
 - GitHub Pages cannot run Python, WebSocket servers, or GPU inference by itself, so the real live translation still needs the FastAPI backend running somewhere else.
 
 To publish it with GitHub Pages, push the repo to GitHub and set Pages to deploy from the `/docs` folder on your default branch.
+
+## Deploy process for phone or another laptop
+
+Use this order when the RTX PC is the server and a phone or laptop is the microphone client:
+
+1. Run locally on the host PC first: start `python main.py` and open `http://127.0.0.1:8000`.
+2. Bind the backend to the LAN: set `APP_HOST=0.0.0.0`, start the backend, and verify `http://192.168.0.20:8000/api/health`.
+3. Open firewall ports on the host PC: allow TCP `8000` for health checks and TCP `8443` for HTTPS.
+4. Put HTTPS in front of FastAPI: use Caddy or another reverse proxy from `https://192.168.0.20:8443` to `http://127.0.0.1:8000`.
+5. Open the HTTPS URL on the phone: allow microphone permission, speak Korean, and let the PC GPU return English subtitles.
+
+Important: `http://192.168.0.20:8000` may load on a phone, but the microphone is normally blocked because it is not a secure browser context. Use HTTPS for phone and second-laptop microphone tests.
 
 ## Why this model choice
 

@@ -154,22 +154,22 @@ http://127.0.0.1:8000/
 
 Click `Start Listening`. Browsers allow microphone access on `localhost`, so this is the best first real microphone test.
 
-## Test From Another Laptop
+## Test From Another Laptop Or Smartphone
 
-First check if the laptop can see the host web server:
+First check if the client device can see the host web server:
 
 ```text
 http://192.168.0.20:8000/
 http://192.168.0.20:8000/api/health
 ```
 
-Important: the page may load over plain HTTP, but microphone capture from another laptop usually will not work over plain LAN HTTP. Browser microphone APIs require a secure context. `localhost` is allowed, but `http://192.168.0.20:8000` is normally not.
+Important: the page may load over plain HTTP, but microphone capture from another laptop or a smartphone usually will not work over plain LAN HTTP. Browser microphone APIs require a secure context. `localhost` is allowed, but `http://192.168.0.20:8000` is normally not.
 
-For the second laptop test:
+For the second laptop or smartphone test:
 
 1. Confirm the page loads over HTTP.
 2. If it does not load, add the firewall rule below.
-3. For real microphone access from the laptop, configure HTTPS with a trusted local certificate.
+3. For real microphone access from the client device, configure HTTPS with a trusted local certificate.
 
 ## Firewall Rule
 
@@ -199,12 +199,12 @@ Then retry from the other laptop:
 http://192.168.0.20:8000/api/health
 ```
 
-## HTTPS Plan For Laptop Microphone Access
+## HTTPS Plan For Laptop Or Phone Microphone Access
 
-For a browser on another laptop to use its microphone, use HTTPS. The recommended local-network setup is:
+For a browser on another laptop or smartphone to use its microphone, use HTTPS. The recommended local-network setup is:
 
 ```text
-Laptop browser microphone
+Phone or laptop browser microphone
   -> https://192.168.0.20:8443
   -> Caddy reverse proxy on host PC
   -> http://127.0.0.1:8000 FastAPI backend
@@ -259,6 +259,20 @@ Open the HTTPS page from the laptop:
 ```text
 https://192.168.0.20:8443/
 ```
+
+## Smartphone Browser Checklist
+
+Use the phone as the web client and the RTX 4080 Super PC as the AI server:
+
+1. Put the phone and host PC on the same Wi-Fi/LAN.
+2. Start the FastAPI backend on the host PC.
+3. Start Caddy on the host PC so it serves `https://192.168.0.20:8443`.
+4. Open `https://192.168.0.20:8443` on the phone.
+5. Trust the local certificate if the browser warns about it.
+6. Press `Start mic` and allow microphone permission.
+7. Speak Korean into the phone. The phone sends audio to the PC; the PC GPU returns transcript and English translation.
+
+If the phone can open the page but microphone permission never appears, the certificate is not trusted enough for the browser to treat the page as a secure context. On iPhone, install the local root CA profile and enable full trust. On Android, install the root CA in system security settings, or use a real HTTPS domain/tunnel instead of a local certificate.
 
 If the laptop still cannot reach the page, run this from PowerShell as Administrator on the host PC:
 
