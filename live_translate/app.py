@@ -103,6 +103,15 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                 )
                 continue
 
+            if not isinstance(payload, dict):
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "message": "Invalid control message. Expected a JSON object.",
+                    }
+                )
+                continue
+
             message_type = payload.get("type")
             if message_type == "flush":
                 session.flush()

@@ -23,6 +23,7 @@ class VadSegmenter:
         self.active = False
         self.silence_frames = 0
         self.segment_frames = 0
+        self.speech_frames = 0
         self.segment_buffer = bytearray()
 
     def accept(self, frame: bytes) -> bytes | None:
@@ -34,6 +35,7 @@ class VadSegmenter:
                 self.active = True
                 self.silence_frames = 0
                 self.segment_frames = len(self.pre_roll)
+                self.speech_frames = 1
                 self.segment_buffer = bytearray(b"".join(self.pre_roll))
             return None
 
@@ -42,6 +44,7 @@ class VadSegmenter:
 
         if is_speech:
             self.silence_frames = 0
+            self.speech_frames += 1
         else:
             self.silence_frames += 1
 
@@ -61,10 +64,11 @@ class VadSegmenter:
 
     def _flush_active(self) -> bytes | None:
         payload = bytes(self.segment_buffer)
-        enough_speech = self.segment_frames >= self.min_speech_frames
+        enough_speech = self.speech_frames >= self.min_speech_frames
         self.active = False
         self.silence_frames = 0
         self.segment_frames = 0
+        self.speech_frames = 0
         self.segment_buffer.clear()
         self.pre_roll.clear()
         if enough_speech:
@@ -78,15 +82,18 @@ class TranslationSession:
         self.settings = settings
         self.segmenter = VadSegmenter(settings)
         self.input_queue: Queue[tuple[str, bytes | dict[str, str | None] | None]] = Queue()
+        self.translation_queue: Queue[tuple[bytes, str, str] | None] = Queue()
         self.result_queue: Queue[dict[str, object] | None] = Queue()
         self.source_language = normalize_source_language(settings.source_language)
         self.target_language = normalize_target_language(settings.target_language)
         self._pcm_buffer = bytearray()
         self._stop_event = Event()
         self._thread = Thread(target=self._run, daemon=True)
+        self._translation_thread = Thread(target=self._run_translation_worker, daemon=True)
 
     def start(self) -> None:
         self._thread.start()
+        self._translation_thread.start()
 
     def push_audio(self, pcm_bytes: bytes) -> None:
         self.input_queue.put(("audio", pcm_bytes))
@@ -115,6 +122,8 @@ class TranslationSession:
         self._stop_event.set()
         self.input_queue.put(("stop", None))
         self._thread.join(timeout=5)
+        self.translation_queue.put(None)
+        self._translation_thread.join(timeout=5)
         self.result_queue.put(None)
 
     def _run(self) -> None:
@@ -140,14 +149,14 @@ class TranslationSession:
                 self._flush_partial_frame()
                 flushed = self.segmenter.flush()
                 if flushed:
-                    self._translate_segment(flushed)
+                    self._queue_translation(flushed)
             elif kind == "language":
                 self._set_languages(payload if isinstance(payload, dict) else {})
             elif kind == "stop":
                 self._flush_partial_frame()
                 flushed = self.segmenter.flush()
                 if flushed:
-                    self._translate_segment(flushed)
+                    self._queue_translation(flushed)
                 break
 
     def _consume_audio(self, payload: bytes) -> None:
@@ -158,7 +167,7 @@ class TranslationSession:
             del self._pcm_buffer[:frame_bytes]
             utterance = self.segmenter.accept(frame)
             if utterance:
-                self._translate_segment(utterance)
+                self._queue_translation(utterance)
 
     def _flush_partial_frame(self) -> None:
         if not self._pcm_buffer:
@@ -168,16 +177,34 @@ class TranslationSession:
         self._pcm_buffer.clear()
         utterance = self.segmenter.accept(padded)
         if utterance:
-            self._translate_segment(utterance)
+            self._queue_translation(utterance)
 
-    def _translate_segment(self, utterance: bytes) -> None:
+    def _queue_translation(self, utterance: bytes) -> None:
+        self.translation_queue.put(
+            (utterance, self.source_language, self.target_language)
+        )
+
+    def _run_translation_worker(self) -> None:
+        while True:
+            job = self.translation_queue.get()
+            if job is None:
+                return
+            utterance, source_language, target_language = job
+            self._translate_segment(utterance, source_language, target_language)
+
+    def _translate_segment(
+        self,
+        utterance: bytes,
+        source_language: str,
+        target_language: str,
+    ) -> None:
         self.result_queue.put({"type": "status", "state": "translating"})
         try:
             result = self.translator.translate_pcm16(
                 utterance,
                 self.settings.sample_rate,
-                source_language=self.source_language,
-                target_language=self.target_language,
+                source_language=source_language,
+                target_language=target_language,
             )
             if result.translated_text:
                 self.result_queue.put(
@@ -186,7 +213,7 @@ class TranslationSession:
                         "translated_text": result.translated_text,
                         "english_text": result.translated_text,
                         "source_text": result.source_text,
-                        "source_language": self.source_language,
+                        "source_language": source_language,
                         "target_language": result.target_language,
                         "audio_seconds": round(result.audio_seconds, 2),
                         "latency_seconds": round(result.latency_seconds, 2),
