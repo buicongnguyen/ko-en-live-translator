@@ -78,7 +78,7 @@ Start Listening
 Open PowerShell in the project folder:
 
 ```powershell
-Set-Location C:\Users\n\source\repos\rambo_game\Transcribe_translate
+Set-Location C:\Users\n\source\repos\Transcribe_translate
 ```
 
 Run the RTX 4080 SUPER preset:
@@ -102,7 +102,7 @@ python main.py
 For a background run with logs:
 
 ```powershell
-Set-Location C:\Users\n\source\repos\rambo_game\Transcribe_translate
+Set-Location C:\Users\n\source\repos\Transcribe_translate
 New-Item -ItemType Directory -Force -Path logs | Out-Null
 
 $env:APP_HOST="0.0.0.0"
@@ -118,7 +118,7 @@ $env:NO_SPEECH_THRESHOLD="0.55"
 Start-Process `
   -FilePath ".venv\Scripts\python.exe" `
   -ArgumentList "main.py" `
-  -WorkingDirectory "C:\Users\n\source\repos\rambo_game\Transcribe_translate" `
+  -WorkingDirectory "C:\Users\n\source\repos\Transcribe_translate" `
   -RedirectStandardOutput "logs\server.out.log" `
   -RedirectStandardError "logs\server.err.log" `
   -WindowStyle Hidden
@@ -211,13 +211,37 @@ Phone or laptop browser microphone
   -> RTX 4080 SUPER Whisper large-v3
 ```
 
-Status from May 24, 2026: Caddy and mkcert were installed, a local certificate was created, and Caddy was started successfully. The host PC can open:
+Status from May 25, 2026 after moving the project: the standalone repository lives at:
+
+```text
+C:\Users\n\source\repos\Transcribe_translate
+```
+
+The previous working folder under `rambo_game` is empty, so start the app from the standalone folder. If Caddy is missing from `PATH`, use the repo launcher below. It serves FastAPI directly over HTTPS with the existing certificate:
+
+```powershell
+Set-Location C:\Users\n\source\repos\Transcribe_translate
+.\start-lan-https.ps1
+```
+
+The launcher uses:
+
+```text
+https://0.0.0.0:8443
+WHISPER_MODEL=large-v3
+WHISPER_DEVICE=cuda
+WHISPER_COMPUTE_TYPE=float16
+```
+
+The host PC should then open:
 
 ```text
 https://192.168.0.20:8443/api/health
 ```
 
-and receives a healthy `large-v3` CUDA response. Caddy is listening on port `8443`. If another laptop still says "site can't be reached", add the `8443` firewall rule from Administrator PowerShell.
+and receive a healthy `large-v3` CUDA response. If another laptop still says "site can't be reached", add the `8443` firewall rule from Administrator PowerShell.
+
+You can still use Caddy as a reverse proxy if it is installed. In that setup, keep FastAPI on port `8000` and let Caddy expose port `8443`.
 
 Install tools:
 

@@ -472,6 +472,7 @@
           <span class="pill">FastAPI WebSocket</span>
           <span class="pill">WebRTC VAD</span>
           <span class="pill">HTTPS for LAN microphones</span>
+          <span class="pill">Galaxy S25 client/native path</span>
         </div>
       </header>
 
@@ -487,6 +488,7 @@
             <a href="#terminology">Terminology</a>
             <a href="#models">Model settings</a>
             <a href="#modern-models">Modern model options</a>
+            <a href="#galaxy-s25">Galaxy S25 native path</a>
             <a href="#a1000-laptop">A1000 laptop path</a>
             <a href="#rtx4080-lan">RTX 4080 Super LAN guide</a>
             <a href="#lan-server">LAN GPU server setup</a>
@@ -573,6 +575,21 @@
                     <td>VAD</td>
                     <td>Voice activity detection. It decides when a speech sentence starts and ends.</td>
                     <td>Prevents silence from becoming fake translation text.</td>
+                  </tr>
+                  <tr>
+                    <td>Native Android app</td>
+                    <td>An app installed on the phone instead of a browser page.</td>
+                    <td>Galaxy S25 Kotlin app with local ASR, translation, and two transcript boxes.</td>
+                  </tr>
+                  <tr>
+                    <td>NPU</td>
+                    <td>Neural processing unit: phone hardware for supported AI workloads.</td>
+                    <td>Useful only when the model, quantization, runtime, and delegate can target it.</td>
+                  </tr>
+                  <tr>
+                    <td>LiteRT / TFLite</td>
+                    <td>Android-friendly model runtime for smaller on-device AI models.</td>
+                    <td>The right class of runtime for Galaxy S25 phone-only experiments.</td>
                   </tr>
                 </tbody>
               </table>
@@ -765,6 +782,12 @@ New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound
                     <td>Modern Chrome, Edge, Firefox, or Safari; microphone permission; HTTPS or localhost.</td>
                     <td>Headset or close microphone, quiet room, and same LAN as the server when using Option A.</td>
                     <td>MDN documents that <code>getUserMedia()</code> requires a secure context such as HTTPS or localhost.</td>
+                  </tr>
+                  <tr>
+                    <td>Galaxy S25 phone-only native app</td>
+                    <td>Android 14+, Kotlin app, microphone permission, downloaded ASR/translation models, and battery/thermal headroom.</td>
+                    <td>Use the S25 as a browser client to the RTX server first; then prototype native ASR with Android APIs or WhisperKit Tiny/Base plus ML Kit Translation.</td>
+                    <td>Samsung lists the S25 series with Snapdragon 8 Elite for Galaxy and stronger NPU performance, but NPU use still depends on mobile runtimes such as LiteRT/TFLite and supported delegates.</td>
                   </tr>
                   <tr>
                     <td>A1000-class local laptop</td>
@@ -966,6 +989,31 @@ New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound
                     <td>Speech translation</td>
                     <td>Speech in one language directly into text in another language.</td>
                     <td>Whisper uses <code>task=translate</code> for Korean speech to English text.</td>
+                  </tr>
+                  <tr>
+                    <td>Native Android app</td>
+                    <td>An APK installed on the phone, normally written in Kotlin or Java.</td>
+                    <td>A Galaxy S25 app can capture audio with Android APIs and show the same Korean/English text layout.</td>
+                  </tr>
+                  <tr>
+                    <td>NPU</td>
+                    <td>Phone AI accelerator hardware, separate from CPU and GPU.</td>
+                    <td>It is not automatic. The model must use a compatible runtime, quantization, operators, and device delegate.</td>
+                  </tr>
+                  <tr>
+                    <td>LiteRT / TFLite</td>
+                    <td>Mobile inference runtime for Android AI models.</td>
+                    <td>Use this class of runtime for phone-sized Whisper or translation models, not desktop Python inference.</td>
+                  </tr>
+                  <tr>
+                    <td>ML Kit Translation</td>
+                    <td>Google on-device text translation API for Android and iOS.</td>
+                    <td>Good fit after ASR produces Korean text; translate <code>ko</code> to <code>en</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Qualcomm AI Hub</td>
+                    <td>Qualcomm tools and examples for optimized on-device AI models.</td>
+                    <td>WhisperKit Android provides a Kotlin/C++ TFLite starting point for Whisper Tiny/Base ASR.</td>
                   </tr>
                   <tr>
                     <td>VAD</td>
@@ -1183,6 +1231,169 @@ New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound
               need a text translation model such as OPUS-MT Korean-to-English
               or NLLB. This can improve meaning, but every extra model adds
               latency and another place for errors.
+            </div>
+          </section>
+
+          <section class="section" id="galaxy-s25">
+            <div class="section-head">
+              <div class="label">Galaxy S25</div>
+              <h2>Using the S25 as a client or native translator</h2>
+              <p>
+                The Galaxy S25 is strong enough to be part of this system in
+                two different ways. The best quality path is still using the
+                phone as the microphone client while the RTX 4080 Super PC runs
+                <code>large-v3</code>. A phone-only native app is possible too,
+                but it should use Android-sized models and runtimes.
+              </p>
+            </div>
+
+            <div class="routes">
+              <article class="route">
+                <div class="route-title">
+                  <h3>Recommended: S25 as microphone client</h3>
+                  <span class="badge">Best quality</span>
+                </div>
+                <p>
+                  Open the translator website from the Galaxy S25, allow
+                  microphone permission, and let the RTX server do the heavy AI
+                  work. This keeps the phone cool and gives better Korean
+                  recognition than a tiny phone model.
+                </p>
+                <div class="callout">
+                  For LAN, open <code>https://192.168.0.20:8443</code>. For
+                  outside the house, use Cloudflare Tunnel plus Cloudflare
+                  Access login instead of router port forwarding.
+                </div>
+              </article>
+
+              <article class="route">
+                <div class="route-title">
+                  <h3>Experimental: S25 native app</h3>
+                  <span class="badge local">Phone only</span>
+                </div>
+                <p>
+                  Build a Kotlin Android app that captures the microphone,
+                  transcribes Korean locally, translates Korean text to English,
+                  and renders the same two scrollable text boxes.
+                </p>
+                <div class="callout">
+                  Start with Android on-device speech recognition or ML Kit
+                  GenAI Speech Recognition where available. For a custom ASR
+                  model, test Qualcomm AI Hub WhisperKit Android with Whisper
+                  Tiny or Base, then use ML Kit Translation for
+                  Korean-to-English text.
+                </div>
+              </article>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Decision</th>
+                    <th>Use on Galaxy S25</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Need best accuracy</td>
+                    <td>Use S25 browser + RTX 4080 Super server.</td>
+                    <td>The server can run <code>large-v3</code> on CUDA while the phone only streams audio.</td>
+                  </tr>
+                  <tr>
+                    <td>Need offline travel mode</td>
+                    <td>Build native Kotlin app with phone-sized ASR and on-device translation.</td>
+                    <td>No home server required, but quality and latency depend on mobile model size.</td>
+                  </tr>
+                  <tr>
+                    <td>Want to use the NPU</td>
+                    <td>Use LiteRT/TFLite, Qualcomm AI Hub assets, and supported delegates.</td>
+                    <td>The NPU is not a direct replacement for desktop CUDA; unsupported models may fall back to CPU or GPU.</td>
+                  </tr>
+                  <tr>
+                    <td>Want quick comparison</td>
+                    <td>Compare against Samsung Live Translate or Interpreter.</td>
+                    <td>Samsung supports Korean and English translation features on S25, but those features are benchmarks rather than this app's backend API.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="diagram" aria-label="Galaxy S25 native translation flow">
+              <div class="label">Phone-only native flow</div>
+              <div class="flow">
+                <div class="flow-node">S25 microphone</div>
+                <div class="flow-node">Kotlin AudioRecord</div>
+                <div class="flow-node">WhisperKit Tiny/Base or Android ASR</div>
+                <div class="flow-node">ML Kit ko -> en</div>
+                <div class="flow-node">Two transcript boxes</div>
+              </div>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Keep the server path as the quality baseline</h3>
+                  <p>
+                    First test the S25 as a browser client against the RTX
+                    server. Record sample Korean phrases and save the output so
+                    the native app has a real comparison target.
+                  </p>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Prototype native ASR before optimizing the NPU</h3>
+                  <p>
+                    Build the Android UI and microphone pipeline first. Test
+                    Android <code>SpeechRecognizer.createOnDeviceSpeechRecognizer()</code>
+                    or ML Kit GenAI Speech Recognition on the actual S25. If
+                    availability or Korean accuracy is not good enough, move to
+                    WhisperKit Android.
+                  </p>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Add on-device Korean-to-English text translation</h3>
+                  <p>
+                    Once Korean text appears reliably, use ML Kit Translation
+                    for <code>ko</code> to <code>en</code>. Download models
+                    before travel and test in airplane mode.
+                  </p>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Profile acceleration last</h3>
+                  <p>
+                    After the app works, test LiteRT/TFLite GPU or NPU
+                    delegates and Qualcomm AI Hub optimized models. Keep CPU and
+                    GPU fallbacks because Android NPU support is not
+                    plug-and-play for every model.
+                  </p>
+                </div>
+              </article>
+            </div>
+
+            <div class="callout important">
+              Practical recommendation: use the Galaxy S25 as the remote client
+              for the RTX server when quality matters, and build the native app
+              as a second portable/offline track with Whisper Tiny/Base or
+              Android-recognizer ASR.
+            </div>
+
+            <div class="callout">
+              The standalone planning note is saved as
+              <a href="./galaxy-s25-native.md">docs/galaxy-s25-native.md</a>.
             </div>
           </section>
 
@@ -1833,6 +2044,50 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
               <article class="source-card">
                 <h3>MDN getUserMedia</h3>
                 <p><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia" target="_blank" rel="noreferrer">Browser microphone and secure-context behavior</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Samsung Galaxy S25</h3>
+                <p><a href="https://news.samsung.com/global/samsung-galaxy-s25-series-sets-the-standard-of-ai-phone-as-a-true-ai-companion" target="_blank" rel="noreferrer">S25 AI hardware and Snapdragon 8 Elite for Galaxy context</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Samsung Live Translate</h3>
+                <p><a href="https://www.samsung.com/us/support/answer/ANS10000935/" target="_blank" rel="noreferrer">Built-in Galaxy live translation and language support reference</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Cloudflare Tunnel</h3>
+                <p><a href="https://developers.cloudflare.com/tunnel/" target="_blank" rel="noreferrer">Expose the home RTX server through an outbound tunnel without router port forwarding</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Cloudflare Access</h3>
+                <p><a href="https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/" target="_blank" rel="noreferrer">Add login protection for the self-hosted translator website</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Cloudflare WebSockets</h3>
+                <p><a href="https://developers.cloudflare.com/network/websockets/" target="_blank" rel="noreferrer">WebSocket support needed for live microphone audio streaming</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Qualcomm WhisperKit Android</h3>
+                <p><a href="https://aihub.qualcomm.com/apps/whisper_kit_android?os=Android" target="_blank" rel="noreferrer">Android 14+ Kotlin/C++ TFLite ASR starting point for Whisper Tiny/Base</a></p>
+              </article>
+              <article class="source-card">
+                <h3>ML Kit Translation</h3>
+                <p><a href="https://developers.google.com/ml-kit/language/translation/translation-language-support" target="_blank" rel="noreferrer">On-device translation languages including Korean and English</a></p>
+              </article>
+              <article class="source-card">
+                <h3>ML Kit GenAI APIs</h3>
+                <p><a href="https://developer.android.com/ai/gemini-nano/ml-kit-genai" target="_blank" rel="noreferrer">Android on-device GenAI APIs including speech recognition where available</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Android SpeechRecognizer</h3>
+                <p><a href="https://developer.android.com/reference/android/speech/SpeechRecognizer" target="_blank" rel="noreferrer">System and on-device speech recognizer API reference</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Android NNAPI</h3>
+                <p><a href="https://developer.android.com/ndk/guides/neuralnetworks" target="_blank" rel="noreferrer">Android notes on neural network acceleration and future runtime guidance</a></p>
+              </article>
+              <article class="source-card">
+                <h3>LiteRT GPU delegate</h3>
+                <p><a href="https://ai.google.dev/edge/litert/performance/gpu" target="_blank" rel="noreferrer">Mobile GPU acceleration reference for LiteRT/TFLite models</a></p>
               </article>
               <article class="source-card">
                 <h3>Microsoft WASAPI loopback</h3>

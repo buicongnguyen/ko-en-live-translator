@@ -18,6 +18,7 @@ This project is a local web app for near-real-time speech translation on a GPU-e
 There is now a static frontend in [docs/index.html](docs/index.html) that is ready to publish with GitHub Pages.
 The setup guide for the two app shapes is in [docs/setup-guide.html](docs/setup-guide.html).
 The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](docs/windows-rtx4080-deployment.md).
+The Galaxy S25 native-phone plan is in [docs/galaxy-s25-native.md](docs/galaxy-s25-native.md).
 
 - It works as a polished demo on `github.io` with a built-in simulated live subtitle flow.
 - It can also connect to a separately deployed backend over `https://` and `wss://`.
@@ -35,7 +36,35 @@ Use this order when the RTX PC is the server and a phone or laptop is the microp
 4. Put HTTPS in front of FastAPI: use Caddy or another reverse proxy from `https://192.168.0.20:8443` to `http://127.0.0.1:8000`.
 5. Open the HTTPS URL on the phone: allow microphone permission, speak Korean, and let the PC GPU return English subtitles.
 
+Current standalone project path:
+
+```powershell
+C:\Users\n\source\repos\Transcribe_translate
+```
+
+If Caddy is not installed or not in `PATH`, start the LAN HTTPS server directly with Uvicorn:
+
+```powershell
+Set-Location C:\Users\n\source\repos\Transcribe_translate
+.\start-lan-https.ps1
+```
+
+Then open:
+
+```text
+https://192.168.0.20:8443/
+https://192.168.0.20:8443/api/health
+```
+
 Important: `http://192.168.0.20:8000` may load on a phone, but the microphone is normally blocked because it is not a secure browser context. Use HTTPS for phone and second-laptop microphone tests.
+
+## Galaxy S25 usage options
+
+The best first use of a Galaxy S25 is as the microphone/browser client while the RTX 4080 Super PC runs `large-v3`. This gives the strongest Korean recognition and English translation quality.
+
+For outside-the-house S25 access, keep the RTX PC at home and put Cloudflare Tunnel plus Cloudflare Access login in front of it. Avoid direct router port-forwarding unless this app has its own production authentication layer.
+
+A phone-only native app is also possible, but it should use Android-native AI paths: Kotlin, Android audio APIs, ML Kit Translation for Korean-to-English text, and either Android on-device speech recognition or Qualcomm AI Hub WhisperKit Android with Whisper Tiny/Base. The S25 NPU is useful only when the model and runtime support it; desktop `large-v3` will not automatically run on the phone NPU.
 
 ## Why this model choice
 
