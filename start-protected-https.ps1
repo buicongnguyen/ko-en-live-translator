@@ -13,7 +13,11 @@ param(
     [string]$WhisperModel = "large-v3",
     [string]$WhisperDevice = "cuda",
     [string]$WhisperComputeType = "float16",
-    [int]$WhisperBeamSize = 1
+    [int]$WhisperBeamSize = 1,
+    [int]$MaxActiveSessions = 2,
+    [int]$IdleTimeoutSeconds = 300,
+    [int]$MaxTranslationQueueSegments = 2,
+    [int]$GpuMaxTemperatureC = 85
 )
 
 $ErrorActionPreference = "Stop"
@@ -50,6 +54,11 @@ $env:WHISPER_DEVICE = $WhisperDevice
 $env:WHISPER_COMPUTE_TYPE = $WhisperComputeType
 $env:WHISPER_BEAM_SIZE = "$WhisperBeamSize"
 $env:SHOW_SOURCE_TEXT = "true"
+$env:MAX_ACTIVE_SESSIONS = "$MaxActiveSessions"
+$env:IDLE_TIMEOUT_SECONDS = "$IdleTimeoutSeconds"
+$env:MAX_TRANSLATION_QUEUE_SEGMENTS = "$MaxTranslationQueueSegments"
+$env:GPU_STATUS_ENABLED = "true"
+$env:GPU_MAX_TEMPERATURE_C = "$GpuMaxTemperatureC"
 
 $env:AUTH_REQUIRED = "true"
 $env:AUTH_PROVIDER = "firebase"
@@ -66,6 +75,9 @@ Write-Host "Local URL:     https://127.0.0.1:$Port"
 Write-Host "LAN URL:       https://192.168.0.20:$Port"
 Write-Host "Admin emails:  $AdminEmails"
 Write-Host "User DB:       $DatabasePath"
+Write-Host "Session cap:   $MaxActiveSessions active sessions"
+Write-Host "Idle timeout:  $IdleTimeoutSeconds seconds without microphone audio"
+Write-Host "GPU limit:     $GpuMaxTemperatureC C"
 Write-Host ""
 Write-Host "Leave this PowerShell window open while testing."
 Write-Host "Use ngrok in another PowerShell window to expose this HTTPS backend."

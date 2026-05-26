@@ -118,6 +118,7 @@ const ui = {
   authStatus: document.getElementById("auth-status"),
   userCard: document.getElementById("user-card"),
   adminPanel: document.getElementById("admin-panel"),
+  adminSessions: document.getElementById("admin-sessions"),
   adminUsers: document.getElementById("admin-users"),
   refreshUsersButton: document.getElementById("refresh-users-button"),
   startButton: document.getElementById("start-button"),
@@ -635,16 +636,22 @@ function applyBackendAuth(auth) {
   renderAdminPanel();
 }
 
-function renderAdminPanel(users = null) {
+function renderAdminPanel(users = null, sessionsPayload = null) {
   const isAdmin = state.backendConnected && state.backendUser?.role === "admin";
   ui.adminPanel.hidden = !isAdmin;
   if (!isAdmin) {
+    ui.adminSessions.textContent = "Connect as an admin to view active sessions.";
     ui.adminUsers.textContent = "Connect as an admin to manage users.";
     return;
   }
 
+  renderAdminSessions(sessionsPayload);
+  renderAdminUsers(users);
+}
+
+function renderAdminUsers(users = null) {
   if (!users) {
-    ui.adminUsers.textContent = "Use Refresh users to load pending approvals.";
+    ui.adminUsers.textContent = "Use Refresh admin to load pending approvals.";
     return;
   }
 
@@ -684,6 +691,64 @@ function renderAdminPanel(users = null) {
   });
 }
 
+function renderAdminSessions(payload = null) {
+  if (!payload) {
+    ui.adminSessions.textContent = "Use Refresh admin to load active sessions.";
+    return;
+  }
+
+  const sessions = payload.sessions || [];
+  const summary = payload.summary || {};
+  const gpu = payload.gpu || {};
+  ui.adminSessions.innerHTML = "";
+
+  const summaryCard = document.createElement("article");
+  summaryCard.className = "admin-session-summary";
+  summaryCard.textContent = [
+    `Active ${summary.active ?? sessions.length}/${summary.max_active ?? "unlimited"}`,
+    `Idle timeout ${formatDuration(summary.idle_timeout_seconds ?? 0)}`,
+    gpu.available
+      ? `GPU ${gpu.temperature_c ?? "?"}C / ${gpu.max_temperature_c ?? "?"}C`
+      : "GPU status unavailable",
+  ].join(" · ");
+  ui.adminSessions.appendChild(summaryCard);
+
+  if (sessions.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "admin-user-detail";
+    empty.textContent = "No active live translation sessions.";
+    ui.adminSessions.appendChild(empty);
+    return;
+  }
+
+  sessions.forEach((session) => {
+    const row = document.createElement("article");
+    row.className = "admin-user-row";
+
+    const meta = document.createElement("div");
+    meta.className = "admin-user-meta";
+
+    const email = document.createElement("div");
+    email.className = "admin-user-email";
+    email.textContent = session.email || "anonymous";
+
+    const detail = document.createElement("div");
+    detail.className = "admin-user-detail";
+    detail.textContent = [
+      `${session.source_language || "?"} to ${session.target_language || "?"}`,
+      `connected ${formatTimestamp(session.connected_at)}`,
+      `last audio ${formatTimestamp(session.last_audio_at)}`,
+      queueSummary(session.queue),
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    meta.append(email, detail);
+    row.appendChild(meta);
+    ui.adminSessions.appendChild(row);
+  });
+}
+
 function adminActionButton(label, email, action) {
   const button = document.createElement("button");
   button.className = "secondary compact-button";
@@ -700,15 +765,25 @@ async function loadAdminUsers() {
 
   try {
     const token = await currentAuthToken();
-    const response = await fetch(adminUrl("/api/admin/users"), {
-      headers: authHeaders(token),
-    });
-    if (!response.ok) {
-      throw new Error(await readableHttpError(response));
+    const [usersResponse, sessionsResponse] = await Promise.all([
+      fetch(adminUrl("/api/admin/users"), {
+        headers: authHeaders(token),
+      }),
+      fetch(adminUrl("/api/admin/sessions"), {
+        headers: authHeaders(token),
+      }),
+    ]);
+    if (!usersResponse.ok) {
+      throw new Error(await readableHttpError(usersResponse));
     }
-    const payload = await response.json();
-    renderAdminPanel(payload.users || []);
+    if (!sessionsResponse.ok) {
+      throw new Error(await readableHttpError(sessionsResponse));
+    }
+    const usersPayload = await usersResponse.json();
+    const sessionsPayload = await sessionsResponse.json();
+    renderAdminPanel(usersPayload.users || [], sessionsPayload);
   } catch (error) {
+    ui.adminSessions.textContent = `Could not load sessions: ${error.message}`;
     ui.adminUsers.textContent = `Could not load users: ${error.message}`;
   }
 }
@@ -862,7 +937,9 @@ function handleServerEvent(payload) {
     const stateName = payload.state ?? "working";
     setState(toTitleCase(stateName));
 
-    if (stateName === "warming_up") {
+    if (payload.message) {
+      setStatus(payload.message);
+    } else if (stateName === "warming_up") {
       setMicrophoneAwareStatus("Backend is loading the speech model.");
     } else if (stateName === "translating") {
       setStatus(`Backend is translating to ${targetLanguageName()}.`);
@@ -1128,6 +1205,41 @@ function updateLanguageUi() {
   ui.copySourceButton.textContent = `Copy ${label}`;
   ui.targetLanguageLabel.textContent = targetLanguageName();
   ui.copyTargetButton.textContent = `Copy ${targetLanguageName()}`;
+}
+
+function formatTimestamp(value) {
+  if (!value) {
+    return "none yet";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function formatDuration(seconds) {
+  if (!seconds) {
+    return "off";
+  }
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+  return `${Math.round(seconds / 60)}m`;
+}
+
+function queueSummary(queue) {
+  if (!queue) {
+    return "";
+  }
+  return [
+    `queue ${queue.translation_queue_size ?? 0}/${queue.max_translation_queue_segments ?? "unlimited"}`,
+    `dropped ${queue.dropped_translation_segments ?? 0}`,
+  ].join(" · ");
 }
 
 function selectedDemoScript() {

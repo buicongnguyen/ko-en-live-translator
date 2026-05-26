@@ -146,14 +146,23 @@
             <div class="admin-panel-head">
               <div>
                 <div class="field-label">Admin</div>
-                <strong>Approved users</strong>
+                <strong>Users and live sessions</strong>
               </div>
               <button id="refresh-users-button" class="secondary compact-button">
-                Refresh users
+                Refresh admin
               </button>
             </div>
-            <div id="admin-users" class="admin-users">
-              Connect an authenticated backend to manage users.
+            <div class="admin-section">
+              <div class="admin-section-title">Active sessions</div>
+              <div id="admin-sessions" class="admin-users">
+                Connect an authenticated backend to view active sessions.
+              </div>
+            </div>
+            <div class="admin-section">
+              <div class="admin-section-title">Approved users</div>
+              <div id="admin-users" class="admin-users">
+                Connect an authenticated backend to manage users.
+              </div>
             </div>
           </section>
         </div>
@@ -213,6 +222,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260526-ngrok"></script>
+    <script src="./app.js?v=20260527-session-limits"></script>
   </body>
 </html>

@@ -4,6 +4,10 @@ param(
     [string]$FirebaseCredentialsFile = "$env:USERPROFILE\secrets\firebase-service-account.json",
     [string]$BackendOrigin = "https://127.0.0.1:8443",
     [int]$BackendPort = 8443,
+    [int]$MaxActiveSessions = 2,
+    [int]$IdleTimeoutSeconds = 300,
+    [int]$MaxTranslationQueueSegments = 2,
+    [int]$GpuMaxTemperatureC = 85,
     [switch]$RestartBackend,
     [switch]$RestartNgrok
 )
@@ -64,6 +68,11 @@ if (-not $listener) {
     $env:WHISPER_COMPUTE_TYPE = "float16"
     $env:WHISPER_BEAM_SIZE = "1"
     $env:SHOW_SOURCE_TEXT = "true"
+    $env:MAX_ACTIVE_SESSIONS = "$MaxActiveSessions"
+    $env:IDLE_TIMEOUT_SECONDS = "$IdleTimeoutSeconds"
+    $env:MAX_TRANSLATION_QUEUE_SEGMENTS = "$MaxTranslationQueueSegments"
+    $env:GPU_STATUS_ENABLED = "true"
+    $env:GPU_MAX_TEMPERATURE_C = "$GpuMaxTemperatureC"
     $env:AUTH_REQUIRED = "true"
     $env:AUTH_PROVIDER = "firebase"
     $env:FIREBASE_PROJECT_ID = $FirebaseProjectId

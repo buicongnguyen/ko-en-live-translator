@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import datetime as dt
+import time
 from collections import deque
-from queue import Queue
-from threading import Event, Thread
+from queue import Empty, Full, Queue
+from threading import Event, Lock, Thread
 
 import webrtcvad
 
@@ -82,11 +83,16 @@ class TranslationSession:
         self.settings = settings
         self.segmenter = VadSegmenter(settings)
         self.input_queue: Queue[tuple[str, bytes | dict[str, str | None] | None]] = Queue()
-        self.translation_queue: Queue[tuple[bytes, str, str] | None] = Queue()
+        self.translation_queue: Queue[tuple[bytes, str, str] | None] = Queue(
+            maxsize=max(0, settings.max_translation_queue_segments)
+        )
         self.result_queue: Queue[dict[str, object] | None] = Queue()
         self.source_language = normalize_source_language(settings.source_language)
         self.target_language = normalize_target_language(settings.target_language)
         self._pcm_buffer = bytearray()
+        self._stats_lock = Lock()
+        self._dropped_translation_segments = 0
+        self._last_backpressure_warning = 0.0
         self._stop_event = Event()
         self._thread = Thread(target=self._run, daemon=True)
         self._translation_thread = Thread(target=self._run_translation_worker, daemon=True)
@@ -122,9 +128,20 @@ class TranslationSession:
         self._stop_event.set()
         self.input_queue.put(("stop", None))
         self._thread.join(timeout=5)
+        self._clear_pending_translations()
         self.translation_queue.put(None)
         self._translation_thread.join(timeout=5)
         self.result_queue.put(None)
+
+    def stats(self) -> dict[str, int]:
+        with self._stats_lock:
+            dropped_translation_segments = self._dropped_translation_segments
+        return {
+            "input_queue_size": self.input_queue.qsize(),
+            "translation_queue_size": self.translation_queue.qsize(),
+            "max_translation_queue_segments": self.settings.max_translation_queue_segments,
+            "dropped_translation_segments": dropped_translation_segments,
+        }
 
     def _run(self) -> None:
         self.result_queue.put({"type": "status", "state": "warming_up"})
@@ -180,8 +197,58 @@ class TranslationSession:
             self._queue_translation(utterance)
 
     def _queue_translation(self, utterance: bytes) -> None:
-        self.translation_queue.put(
-            (utterance, self.source_language, self.target_language)
+        job = (utterance, self.source_language, self.target_language)
+        if self.settings.max_translation_queue_segments <= 0:
+            self.translation_queue.put(job)
+            return
+
+        try:
+            self.translation_queue.put_nowait(job)
+            return
+        except Full:
+            if self._drop_oldest_translation():
+                self._record_dropped_translation()
+                self._emit_backpressure_warning(
+                    "The GPU queue is busy, so an older speech segment was dropped to keep translation live."
+                )
+
+        try:
+            self.translation_queue.put_nowait(job)
+        except Full:
+            self._record_dropped_translation()
+            self._emit_backpressure_warning(
+                "The GPU queue is still full, so the newest speech segment was dropped."
+            )
+
+    def _drop_oldest_translation(self) -> bool:
+        try:
+            self.translation_queue.get_nowait()
+            return True
+        except Empty:
+            return False
+
+    def _clear_pending_translations(self) -> None:
+        while True:
+            try:
+                self.translation_queue.get_nowait()
+            except Empty:
+                return
+
+    def _record_dropped_translation(self) -> None:
+        with self._stats_lock:
+            self._dropped_translation_segments += 1
+
+    def _emit_backpressure_warning(self, message: str) -> None:
+        now = time.monotonic()
+        if now - self._last_backpressure_warning < 8:
+            return
+        self._last_backpressure_warning = now
+        self.result_queue.put(
+            {
+                "type": "status",
+                "state": "backpressure",
+                "message": message,
+            }
         )
 
     def _run_translation_worker(self) -> None:

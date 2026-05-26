@@ -68,6 +68,15 @@ For normal daily operation after setup, use:
 .\stop-translator-stack.ps1
 ```
 
+The protected startup uses safe defaults for one RTX 4080 Super:
+
+- Maximum active live sessions: `2`
+- Idle disconnect: `5` minutes without microphone audio
+- Translation backlog: `2` queued speech segments
+- New-session GPU temperature limit: `85C`
+
+Admins can see active sessions, last audio time, queue drops, and GPU temperature from the website admin panel after signing in.
+
 Then open:
 
 ```text

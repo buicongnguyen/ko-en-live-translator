@@ -86,6 +86,56 @@ Copy the printed GitHub Pages URL. It includes the current ngrok backend origin.
 
 If ngrok creates a new URL after restart, use the new URL. Free ngrok URLs may change.
 
+## Safety Limits
+
+The normal startup script protects the single RTX 4080 Super GPU with these defaults:
+
+```text
+MAX_ACTIVE_SESSIONS=2
+IDLE_TIMEOUT_SECONDS=300
+MAX_TRANSLATION_QUEUE_SEGMENTS=2
+GPU_MAX_TEMPERATURE_C=85
+```
+
+Meaning:
+
+- `MAX_ACTIVE_SESSIONS=2` allows two browsers to hold a live backend connection at the same time. A third user receives a busy message instead of overloading the GPU.
+- `IDLE_TIMEOUT_SECONDS=300` closes a browser session after five minutes without microphone audio.
+- `MAX_TRANSLATION_QUEUE_SEGMENTS=2` keeps translation live by dropping older queued speech if the GPU falls behind.
+- `GPU_MAX_TEMPERATURE_C=85` blocks new translation sessions if `nvidia-smi` reports the GPU at or above 85C.
+
+To test three simultaneous users later:
+
+```powershell
+.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 3
+```
+
+Start with `2` for normal use. Increase only if latency stays acceptable and the GPU temperature stays comfortably below 85C.
+
+The admin panel in the website shows:
+
+- Active sessions and the maximum allowed sessions.
+- Each connected user's email.
+- Connected time and last microphone-audio time.
+- Current translation queue size and dropped segment count.
+- GPU temperature when `nvidia-smi` is available.
+
+## GPU Temperature Care
+
+For long sessions, keep the RTX PC in a cool, ventilated position. Avoid blocking the case intake/exhaust, and do not run heavy games or GPU workloads at the same time as live translation.
+
+Useful host-PC check:
+
+```powershell
+nvidia-smi
+```
+
+General guidance:
+
+- Below 75C is comfortable.
+- 75C to 84C is usable but worth watching.
+- 85C or higher means pause new sessions, improve airflow, or lower load.
+
 ## Troubleshooting
 
 If backend says port `8443` is already used:

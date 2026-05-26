@@ -302,6 +302,29 @@ button:disabled {
   gap: 8px;
 }
 
+.admin-section {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-section-title {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-session-summary {
+  padding: 8px 10px;
+  border: 1px solid rgba(18, 109, 98, 0.22);
+  border-radius: 12px;
+  background: rgba(235, 249, 243, 0.72);
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .admin-user-row {
   justify-content: space-between;
   padding: 8px;
