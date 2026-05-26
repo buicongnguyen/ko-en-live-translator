@@ -226,7 +226,6 @@ button:disabled {
 .backend-content {
   padding: 0 12px 12px;
   display: grid;
-  grid-template-columns: auto minmax(220px, 1fr) auto minmax(220px, 1.2fr);
   gap: 10px;
   align-items: center;
 }
@@ -252,6 +251,7 @@ button:disabled {
   word-break: break-word;
 }
 
+.backend-connect-card,
 .auth-card,
 .admin-panel {
   grid-column: 1 / -1;
@@ -261,6 +261,22 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.48);
+}
+
+.backend-connect-card {
+  grid-template-columns: minmax(240px, 1fr) auto;
+  align-items: end;
+  border-color: rgba(18, 109, 98, 0.24);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(220, 244, 236, 0.62));
+}
+
+.connection-field {
+  display: grid;
+  gap: 8px;
+}
+
+.connection-actions {
+  justify-content: flex-end;
 }
 
 .auth-card {
@@ -501,6 +517,14 @@ button:disabled {
 
   .auth-card {
     grid-template-columns: 1fr;
+  }
+
+  .backend-connect-card {
+    grid-template-columns: 1fr;
+  }
+
+  .connection-actions {
+    justify-content: flex-start;
   }
 
   .transcript-body {

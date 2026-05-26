@@ -98,11 +98,34 @@
       <details class="backend-drawer">
         <summary>Backend connection</summary>
         <div class="backend-content">
+          <section class="backend-connect-card" aria-label="Backend server connection">
+            <div class="connection-field">
+              <label class="field-label" for="backend-origin">Backend origin</label>
+              <input
+                id="backend-origin"
+                class="text-field"
+                type="text"
+                placeholder="https://your-rtx-backend.ngrok-free.app"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <div id="endpoint-preview" class="endpoint-preview">
+                Health: /api/health · Socket: /ws
+              </div>
+            </div>
+            <div class="button-row compact connection-actions">
+              <button id="connect-button" class="primary">Connect backend</button>
+              <button id="disconnect-button" class="secondary" disabled>
+                Disconnect
+              </button>
+            </div>
+          </section>
+
           <section class="auth-card" aria-label="Account access">
             <div>
               <div class="field-label">Access</div>
               <div id="auth-status" class="endpoint-preview">
-                Login is optional until Firebase config is added.
+                Firebase login is optional until the protected backend is configured.
               </div>
             </div>
             <div class="button-row compact">
@@ -133,25 +156,6 @@
               Connect an authenticated backend to manage users.
             </div>
           </section>
-
-          <label class="field-label" for="backend-origin">Backend origin</label>
-          <input
-            id="backend-origin"
-            class="text-field"
-            type="text"
-            placeholder="https://your-backend.example.com"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <div class="button-row compact">
-            <button id="connect-button" class="primary">Connect</button>
-            <button id="disconnect-button" class="secondary" disabled>
-              Disconnect
-            </button>
-          </div>
-          <div id="endpoint-preview" class="endpoint-preview">
-            Health: /api/health · Socket: /ws
-          </div>
         </div>
       </details>
 

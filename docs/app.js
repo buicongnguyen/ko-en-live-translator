@@ -183,7 +183,9 @@ async function boot() {
 async function initializeAuth() {
   const config = window.TRANSLATOR_FIREBASE_CONFIG;
   if (!config) {
-    setAuthStatus("Firebase login is not configured yet. Demo mode and public backends still work.");
+    setAuthStatus(
+      "Firebase login is not configured yet. You can still connect to an unprotected backend; protected RTX access needs Firebase variables in GitHub Actions."
+    );
     refreshAuthUi();
     return;
   }
