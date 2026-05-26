@@ -7,5 +7,6 @@ https/*.key
 https/*.crt
 https/*.log
 data/
+logs/
 *.service-account.json
 firebase-service-account*.json
