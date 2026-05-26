@@ -155,6 +155,232 @@
         font-size: 0.88rem;
       }
 
+      .setup-hub {
+        display: grid;
+        gap: 16px;
+        margin: 0 0 26px;
+      }
+
+      .hub-head {
+        display: grid;
+        gap: 10px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 14px;
+        background:
+          radial-gradient(circle at top right, rgba(15, 109, 102, 0.18), transparent 34%),
+          rgba(255, 255, 255, 0.78);
+        box-shadow: var(--shadow);
+      }
+
+      .hub-head h2 {
+        max-width: 880px;
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        line-height: 1.04;
+      }
+
+      .hub-head p {
+        max-width: 850px;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .focus-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .focus-card {
+        display: grid;
+        gap: 8px;
+        min-height: 138px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .focus-card span {
+        color: var(--green);
+        font-size: 0.76rem;
+        font-weight: 950;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .focus-card strong {
+        font-size: 1.08rem;
+      }
+
+      .focus-card p {
+        color: var(--muted);
+        line-height: 1.48;
+        font-size: 0.9rem;
+      }
+
+      .guide-accordion {
+        display: grid;
+        gap: 12px;
+      }
+
+      .guide-topic {
+        border: 1px solid rgba(255, 255, 255, 0.76);
+        border-radius: 12px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .guide-topic summary {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 17px 18px;
+        cursor: pointer;
+        list-style: none;
+      }
+
+      .guide-topic summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .guide-topic summary::after {
+        content: "+";
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: white;
+        background: var(--green);
+        font-weight: 950;
+      }
+
+      .guide-topic[open] summary::after {
+        content: "-";
+      }
+
+      .topic-number {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: white;
+        background: linear-gradient(135deg, var(--green), var(--blue));
+        font-weight: 950;
+      }
+
+      .topic-title {
+        display: grid;
+        gap: 4px;
+      }
+
+      .topic-title strong {
+        font-size: 1.02rem;
+      }
+
+      .topic-title span {
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .topic-content {
+        display: grid;
+        gap: 14px;
+        padding: 0 18px 18px 68px;
+      }
+
+      .definition-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .definition-card {
+        display: grid;
+        gap: 6px;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .definition-card strong {
+        color: var(--green-dark);
+      }
+
+      .definition-card p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.48;
+      }
+
+      .compact-steps {
+        counter-reset: compact-step;
+        display: grid;
+        gap: 9px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .compact-steps li {
+        counter-increment: compact-step;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.54);
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .compact-steps li::before {
+        content: counter(compact-step);
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: white;
+        background: var(--orange);
+        font-size: 0.78rem;
+        font-weight: 950;
+      }
+
+      .setting-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .setting-item {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .setting-item code {
+        color: var(--green-dark);
+        font-weight: 850;
+      }
+
+      .setting-item p {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.48;
+      }
+
       .layout {
         display: grid;
         grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.64fr);
@@ -414,6 +640,12 @@
       }
 
       @media (max-width: 980px) {
+        .focus-grid,
+        .definition-grid,
+        .setting-list {
+          grid-template-columns: 1fr;
+        }
+
         .layout {
           grid-template-columns: 1fr;
         }
@@ -446,6 +678,19 @@
         .step {
           grid-template-columns: 1fr;
         }
+
+        .guide-topic summary {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .guide-topic summary::after {
+          grid-column: 1 / -1;
+          justify-self: start;
+        }
+
+        .topic-content {
+          padding-left: 18px;
+        }
       }
     </style>
   </head>
@@ -461,25 +706,266 @@
 
       <header class="hero">
         <div class="eyebrow">Setup guide</div>
-        <h1>Two practical ways to run Korean-to-English live translation.</h1>
+        <h1>Live Translator Setup Hub.</h1>
         <p class="lede">
-          This guide explains how to build both versions: a local-network
-          self-hosted GPU server with a web app, and a small local PC app that
-          runs the model and browser interface on the same laptop.
+          Start with the focused setup cards below. Each section opens only the
+          part you need: test the app, configure Firebase login, expose the RTX
+          backend with ngrok, run the Windows service, or tune safety settings.
         </p>
         <div class="quick-pills" aria-label="Recommended stack">
           <span class="pill">faster-whisper</span>
           <span class="pill">FastAPI WebSocket</span>
           <span class="pill">WebRTC VAD</span>
           <span class="pill">HTTPS for LAN microphones</span>
+          <span class="pill">Firebase login</span>
+          <span class="pill">ngrok test tunnel</span>
           <span class="pill">Galaxy S25 client/native path</span>
         </div>
       </header>
+
+      <section class="setup-hub" id="setup-hub" aria-label="Setup guide hub">
+        <div class="hub-head">
+          <div class="eyebrow">Start here</div>
+          <h2>Choose one setup topic, open it, and follow it from top to bottom.</h2>
+          <p>
+            The live translator has several moving parts. This top page keeps
+            the common paths short: test the public app, configure Firebase
+            login, expose the RTX backend with ngrok, start the protected
+            Windows server, and understand the safety settings.
+          </p>
+        </div>
+
+        <div class="focus-grid" aria-label="Quick setup choices">
+          <a class="focus-card" href="#topic-test">
+            <span>Use now</span>
+            <strong>Open and test the app</strong>
+            <p>Sign in, connect the backend, approve users, and start the microphone.</p>
+          </a>
+          <a class="focus-card" href="#topic-firebase">
+            <span>Login</span>
+            <strong>Firebase and admin approval</strong>
+            <p>Google sign-in, admin email, service account, and approved user list.</p>
+          </a>
+          <a class="focus-card" href="#topic-ngrok">
+            <span>Public URL</span>
+            <strong>ngrok tunnel</strong>
+            <p>Free HTTPS/WSS testing from outside the house without router setup.</p>
+          </a>
+          <a class="focus-card" href="#topic-backend">
+            <span>Host PC</span>
+            <strong>RTX backend service</strong>
+            <p>Start, stop, restart, and check the protected Windows backend.</p>
+          </a>
+          <a class="focus-card" href="#topic-safety">
+            <span>Protection</span>
+            <strong>GPU and session limits</strong>
+            <p>Limit users, close idle sessions, drop stale audio, and watch temperature.</p>
+          </a>
+          <a class="focus-card" href="#definitions-first">
+            <span>Learn</span>
+            <strong>Full technical guide</strong>
+            <p>Read the deeper notes for LAN, laptop, Galaxy S25, and model choices.</p>
+          </a>
+        </div>
+
+        <div class="guide-accordion">
+          <details class="guide-topic" id="topic-test" open>
+            <summary>
+              <span class="topic-number">1</span>
+              <span class="topic-title">
+                <strong>Access: sign in, then connect backend</strong>
+                <span>Use this when the RTX PC backend and ngrok are already running.</span>
+              </span>
+            </summary>
+            <div class="topic-content">
+              <div class="definition-grid">
+                <article class="definition-card">
+                  <strong>Frontend</strong>
+                  <p>The GitHub Pages website that shows the microphone UI and transcript boxes.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Backend origin</strong>
+                  <p>The HTTPS URL that points to the RTX PC, for example an ngrok URL.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Admin approval</strong>
+                  <p>Your admin account decides which signed-in emails can use the GPU.</p>
+                </article>
+              </div>
+              <ol class="compact-steps">
+                <li>Open <a href="./index.html">the live translator app</a>.</li>
+                <li>Open <code>Setup steps</code>, then in <code>1 Access</code> press <code>Sign in with Google</code>.</li>
+                <li>In <code>2 Backend</code>, paste the backend origin such as <code>https://alone-catalog-rejoice.ngrok-free.dev</code>.</li>
+                <li>Press <code>Connect backend</code>. If your email is approved, the app enables <code>Start mic</code>.</li>
+                <li>If you are admin, press <code>Refresh admin</code> to see active sessions and approve pending users.</li>
+              </ol>
+              <div class="callout">
+                Current testing link:
+                <a href="./index.html?backend=https%3A%2F%2Falone-catalog-rejoice.ngrok-free.dev">open the app with the ngrok backend filled in</a>.
+              </div>
+            </div>
+          </details>
+
+          <details class="guide-topic" id="topic-firebase">
+            <summary>
+              <span class="topic-number">2</span>
+              <span class="topic-title">
+                <strong>Firebase: Google login and admin approval</strong>
+                <span>Use this when you want only approved email addresses to access your GPU.</span>
+              </span>
+            </summary>
+            <div class="topic-content">
+              <div class="definition-grid">
+                <article class="definition-card">
+                  <strong>Firebase Auth</strong>
+                  <p>Google or Facebook login for the browser app. The user's password stays with Google/Firebase.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Web config</strong>
+                  <p>Public browser settings such as API key, auth domain, project ID, and app ID.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Service account JSON</strong>
+                  <p>Private backend key saved only on the RTX PC so Python can verify login tokens.</p>
+                </article>
+              </div>
+              <ol class="compact-steps">
+                <li>Create or open the Firebase project, then enable <code>Authentication</code> and <code>Google</code> sign-in.</li>
+                <li>Add the GitHub Pages domain, for example <code>buicongnguyen.github.io</code>, to Firebase authorized domains.</li>
+                <li>Create a Firebase Web app and put its public config into GitHub Actions variables.</li>
+                <li>Download the Firebase Admin SDK service account JSON and save it outside the repo, for example <code>C:\Users\n\secrets\firebase-service-account.json</code>.</li>
+                <li>Start the protected backend with <code>ADMIN_EMAILS="nguyenbuicong80@gmail.com"</code> so your email becomes admin.</li>
+                <li>Approve other users from the web admin panel after they sign in once.</li>
+              </ol>
+              <div class="callout important">
+                Never commit the Firebase Admin service account JSON. Only the Firebase Web app config is safe to deploy to GitHub Pages.
+              </div>
+            </div>
+          </details>
+
+          <details class="guide-topic" id="topic-ngrok">
+            <summary>
+              <span class="topic-number">3</span>
+              <span class="topic-title">
+                <strong>ngrok: public HTTPS/WSS URL for the home RTX PC</strong>
+                <span>Use this for free testing from another browser without installing Tailscale.</span>
+              </span>
+            </summary>
+            <div class="topic-content">
+              <div class="definition-grid">
+                <article class="definition-card">
+                  <strong>Tunnel</strong>
+                  <p>An outbound connection from your PC to ngrok that gives the browser a public HTTPS URL.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>HTTPS/WSS</strong>
+                  <p>Secure HTTP and secure WebSocket. The microphone page needs these for real live audio.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Backend origin</strong>
+                  <p>The ngrok URL you paste into the website, without <code>/api/health</code> or <code>/ws</code>.</p>
+                </article>
+              </div>
+              <ol class="compact-steps">
+                <li>Install or update ngrok and add your ngrok authtoken once on the RTX PC.</li>
+                <li>Start the protected local backend on <code>https://127.0.0.1:8443</code>.</li>
+                <li>Run <code>ngrok http https://127.0.0.1:8443 --host-header=rewrite</code>.</li>
+                <li>Copy the forwarding URL, for example <code>https://alone-catalog-rejoice.ngrok-free.dev</code>.</li>
+                <li>Paste that URL into the app's <code>Backend origin</code> box and press <code>Connect backend</code>.</li>
+              </ol>
+              <pre><code>$ngrok="$env:LOCALAPPDATA\Microsoft\WinGet\Links\ngrok.exe"
+& $ngrok version
+& $ngrok http https://127.0.0.1:8443 --host-header=rewrite</code></pre>
+            </div>
+          </details>
+
+          <details class="guide-topic" id="topic-backend">
+            <summary>
+              <span class="topic-number">4</span>
+              <span class="topic-title">
+                <strong>Windows RTX backend: start, stop, and status</strong>
+                <span>Use this on the Windows 11 Pro RTX 4080 Super host PC.</span>
+              </span>
+            </summary>
+            <div class="topic-content">
+              <div class="definition-grid">
+                <article class="definition-card">
+                  <strong>FastAPI backend</strong>
+                  <p>The Python server that receives microphone audio and returns live translation events.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Uvicorn</strong>
+                  <p>The Python web server process that runs FastAPI on port <code>8443</code>.</p>
+                </article>
+                <article class="definition-card">
+                  <strong>Stack scripts</strong>
+                  <p>PowerShell helpers that start the backend, start ngrok, show status, or stop everything.</p>
+                </article>
+              </div>
+              <ol class="compact-steps">
+                <li>Open PowerShell 7 on the RTX PC.</li>
+                <li>Run <code>Set-Location C:\Users\n\source\repos\Transcribe_translate</code>.</li>
+                <li>Start everything with <code>.\start-translator-stack.ps1</code>.</li>
+                <li>Check the public link with <code>.\status-translator-stack.ps1</code>.</li>
+                <li>Restart after code changes with <code>.\start-translator-stack.ps1 -RestartBackend</code>.</li>
+                <li>Stop public access and backend with <code>.\stop-translator-stack.ps1</code>.</li>
+              </ol>
+              <pre><code>Set-Location C:\Users\n\source\repos\Transcribe_translate
+.\start-translator-stack.ps1
+.\status-translator-stack.ps1</code></pre>
+            </div>
+          </details>
+
+          <details class="guide-topic" id="topic-safety">
+            <summary>
+              <span class="topic-number">5</span>
+              <span class="topic-title">
+                <strong>Safety settings: users, stale audio, and GPU heat</strong>
+                <span>Use this before allowing more than one person to test.</span>
+              </span>
+            </summary>
+            <div class="topic-content">
+              <div class="setting-list">
+                <article class="setting-item">
+                  <code>MAX_ACTIVE_SESSIONS=2</code>
+                  <p>Allows two active live translation sessions. A third user gets a busy message.</p>
+                </article>
+                <article class="setting-item">
+                  <code>IDLE_TIMEOUT_SECONDS=300</code>
+                  <p>Disconnects a browser after five minutes without microphone audio.</p>
+                </article>
+                <article class="setting-item">
+                  <code>MAX_TRANSLATION_QUEUE_SEGMENTS=2</code>
+                  <p>Drops older queued speech when the GPU falls behind, keeping live translation current.</p>
+                </article>
+                <article class="setting-item">
+                  <code>GPU_MAX_TEMPERATURE_C=85</code>
+                  <p>Blocks new sessions if <code>nvidia-smi</code> reports the GPU at or above 85C.</p>
+                </article>
+              </div>
+              <ol class="compact-steps">
+                <li>Keep the default <code>MAX_ACTIVE_SESSIONS=2</code> while testing reliability.</li>
+                <li>Try <code>-MaxActiveSessions 3</code> only after latency and GPU temperature stay stable.</li>
+                <li>Use the web admin panel to watch active users, last audio time, queue size, dropped segments, and GPU temperature.</li>
+                <li>Keep the RTX PC ventilated and avoid heavy games or GPU work while translating.</li>
+              </ol>
+              <pre><code>.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 3
+nvidia-smi</code></pre>
+            </div>
+          </details>
+        </div>
+      </section>
 
       <div class="layout">
         <aside class="sidebar">
           <section class="panel toc" aria-label="Contents">
             <div class="label">Contents</div>
+            <a href="#setup-hub">Start here setup hub</a>
+            <a href="#topic-test">1. Access and connect</a>
+            <a href="#topic-firebase">2. Firebase login</a>
+            <a href="#topic-ngrok">3. ngrok public URL</a>
+            <a href="#topic-backend">4. Windows backend</a>
+            <a href="#topic-safety">5. Safety settings</a>
             <a href="#definitions-first">Definitions first</a>
             <a href="#deployment-process">Deployment process</a>
             <a href="#public-auth">Public login + GPU backend</a>
