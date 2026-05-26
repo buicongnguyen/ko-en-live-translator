@@ -20,6 +20,18 @@ class Settings:
     whisper_model: str = os.getenv("WHISPER_MODEL", "medium")
     source_language: str = os.getenv("SOURCE_LANGUAGE", "ko")
     target_language: str = os.getenv("TARGET_LANGUAGE", "en")
+    auth_required: bool = _env_bool("AUTH_REQUIRED", False)
+    auth_provider: str = os.getenv("AUTH_PROVIDER", "firebase")
+    firebase_project_id: str = os.getenv("FIREBASE_PROJECT_ID", "")
+    firebase_credentials_file: Path | None = (
+        Path(os.getenv("FIREBASE_CREDENTIALS_FILE")).expanduser()
+        if os.getenv("FIREBASE_CREDENTIALS_FILE")
+        else None
+    )
+    admin_emails: str = os.getenv("ADMIN_EMAILS", "")
+    approved_emails: str = os.getenv("APPROVED_EMAILS", "")
+    allow_unverified_auth_email: bool = _env_bool("ALLOW_UNVERIFIED_AUTH_EMAIL", False)
+    auth_database_path: Path = Path(os.getenv("AUTH_DATABASE_PATH", "data/auth-users.sqlite3"))
     device: str = os.getenv("WHISPER_DEVICE", "auto")
     compute_type: str = os.getenv("WHISPER_COMPUTE_TYPE", "auto")
     enable_text_translation: bool = _env_bool("ENABLE_TEXT_TRANSLATION", False)

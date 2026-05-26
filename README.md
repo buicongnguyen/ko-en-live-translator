@@ -19,6 +19,7 @@ There is now a static frontend in [docs/index.html](docs/index.html) that is rea
 The setup guide for the two app shapes is in [docs/setup-guide.html](docs/setup-guide.html).
 The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](docs/windows-rtx4080-deployment.md).
 The Galaxy S25 native-phone plan is in [docs/galaxy-s25-native.md](docs/galaxy-s25-native.md).
+The public GitHub Pages login and RTX backend plan is in [docs/public-auth-deployment.md](docs/public-auth-deployment.md).
 
 - It works as a polished demo on `github.io` with a built-in simulated live subtitle flow.
 - It can also connect to a separately deployed backend over `https://` and `wss://`.
@@ -62,7 +63,7 @@ Important: `http://192.168.0.20:8000` may load on a phone, but the microphone is
 
 The best first use of a Galaxy S25 is as the microphone/browser client while the RTX 4080 Super PC runs `large-v3`. This gives the strongest Korean recognition and English translation quality.
 
-For outside-the-house S25 access, keep the RTX PC at home and put Cloudflare Tunnel plus Cloudflare Access login in front of it. Avoid direct router port-forwarding unless this app has its own production authentication layer.
+For outside-the-house S25 access, keep the RTX PC at home and use the public GitHub Pages frontend with Firebase login plus a protected backend URL from ngrok or DuckDNS + Caddy. Avoid direct router port-forwarding unless authentication, HTTPS, and admin approval are enabled.
 
 A phone-only native app is also possible, but it should use Android-native AI paths: Kotlin, Android audio APIs, ML Kit Translation for Korean-to-English text, and either Android on-device speech recognition or Qualcomm AI Hub WhisperKit Android with Whisper Tiny/Base. The S25 NPU is useful only when the model and runtime support it; desktop `large-v3` will not automatically run on the phone NPU.
 
@@ -115,6 +116,19 @@ If you deploy the backend to a public host, the GitHub Pages site can connect to
 - The backend now enables CORS so a static site on another origin can call the health endpoint.
 
 Important: a page served from `https://username.github.io` cannot connect to plain `http://127.0.0.1:8000` because browsers block mixed-content requests from HTTPS pages. For GitHub Pages, use an `https://` backend with `wss://` websocket support.
+
+## Optional login and admin approval
+
+The GitHub Pages frontend can optionally use Firebase Auth for Google/Facebook sign-in. The backend can enforce auth with `AUTH_REQUIRED=true`, verify Firebase ID tokens, store users locally in SQLite, and allow only `approved` users to open the live WebSocket.
+
+Keep private control material only on the RTX PC:
+
+```powershell
+$env:FIREBASE_CREDENTIALS_FILE="C:\Users\n\secrets\firebase-service-account.json"
+$env:ADMIN_EMAILS="your-email@gmail.com"
+```
+
+Do not commit Firebase Admin service account JSON, ngrok tokens, or approval databases. The browser Firebase web config is public-facing and can be generated during GitHub Pages deployment from GitHub Actions variables.
 
 ## Useful configuration
 

@@ -6,3 +6,6 @@ https/*.pem
 https/*.key
 https/*.crt
 https/*.log
+data/
+*.service-account.json
+firebase-service-account*.json

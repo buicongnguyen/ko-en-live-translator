@@ -92,6 +92,15 @@ const state = {
   backendConnected: false,
   showSourceText: true,
   runtime: null,
+  backendUser: null,
+  auth: {
+    available: false,
+    app: null,
+    auth: null,
+    providers: {},
+    user: null,
+    token: "",
+  },
   sourceLanguage: "ko",
   targetLanguage: "en",
   sourceLines: [],
@@ -103,6 +112,14 @@ const ui = {
   resetButton: document.getElementById("reset-button"),
   connectButton: document.getElementById("connect-button"),
   disconnectButton: document.getElementById("disconnect-button"),
+  googleLoginButton: document.getElementById("google-login-button"),
+  facebookLoginButton: document.getElementById("facebook-login-button"),
+  signOutButton: document.getElementById("sign-out-button"),
+  authStatus: document.getElementById("auth-status"),
+  userCard: document.getElementById("user-card"),
+  adminPanel: document.getElementById("admin-panel"),
+  adminUsers: document.getElementById("admin-users"),
+  refreshUsersButton: document.getElementById("refresh-users-button"),
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
   sourceLanguage: document.getElementById("source-language"),
@@ -128,6 +145,10 @@ ui.demoButton.addEventListener("click", playDemo);
 ui.resetButton.addEventListener("click", resetShowcase);
 ui.connectButton.addEventListener("click", connectBackend);
 ui.disconnectButton.addEventListener("click", disconnectBackend);
+ui.googleLoginButton.addEventListener("click", signInWithGoogle);
+ui.facebookLoginButton.addEventListener("click", signInWithFacebook);
+ui.signOutButton.addEventListener("click", signOutUser);
+ui.refreshUsersButton.addEventListener("click", loadAdminUsers);
 ui.startButton.addEventListener("click", startCapture);
 ui.stopButton.addEventListener("click", stopCapture);
 ui.backendOrigin.addEventListener("input", updateEndpointPreview);
@@ -137,9 +158,12 @@ ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
 ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
-boot();
+boot().catch((error) => {
+  setStatus(`Startup error: ${error.message}`);
+  console.error(error);
+});
 
-function boot() {
+async function boot() {
   restoreSourceLanguagePreference();
   restoreTargetLanguagePreference();
   updateLanguageUi();
@@ -152,7 +176,118 @@ function boot() {
   }
   updateEndpointPreview();
   updateMicrophoneHint();
+  await initializeAuth();
   refreshControls();
+}
+
+async function initializeAuth() {
+  const config = window.TRANSLATOR_FIREBASE_CONFIG;
+  if (!config) {
+    setAuthStatus("Firebase login is not configured yet. Demo mode and public backends still work.");
+    refreshAuthUi();
+    return;
+  }
+
+  try {
+    const [{ initializeApp }, firebaseAuth] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
+    ]);
+
+    const {
+      FacebookAuthProvider,
+      GoogleAuthProvider,
+      getAuth,
+      onAuthStateChanged,
+      signInWithPopup,
+      signOut,
+    } = firebaseAuth;
+
+    state.auth.available = true;
+    state.auth.signInWithPopup = signInWithPopup;
+    state.auth.signOut = signOut;
+    state.auth.app = initializeApp(config);
+    state.auth.auth = getAuth(state.auth.app);
+    state.auth.providers.google = new GoogleAuthProvider();
+    state.auth.providers.google.setCustomParameters({ prompt: "select_account" });
+    state.auth.providers.facebook = new FacebookAuthProvider();
+
+    onAuthStateChanged(state.auth.auth, async (user) => {
+      state.auth.user = user;
+      state.auth.token = user ? await user.getIdToken() : "";
+      state.backendUser = null;
+      if (state.backendConnected) {
+        await disconnectBackend();
+      }
+      refreshAuthUi();
+    });
+
+    setAuthStatus("Sign in before connecting to a protected backend.");
+  } catch (error) {
+    state.auth.available = false;
+    setAuthStatus(`Firebase login could not load: ${error.message}`);
+  }
+
+  refreshAuthUi();
+}
+
+async function signInWithGoogle() {
+  await signInWithProvider("google");
+}
+
+async function signInWithFacebook() {
+  await signInWithProvider("facebook");
+}
+
+async function signInWithProvider(providerName) {
+  if (!state.auth.available) {
+    setAuthStatus("Firebase login is not configured yet.");
+    return;
+  }
+
+  try {
+    setAuthStatus(`Opening ${providerName} sign-in.`);
+    await state.auth.signInWithPopup(
+      state.auth.auth,
+      state.auth.providers[providerName]
+    );
+  } catch (error) {
+    setAuthStatus(`Sign-in failed: ${error.message}`);
+  }
+}
+
+async function signOutUser() {
+  if (!state.auth.available || !state.auth.auth) {
+    return;
+  }
+  await state.auth.signOut(state.auth.auth);
+  setAuthStatus("Signed out.");
+}
+
+function refreshAuthUi() {
+  const signedIn = Boolean(state.auth.user);
+  ui.googleLoginButton.disabled = !state.auth.available || signedIn;
+  ui.facebookLoginButton.disabled = !state.auth.available || signedIn;
+  ui.signOutButton.disabled = !signedIn;
+
+  if (!state.auth.available) {
+    ui.userCard.hidden = true;
+    return;
+  }
+
+  if (!signedIn) {
+    ui.userCard.hidden = true;
+    setAuthStatus("Sign in with Google or Facebook before using a protected GPU backend.");
+    return;
+  }
+
+  ui.userCard.hidden = false;
+  ui.userCard.textContent = `Signed in: ${state.auth.user.email}`;
+  setAuthStatus("Signed in. Connect to the backend to check approval.");
+}
+
+function setAuthStatus(text) {
+  ui.authStatus.textContent = text;
 }
 
 async function playDemo() {
@@ -242,17 +377,21 @@ async function connectBackend() {
   const socketUrl = toWebSocketUrl(origin);
 
   try {
-    const response = await fetch(healthUrl);
+    const token = await currentAuthToken();
+    const response = await fetch(healthUrl, {
+      headers: authHeaders(token),
+    });
     if (!response.ok) {
-      throw new Error(`Health check failed with status ${response.status}.`);
+      throw new Error(await readableHttpError(response));
     }
 
     const payload = await response.json();
     if (payload.runtime) {
       applyRuntime(payload.runtime);
     }
+    applyBackendAuth(payload.auth);
 
-    await openSocket(socketUrl);
+    await openSocket(socketUrl, token);
     sendLanguageSetting();
     state.backendConnected = true;
     state.isDemoPlaying = false;
@@ -261,11 +400,14 @@ async function connectBackend() {
     setBackendStatus(backendLabel());
     setState("Backend Ready");
     setStatus("Backend connected. You can now start microphone capture.");
+    await loadAdminUsers();
   } catch (error) {
     state.backendConnected = false;
     state.runtime = null;
+    state.backendUser = null;
     state.showSourceText = true;
     closeSocket();
+    renderAdminPanel();
     setConnection("Demo Mode");
     setBackendStatus("Backend Offline");
     setState("Showcase Ready");
@@ -280,8 +422,10 @@ async function disconnectBackend() {
   await stopCapture();
   state.backendConnected = false;
   state.runtime = null;
+  state.backendUser = null;
   state.showSourceText = true;
   closeSocket();
+  renderAdminPanel();
   setConnection("Demo Mode");
   setBackendStatus("Backend Optional");
   setState("Showcase Ready");
@@ -452,16 +596,167 @@ function updateEndpointPreview() {
   ui.endpointPreview.textContent = `Health: ${healthUrl} · Socket: ${socketUrl}`;
 }
 
-function openSocket(url) {
+async function currentAuthToken() {
+  if (!state.auth.user) {
+    return "";
+  }
+  state.auth.token = await state.auth.user.getIdToken();
+  return state.auth.token;
+}
+
+function authHeaders(token) {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function readableHttpError(response) {
+  try {
+    const payload = await response.json();
+    return payload.detail || `Request failed with status ${response.status}.`;
+  } catch {
+    return `Request failed with status ${response.status}.`;
+  }
+}
+
+function applyBackendAuth(auth) {
+  state.backendUser = auth?.user ?? null;
+  if (auth?.required && !state.backendUser) {
+    setAuthStatus("Backend requires login. Sign in and ask the admin to approve your email.");
+  } else if (state.backendUser) {
+    setAuthStatus(
+      `Backend approved ${state.backendUser.email} as ${state.backendUser.role}.`
+    );
+  }
+  renderAdminPanel();
+}
+
+function renderAdminPanel(users = null) {
+  const isAdmin = state.backendConnected && state.backendUser?.role === "admin";
+  ui.adminPanel.hidden = !isAdmin;
+  if (!isAdmin) {
+    ui.adminUsers.textContent = "Connect as an admin to manage users.";
+    return;
+  }
+
+  if (!users) {
+    ui.adminUsers.textContent = "Use Refresh users to load pending approvals.";
+    return;
+  }
+
+  ui.adminUsers.innerHTML = "";
+  if (users.length === 0) {
+    ui.adminUsers.textContent = "No users have signed in yet.";
+    return;
+  }
+
+  users.forEach((user) => {
+    const row = document.createElement("article");
+    row.className = "admin-user-row";
+
+    const meta = document.createElement("div");
+    meta.className = "admin-user-meta";
+
+    const email = document.createElement("div");
+    email.className = "admin-user-email";
+    email.textContent = user.email;
+
+    const detail = document.createElement("div");
+    detail.className = "admin-user-detail";
+    detail.textContent = `${user.status} · ${user.role} · ${user.provider || "unknown provider"}`;
+
+    meta.append(email, detail);
+
+    const actions = document.createElement("div");
+    actions.className = "admin-user-actions";
+    actions.append(
+      adminActionButton("Approve", user.email, "approve"),
+      adminActionButton("Pending", user.email, "pending"),
+      adminActionButton("Block", user.email, "block")
+    );
+
+    row.append(meta, actions);
+    ui.adminUsers.appendChild(row);
+  });
+}
+
+function adminActionButton(label, email, action) {
+  const button = document.createElement("button");
+  button.className = "secondary compact-button";
+  button.textContent = label;
+  button.addEventListener("click", () => updateUserStatus(email, action));
+  return button;
+}
+
+async function loadAdminUsers() {
+  if (!state.backendConnected || state.backendUser?.role !== "admin") {
+    renderAdminPanel();
+    return;
+  }
+
+  try {
+    const token = await currentAuthToken();
+    const response = await fetch(adminUrl("/api/admin/users"), {
+      headers: authHeaders(token),
+    });
+    if (!response.ok) {
+      throw new Error(await readableHttpError(response));
+    }
+    const payload = await response.json();
+    renderAdminPanel(payload.users || []);
+  } catch (error) {
+    ui.adminUsers.textContent = `Could not load users: ${error.message}`;
+  }
+}
+
+async function updateUserStatus(email, action) {
+  if (!state.backendConnected || state.backendUser?.role !== "admin") {
+    return;
+  }
+
+  try {
+    const token = await currentAuthToken();
+    const response = await fetch(adminUrl(`/api/admin/users/${action}`), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(token),
+      },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      throw new Error(await readableHttpError(response));
+    }
+    await loadAdminUsers();
+    setStatus(`${email} is now ${action === "approve" ? "approved" : action}.`);
+  } catch (error) {
+    setStatus(`Admin update failed: ${error.message}`);
+  }
+}
+
+function adminUrl(path) {
+  return new URL(path, normalizeOrigin(ui.backendOrigin.value)).toString();
+}
+
+function openSocket(url, token = "") {
   return new Promise((resolve, reject) => {
     const socket = new WebSocket(url);
     socket.binaryType = "arraybuffer";
+    let settled = false;
+    const timeout = window.setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      socket.close();
+      reject(new Error("WebSocket connection timed out."));
+    }, 10000);
 
     socket.addEventListener(
       "open",
       () => {
         state.socket = socket;
-        resolve();
+        if (token) {
+          socket.send(JSON.stringify({ type: "auth", token }));
+        }
       },
       { once: true }
     );
@@ -469,17 +764,37 @@ function openSocket(url) {
     socket.addEventListener(
       "error",
       () => {
-        reject(new Error("WebSocket connection failed."));
+        if (!settled) {
+          settled = true;
+          window.clearTimeout(timeout);
+          reject(new Error("WebSocket connection failed."));
+        }
       },
       { once: true }
     );
 
     socket.addEventListener("message", (event) => {
       const payload = JSON.parse(event.data);
+      if (!settled) {
+        if (payload.type === "error") {
+          settled = true;
+          window.clearTimeout(timeout);
+          reject(new Error(payload.message || "WebSocket authentication failed."));
+          return;
+        }
+        settled = true;
+        window.clearTimeout(timeout);
+        resolve();
+      }
       handleServerEvent(payload);
     });
 
     socket.addEventListener("close", () => {
+      if (!settled) {
+        settled = true;
+        window.clearTimeout(timeout);
+        reject(new Error("WebSocket closed before the backend accepted the connection."));
+      }
       if (state.socket === socket) {
         state.socket = null;
       }
@@ -489,7 +804,9 @@ function openSocket(url) {
         setStatus("The backend connection was lost. Reconnect before continuing.");
       }
       state.backendConnected = false;
+      state.backendUser = null;
       state.isCapturing = false;
+      renderAdminPanel();
       refreshControls();
     });
   });
@@ -515,7 +832,17 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "hello") {
+    applyBackendAuth(payload.auth);
     setMicrophoneAwareStatus(payload.message);
+    return;
+  }
+
+  if (payload.type === "auth") {
+    if (payload.user) {
+      state.backendUser = payload.user;
+      setAuthStatus(`Backend approved ${payload.user.email}.`);
+      renderAdminPanel();
+    }
     return;
   }
 
@@ -816,6 +1143,7 @@ function refreshControls() {
   ui.resetButton.disabled = state.isCapturing;
   ui.connectButton.disabled = state.isCapturing;
   ui.disconnectButton.disabled = !state.backendConnected && !state.socket;
+  ui.refreshUsersButton.disabled = state.backendUser?.role !== "admin";
   ui.startButton.disabled = !state.backendConnected || state.isCapturing;
   ui.stopButton.disabled = !state.isCapturing;
 }

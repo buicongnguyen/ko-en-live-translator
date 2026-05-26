@@ -98,6 +98,42 @@
       <details class="backend-drawer">
         <summary>Backend connection</summary>
         <div class="backend-content">
+          <section class="auth-card" aria-label="Account access">
+            <div>
+              <div class="field-label">Access</div>
+              <div id="auth-status" class="endpoint-preview">
+                Login is optional until Firebase config is added.
+              </div>
+            </div>
+            <div class="button-row compact">
+              <button id="google-login-button" class="secondary" disabled>
+                Sign in with Google
+              </button>
+              <button id="facebook-login-button" class="secondary" disabled>
+                Facebook
+              </button>
+              <button id="sign-out-button" class="secondary" disabled>
+                Sign out
+              </button>
+            </div>
+            <div id="user-card" class="endpoint-preview" hidden></div>
+          </section>
+
+          <section id="admin-panel" class="admin-panel" aria-label="Admin approvals" hidden>
+            <div class="admin-panel-head">
+              <div>
+                <div class="field-label">Admin</div>
+                <strong>Approved users</strong>
+              </div>
+              <button id="refresh-users-button" class="secondary compact-button">
+                Refresh users
+              </button>
+            </div>
+            <div id="admin-users" class="admin-users">
+              Connect an authenticated backend to manage users.
+            </div>
+          </section>
+
           <label class="field-label" for="backend-origin">Backend origin</label>
           <input
             id="backend-origin"
@@ -172,6 +208,7 @@
       </section>
     </main>
 
+    <script src="./firebase-config.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

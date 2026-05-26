@@ -482,6 +482,7 @@
             <div class="label">Contents</div>
             <a href="#definitions-first">Definitions first</a>
             <a href="#deployment-process">Deployment process</a>
+            <a href="#public-auth">Public login + GPU backend</a>
             <a href="#choose">Choose the app shape</a>
             <a href="#minimum-requirements">Minimum requirements</a>
             <a href="#install-resources">Install resources</a>
@@ -691,6 +692,130 @@ New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound
               GitHub Pages can show the guide and demo UI, but it cannot run the
               Python GPU backend. For real live translation, keep the backend on
               the RTX PC and connect to it over HTTPS/WSS.
+            </div>
+          </section>
+
+          <section class="section" id="public-auth">
+            <div class="section-head">
+              <div class="label">Public access</div>
+              <h2>GitHub Pages login with the RTX 4080 backend</h2>
+              <p>
+                GitHub Pages can be the public website, login screen, and
+                microphone UI. It still cannot run the GPU model or forward
+                live traffic by itself. The browser connects from
+                <code>github.io</code> to a separate HTTPS/WSS backend URL that
+                reaches the RTX 4080 Super PC.
+              </p>
+            </div>
+
+            <div class="diagram" aria-label="Public GitHub Pages auth flow">
+              <div class="label">Public flow</div>
+              <div class="flow">
+                <div class="flow-node">GitHub Pages UI</div>
+                <div class="flow-node">Firebase Google/Facebook login</div>
+                <div class="flow-node">Approved email check</div>
+                <div class="flow-node">ngrok or DuckDNS backend URL</div>
+                <div class="flow-node">RTX 4080 Super WebSocket</div>
+              </div>
+            </div>
+
+            <div class="model-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Piece</th>
+                    <th>Where it lives</th>
+                    <th>Secret?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Firebase web config</td>
+                    <td>Generated into <code>docs/firebase-config.js</code> during GitHub Pages deployment.</td>
+                    <td>No private key, but restrict Firebase authorized domains.</td>
+                  </tr>
+                  <tr>
+                    <td>Firebase Admin service account</td>
+                    <td>RTX PC only, for example <code>C:\Users\n\secrets\firebase-service-account.json</code>.</td>
+                    <td>Yes. Never commit it.</td>
+                  </tr>
+                  <tr>
+                    <td>Admin email</td>
+                    <td><code>ADMIN_EMAILS</code> environment variable on the RTX PC.</td>
+                    <td>Keep it out of the repo.</td>
+                  </tr>
+                  <tr>
+                    <td>User approvals</td>
+                    <td>Local SQLite database <code>data/auth-users.sqlite3</code> on the RTX PC.</td>
+                    <td>Local-only state, ignored by Git.</td>
+                  </tr>
+                  <tr>
+                    <td>Backend public URL</td>
+                    <td>Start with <code>ngrok http 8000</code>; later use DuckDNS + Caddy.</td>
+                    <td>The URL can be shared, but the backend still requires approved login.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="steps">
+              <article class="step">
+                <div class="step-number">01</div>
+                <div class="step-body">
+                  <h3>Deploy Firebase web config from GitHub variables</h3>
+                  <p>
+                    Add <code>FIREBASE_API_KEY</code>,
+                    <code>FIREBASE_AUTH_DOMAIN</code>,
+                    <code>FIREBASE_PROJECT_ID</code>, and
+                    <code>FIREBASE_APP_ID</code> as GitHub Actions variables.
+                    The workflow writes the public browser config during Pages
+                    deployment.
+                  </p>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">02</div>
+                <div class="step-body">
+                  <h3>Start the protected backend on the RTX PC</h3>
+                  <pre><code>$env:AUTH_REQUIRED="true"
+$env:FIREBASE_PROJECT_ID="your-firebase-project-id"
+$env:FIREBASE_CREDENTIALS_FILE="C:\Users\n\secrets\firebase-service-account.json"
+$env:ADMIN_EMAILS="your-email@gmail.com"
+$env:CORS_ALLOW_ORIGINS="https://buicongnguyen.github.io"
+python main.py</code></pre>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">03</div>
+                <div class="step-body">
+                  <h3>Forward the backend with HTTPS/WSS</h3>
+                  <p>
+                    For the first free test, run <code>ngrok http 8000</code>
+                    and paste the HTTPS ngrok origin into the GitHub Pages
+                    backend box. Later, use DuckDNS + Caddy for a stable
+                    no-monthly-cost URL.
+                  </p>
+                </div>
+              </article>
+
+              <article class="step">
+                <div class="step-number">04</div>
+                <div class="step-body">
+                  <h3>Approve users from the web admin panel</h3>
+                  <p>
+                    Unknown users become <code>pending</code>. Your admin
+                    account can refresh users, approve trusted emails, block
+                    abuse, and let approved users reconnect to use the GPU.
+                  </p>
+                </div>
+              </article>
+            </div>
+
+            <div class="callout important">
+              Full runbook:
+              <a href="./public-auth-deployment.md">docs/public-auth-deployment.md</a>.
             </div>
           </section>
 
@@ -2064,6 +2189,26 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
               <article class="source-card">
                 <h3>Cloudflare WebSockets</h3>
                 <p><a href="https://developers.cloudflare.com/network/websockets/" target="_blank" rel="noreferrer">WebSocket support needed for live microphone audio streaming</a></p>
+              </article>
+              <article class="source-card">
+                <h3>GitHub Pages</h3>
+                <p><a href="https://docs.github.com/pages/getting-started-with-github-pages/what-is-github-pages" target="_blank" rel="noreferrer">Static hosting boundary for the public frontend</a></p>
+              </article>
+              <article class="source-card">
+                <h3>GitHub Actions limits</h3>
+                <p><a href="https://docs.github.com/actions/reference/limits" target="_blank" rel="noreferrer">Why Actions should not be used as a permanent GPU server tunnel</a></p>
+              </article>
+              <article class="source-card">
+                <h3>Firebase Authentication</h3>
+                <p><a href="https://firebase.google.com/docs/auth/" target="_blank" rel="noreferrer">Google/Facebook sign-in used by the GitHub Pages frontend</a></p>
+              </article>
+              <article class="source-card">
+                <h3>ngrok WebSockets</h3>
+                <p><a href="https://ngrok.com/docs/using-ngrok-with/websockets/" target="_blank" rel="noreferrer">Free test tunnel option that supports the live WebSocket path</a></p>
+              </article>
+              <article class="source-card">
+                <h3>DuckDNS</h3>
+                <p><a href="https://www.duckdns.org/" target="_blank" rel="noreferrer">Free dynamic DNS option for a stable backend hostname</a></p>
               </article>
               <article class="source-card">
                 <h3>Qualcomm WhisperKit Android</h3>
