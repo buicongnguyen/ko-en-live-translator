@@ -607,7 +607,11 @@ async function currentAuthToken() {
 }
 
 function authHeaders(token) {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {
+    // Free ngrok domains show an interstitial HTML warning unless API clients opt out.
+    "ngrok-skip-browser-warning": "true",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 }
 
 async function readableHttpError(response) {

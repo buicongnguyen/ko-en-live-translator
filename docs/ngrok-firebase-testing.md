@@ -318,6 +318,8 @@ Correct: https://abc123.ngrok-free.app
 Wrong:   https://abc123.ngrok-free.app/api/health
 ```
 
+If the app says `Unexpected token '<'`, the browser received the ngrok warning page instead of JSON. The frontend now sends the `ngrok-skip-browser-warning` API header; refresh GitHub Pages with `Ctrl + F5` after the newest deploy.
+
 If microphone does not start, use HTTPS. Browser microphone access is blocked on normal LAN HTTP.
 
 If Korean transcript is poor, test with `WHISPER_MODEL=large-v3`, quiet audio, and clear speech.
