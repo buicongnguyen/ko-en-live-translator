@@ -51,6 +51,14 @@ Set-Location C:\Users\n\source\repos\Transcribe_translate
 .\start-lan-https.ps1
 ```
 
+After Firebase is configured, start the protected Google-login backend with:
+
+```powershell
+.\start-protected-https.ps1 `
+  -FirebaseProjectId "your-firebase-project-id" `
+  -AdminEmails "your-email@gmail.com"
+```
+
 Then open:
 
 ```text

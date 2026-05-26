@@ -201,7 +201,7 @@ If Firebase asks for the ngrok domain during testing, add the current ngrok doma
 
 In Firebase project settings, create or open the Web App config.
 
-Add these values to GitHub repository variables:
+Add these values to GitHub repository variables. You can either use the GitHub website:
 
 ```text
 GitHub repo
@@ -223,6 +223,20 @@ FIREBASE_STORAGE_BUCKET
 ```
 
 These are browser web config values. They are not the Firebase Admin private key.
+
+Or run this local helper script from the repo:
+
+```powershell
+Set-Location C:\Users\n\source\repos\Transcribe_translate
+
+.\set-firebase-github-vars.ps1 `
+  -ApiKey "firebase-api-key-from-web-config" `
+  -AuthDomain "your-project-id.firebaseapp.com" `
+  -ProjectId "your-project-id" `
+  -AppId "firebase-web-app-id" `
+  -MessagingSenderId "firebase-sender-id" `
+  -StorageBucket "your-project-id.appspot.com"
+```
 
 After saving variables, re-run the GitHub Pages workflow or push a small commit.
 
@@ -247,32 +261,15 @@ Get-NetTCPConnection -LocalPort 8443 | Select-Object LocalAddress,LocalPort,Stat
 Stop-Process -Id <OwningProcess>
 ```
 
-Start the backend with Firebase protection:
+Start the backend with Firebase protection. The helper script below sets `AUTH_REQUIRED=true`, points to the local Firebase Admin JSON, and creates the local approval database:
 
 ```powershell
 Set-Location C:\Users\n\source\repos\Transcribe_translate
 
-$env:APP_HOST="0.0.0.0"
-$env:APP_PORT="8443"
-$env:WHISPER_MODEL="large-v3"
-$env:WHISPER_DEVICE="cuda"
-$env:WHISPER_COMPUTE_TYPE="float16"
-$env:WHISPER_BEAM_SIZE="1"
-$env:SHOW_SOURCE_TEXT="true"
-
-$env:AUTH_REQUIRED="true"
-$env:AUTH_PROVIDER="firebase"
-$env:FIREBASE_PROJECT_ID="your-firebase-project-id"
-$env:FIREBASE_CREDENTIALS_FILE="C:\Users\n\secrets\firebase-service-account.json"
-$env:ADMIN_EMAILS="your-email@gmail.com"
-$env:APPROVED_EMAILS=""
-$env:CORS_ALLOW_ORIGINS="https://buicongnguyen.github.io"
-
-.\.venv\Scripts\python.exe -m uvicorn live_translate.app:app `
-  --host 0.0.0.0 `
-  --port 8443 `
-  --ssl-certfile https\translate-local.pem `
-  --ssl-keyfile https\translate-local-key.pem
+.\start-protected-https.ps1 `
+  -FirebaseProjectId "your-firebase-project-id" `
+  -AdminEmails "your-email@gmail.com" `
+  -FirebaseCredentialsFile "C:\Users\n\secrets\firebase-service-account.json"
 ```
 
 Replace:
