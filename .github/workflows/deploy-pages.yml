@@ -57,6 +57,10 @@ jobs:
             'docs/firebase-config.js',
             `window.TRANSLATOR_FIREBASE_CONFIG = ${JSON.stringify(config, null, 2)};\n`,
           );
+          fs.writeFileSync(
+            'docs/firebase-config.generated.js',
+            `window.TRANSLATOR_FIREBASE_CONFIG = ${JSON.stringify(config, null, 2)};\n`,
+          );
           NODE
 
       - name: Upload static site artifact
