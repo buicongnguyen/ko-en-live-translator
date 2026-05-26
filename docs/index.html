@@ -96,9 +96,43 @@
       </header>
 
       <details class="backend-drawer">
-        <summary>Backend connection</summary>
+        <summary>Setup steps</summary>
         <div class="backend-content">
-          <section class="backend-connect-card" aria-label="Backend server connection">
+          <section class="auth-card setup-step" aria-label="Step 1 account access">
+            <div class="step-heading">
+              <span class="step-number">1</span>
+              <div>
+                <div class="field-label">Access</div>
+                <strong>Sign in with Google</strong>
+                <p class="step-copy">Use your approved Google account before connecting to the RTX backend.</p>
+              </div>
+            </div>
+            <div id="auth-status" class="endpoint-preview">
+              Firebase login is optional until the protected backend is configured.
+            </div>
+            <div class="button-row compact">
+              <button id="google-login-button" class="secondary" disabled>
+                Sign in with Google
+              </button>
+              <button id="facebook-login-button" class="secondary" disabled>
+                Facebook
+              </button>
+              <button id="sign-out-button" class="secondary" disabled>
+                Sign out
+              </button>
+            </div>
+            <div id="user-card" class="endpoint-preview" hidden></div>
+          </section>
+
+          <section class="backend-connect-card setup-step" aria-label="Step 2 backend server connection">
+            <div class="step-heading">
+              <span class="step-number">2</span>
+              <div>
+                <div class="field-label">Backend</div>
+                <strong>Connect backend</strong>
+                <p class="step-copy">Use the ngrok or HTTPS origin from the RTX 4080 Super host PC.</p>
+              </div>
+            </div>
             <div class="connection-field">
               <label class="field-label" for="backend-origin">Backend origin</label>
               <input
@@ -119,27 +153,6 @@
                 Disconnect
               </button>
             </div>
-          </section>
-
-          <section class="auth-card" aria-label="Account access">
-            <div>
-              <div class="field-label">Access</div>
-              <div id="auth-status" class="endpoint-preview">
-                Firebase login is optional until the protected backend is configured.
-              </div>
-            </div>
-            <div class="button-row compact">
-              <button id="google-login-button" class="secondary" disabled>
-                Sign in with Google
-              </button>
-              <button id="facebook-login-button" class="secondary" disabled>
-                Facebook
-              </button>
-              <button id="sign-out-button" class="secondary" disabled>
-                Sign out
-              </button>
-            </div>
-            <div id="user-card" class="endpoint-preview" hidden></div>
           </section>
 
           <section id="admin-panel" class="admin-panel" aria-label="Admin approvals" hidden>

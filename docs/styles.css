@@ -227,7 +227,7 @@ button:disabled {
   padding: 0 12px 12px;
   display: grid;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .field-label {
@@ -264,10 +264,48 @@ button:disabled {
 }
 
 .backend-connect-card {
-  grid-template-columns: minmax(240px, 1fr) auto;
-  align-items: end;
+  grid-template-columns: minmax(220px, 0.75fr) minmax(240px, 1fr) auto;
+  align-items: center;
   border-color: rgba(18, 109, 98, 0.24);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(220, 244, 236, 0.62));
+}
+
+.setup-step {
+  position: relative;
+}
+
+.step-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.step-heading strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+}
+
+.step-number {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fffaf0;
+  font-size: 0.95rem;
+  font-weight: 950;
+  box-shadow: 0 10px 20px rgba(18, 109, 98, 0.18);
+}
+
+.step-copy {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .connection-field {
@@ -280,7 +318,7 @@ button:disabled {
 }
 
 .auth-card {
-  grid-template-columns: minmax(220px, 1fr) auto minmax(180px, 0.8fr);
+  grid-template-columns: minmax(220px, 0.75fr) minmax(220px, 1fr) auto minmax(180px, 0.7fr);
   align-items: center;
 }
 
