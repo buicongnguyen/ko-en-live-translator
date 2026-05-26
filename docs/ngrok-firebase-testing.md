@@ -323,6 +323,7 @@ If Korean transcript is poor, test with `WHISPER_MODEL=large-v3`, quiet audio, a
 
 ## Reference Links
 
+- Windows service management: ./windows-service-management.md
 - ngrok signup: https://dashboard.ngrok.com/signup
 - ngrok authtoken: https://dashboard.ngrok.com/get-started/your-authtoken
 - ngrok WebSockets: https://ngrok.com/docs/using-ngrok-with/websockets/
