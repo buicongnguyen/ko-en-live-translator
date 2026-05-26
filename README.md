@@ -20,6 +20,7 @@ The setup guide for the two app shapes is in [docs/setup-guide.html](docs/setup-
 The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](docs/windows-rtx4080-deployment.md).
 The Galaxy S25 native-phone plan is in [docs/galaxy-s25-native.md](docs/galaxy-s25-native.md).
 The public GitHub Pages login and RTX backend plan is in [docs/public-auth-deployment.md](docs/public-auth-deployment.md).
+The step-by-step ngrok and Firebase testing runbook is in [docs/ngrok-firebase-testing.md](docs/ngrok-firebase-testing.md).
 
 - It works as a polished demo on `github.io` with a built-in simulated live subtitle flow.
 - It can also connect to a separately deployed backend over `https://` and `wss://`.
