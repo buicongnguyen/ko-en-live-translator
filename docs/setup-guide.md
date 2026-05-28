@@ -170,7 +170,7 @@ Use these settings before allowing more than one person to test.
 Default protected backend settings:
 
 ```text
-MAX_ACTIVE_SESSIONS=2
+MAX_ACTIVE_SESSIONS=4
 IDLE_TIMEOUT_SECONDS=300
 MAX_TRANSLATION_QUEUE_SEGMENTS=2
 GPU_MAX_TEMPERATURE_C=85
@@ -178,16 +178,18 @@ GPU_MAX_TEMPERATURE_C=85
 
 Meaning:
 
-- `MAX_ACTIVE_SESSIONS=2`: allows two active live translation sessions. A third user gets a busy message.
+- `MAX_ACTIVE_SESSIONS=4`: allows four connected live translation sessions by default. This is reasonable when not everyone talks at the same time.
 - `IDLE_TIMEOUT_SECONDS=300`: disconnects a browser after five minutes without microphone audio.
 - `MAX_TRANSLATION_QUEUE_SEGMENTS=2`: drops older queued speech when the GPU falls behind, keeping live translation current.
 - `GPU_MAX_TEMPERATURE_C=85`: blocks new sessions if `nvidia-smi` reports the GPU at or above 85C.
 
-Test three active sessions only after latency and temperature look stable:
+To test eight mostly idle users later:
 
 ```powershell
-.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 3
+.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 8
 ```
+
+Use the admin panel to watch queue size, dropped segments, and GPU temperature. If several users talk at once and latency rises, lower the cap back to `4`.
 
 Watch GPU status:
 
@@ -574,7 +576,7 @@ Use this checklist before comparing the app against Transync AI or another comme
 - Recovery: unplugging the mic or losing the server connection shows a readable error and can reconnect.
 - Thermals: run for 15 minutes and watch GPU memory, fan noise, temperature, and whether latency drifts upward.
 - Admin: pending users appear in the admin panel and approved users can reconnect.
-- Session cap: a third active user receives a busy message when `MAX_ACTIVE_SESSIONS=2`.
+- Session cap: a fifth active user receives a busy message when `MAX_ACTIVE_SESSIONS=4`.
 
 ## Useful Project Docs
 

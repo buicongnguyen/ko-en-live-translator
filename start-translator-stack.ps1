@@ -4,7 +4,7 @@ param(
     [string]$FirebaseCredentialsFile = "$env:USERPROFILE\secrets\firebase-service-account.json",
     [string]$BackendOrigin = "https://127.0.0.1:8443",
     [int]$BackendPort = 8443,
-    [int]$MaxActiveSessions = 2,
+    [int]$MaxActiveSessions = 4,
     [int]$IdleTimeoutSeconds = 300,
     [int]$MaxTranslationQueueSegments = 2,
     [int]$GpuMaxTemperatureC = 85,

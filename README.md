@@ -70,12 +70,14 @@ For normal daily operation after setup, use:
 
 The protected startup uses safe defaults for one RTX 4080 Super:
 
-- Maximum active live sessions: `2`
+- Maximum active live sessions: `4`
 - Idle disconnect: `5` minutes without microphone audio
 - Translation backlog: `2` queued speech segments
 - New-session GPU temperature limit: `85C`
 
 Admins can see active sessions, last audio time, queue drops, and GPU temperature from the website admin panel after signing in.
+
+You can try `-MaxActiveSessions 8` for mostly idle users, but the RTX 4080 Super still runs one shared inference pipeline. If many people speak at the same time, latency and dropped queued segments can increase.
 
 Then open:
 

@@ -928,8 +928,8 @@
             <div class="topic-content">
               <div class="setting-list">
                 <article class="setting-item">
-                  <code>MAX_ACTIVE_SESSIONS=2</code>
-                  <p>Allows two active live translation sessions. A third user gets a busy message.</p>
+                  <code>MAX_ACTIVE_SESSIONS=4</code>
+                  <p>Allows four connected live translation sessions by default. This is reasonable when not everyone talks at the same time.</p>
                 </article>
                 <article class="setting-item">
                   <code>IDLE_TIMEOUT_SECONDS=300</code>
@@ -945,12 +945,12 @@
                 </article>
               </div>
               <ol class="compact-steps">
-                <li>Keep the default <code>MAX_ACTIVE_SESSIONS=2</code> while testing reliability.</li>
-                <li>Try <code>-MaxActiveSessions 3</code> only after latency and GPU temperature stay stable.</li>
+                <li>Keep the default <code>MAX_ACTIVE_SESSIONS=4</code> for normal use.</li>
+                <li>Try <code>-MaxActiveSessions 8</code> only for mostly idle users after latency, queue drops, and GPU temperature stay stable.</li>
                 <li>Use the web admin panel to watch active users, last audio time, queue size, dropped segments, and GPU temperature.</li>
                 <li>Keep the RTX PC ventilated and avoid heavy games or GPU work while translating.</li>
               </ol>
-              <pre><code>.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 3
+              <pre><code>.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 8
 nvidia-smi</code></pre>
             </div>
           </details>

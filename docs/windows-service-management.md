@@ -91,7 +91,7 @@ If ngrok creates a new URL after restart, use the new URL. Free ngrok URLs may c
 The normal startup script protects the single RTX 4080 Super GPU with these defaults:
 
 ```text
-MAX_ACTIVE_SESSIONS=2
+MAX_ACTIVE_SESSIONS=4
 IDLE_TIMEOUT_SECONDS=300
 MAX_TRANSLATION_QUEUE_SEGMENTS=2
 GPU_MAX_TEMPERATURE_C=85
@@ -99,18 +99,18 @@ GPU_MAX_TEMPERATURE_C=85
 
 Meaning:
 
-- `MAX_ACTIVE_SESSIONS=2` allows two browsers to hold a live backend connection at the same time. A third user receives a busy message instead of overloading the GPU.
+- `MAX_ACTIVE_SESSIONS=4` allows four browsers to hold a live backend connection at the same time. This is a safer default for mostly idle users than `8`.
 - `IDLE_TIMEOUT_SECONDS=300` closes a browser session after five minutes without microphone audio.
 - `MAX_TRANSLATION_QUEUE_SEGMENTS=2` keeps translation live by dropping older queued speech if the GPU falls behind.
 - `GPU_MAX_TEMPERATURE_C=85` blocks new translation sessions if `nvidia-smi` reports the GPU at or above 85C.
 
-To test three simultaneous users later:
+To test eight mostly idle users later:
 
 ```powershell
-.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 3
+.\start-translator-stack.ps1 -RestartBackend -MaxActiveSessions 8
 ```
 
-Start with `2` for normal use. Increase only if latency stays acceptable and the GPU temperature stays comfortably below 85C.
+Start with `4` for normal use. Try `8` only if users are not talking continuously, latency stays acceptable, queue drops stay low, and the GPU temperature stays comfortably below 85C.
 
 The admin panel in the website shows:
 

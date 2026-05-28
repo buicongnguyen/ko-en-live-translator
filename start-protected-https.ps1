@@ -14,7 +14,7 @@ param(
     [string]$WhisperDevice = "cuda",
     [string]$WhisperComputeType = "float16",
     [int]$WhisperBeamSize = 1,
-    [int]$MaxActiveSessions = 2,
+    [int]$MaxActiveSessions = 4,
     [int]$IdleTimeoutSeconds = 300,
     [int]$MaxTranslationQueueSegments = 2,
     [int]$GpuMaxTemperatureC = 85

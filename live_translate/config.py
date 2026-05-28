@@ -32,7 +32,7 @@ class Settings:
     approved_emails: str = os.getenv("APPROVED_EMAILS", "")
     allow_unverified_auth_email: bool = _env_bool("ALLOW_UNVERIFIED_AUTH_EMAIL", False)
     auth_database_path: Path = Path(os.getenv("AUTH_DATABASE_PATH", "data/auth-users.sqlite3"))
-    max_active_sessions: int = int(os.getenv("MAX_ACTIVE_SESSIONS", "2"))
+    max_active_sessions: int = int(os.getenv("MAX_ACTIVE_SESSIONS", "4"))
     idle_timeout_seconds: int = int(os.getenv("IDLE_TIMEOUT_SECONDS", "300"))
     max_translation_queue_segments: int = int(os.getenv("MAX_TRANSLATION_QUEUE_SEGMENTS", "2"))
     gpu_status_enabled: bool = _env_bool("GPU_STATUS_ENABLED", True)

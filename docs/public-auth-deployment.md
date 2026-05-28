@@ -181,7 +181,7 @@ Unknown user signs in
 
 Authentication protects who can use the GPU. The next protection layer should limit how much they can use it:
 
-- Maximum active sessions, for example `1` or `2`.
+- Maximum active sessions, default `4`; try `8` only for mostly idle users after latency and GPU temperature look stable.
 - Idle timeout if no speech is detected.
 - GPU temperature guard with `nvidia-smi`.
 - Admin dashboard showing active users, GPU temperature, and reject/stop controls.
