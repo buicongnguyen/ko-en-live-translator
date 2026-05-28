@@ -146,6 +146,7 @@ const ui = {
   audioText: document.getElementById("audio-text"),
   backendSummaryStatus: document.getElementById("backend-summary-status"),
   themeToggleButton: document.getElementById("theme-toggle-button"),
+  backendDrawer: document.querySelector(".backend-drawer"),
 };
 
 ui.demoButton.addEventListener("click", playDemo);
@@ -429,6 +430,7 @@ async function connectBackend() {
     ui.audioText.textContent = "Audio: -";
     setStatus("Backend connected. Starting microphone capture.");
     refreshControls();
+    returnToConversationView();
     await loadAdminUsers();
     await startCapture();
   } catch (error) {
@@ -1036,6 +1038,21 @@ function applyTheme(theme, options = {}) {
     "aria-label",
     isDark ? "Switch to light mode" : "Switch to dark mode"
   );
+}
+
+function returnToConversationView() {
+  ui.backendDrawer?.removeAttribute("open");
+  window.requestAnimationFrame(() => {
+    ui.conversationTranscript?.scrollIntoView({
+      block: "nearest",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+    ui.conversationTranscript?.focus({ preventScroll: true });
+  });
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 }
 
 function publishTranslation(payload) {
