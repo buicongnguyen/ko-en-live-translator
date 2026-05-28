@@ -238,6 +238,16 @@ Read these terms before debugging setup problems.
 
 Use this order when the RTX PC hosts the backend and a smartphone or laptop uses its microphone.
 
+```mermaid
+flowchart TD
+    S1[1. Run locally\nhttp://127.0.0.1:8000] --> S2[2. Bind to LAN\nAPP_HOST=0.0.0.0]
+    S2 --> S3[3. Open firewall\nTCP 8000 + 8443]
+    S3 --> S4[4. Add HTTPS\nCaddy / Uvicorn :8443]
+    S4 --> S5[5. Open from phone\nhttps://192.168.0.20:8443]
+```
+
+*Five-step deployment sequence from local to phone access.*
+
 ### 1. Run Locally On The Host PC First
 
 This confirms Python, CUDA, the model, and microphone capture work before adding network complexity.
@@ -421,6 +431,17 @@ $env:WHISPER_MODEL="base"
 $env:WHISPER_DEVICE="cpu"
 $env:WHISPER_COMPUTE_TYPE="int8"
 ```
+
+```mermaid
+flowchart TD
+    Q{GPU available?} -- RTX 4080 Super\n16 GB VRAM --> A[large-v3\nfloat16 CUDA]
+    Q -- A1000 / 8 GB GPU --> B{Quality or speed?}
+    Q -- No GPU / CPU only --> C[base\nint8 CPU]
+    B -- Quality --> D[medium\nint8_float16]
+    B -- Speed --> E[small\nint8_float16]
+```
+
+*GPU model selection: pick the preset that matches your hardware.*
 
 Noise and hallucination filters:
 

@@ -2,6 +2,16 @@
 
 Use this checklist when you want to access the home RTX PC from another network without installing Tailscale or changing router settings.
 
+```mermaid
+flowchart LR
+    A[RTX PC\nlocalhost:8443] --> B[ngrok client]
+    B --> C[ngrok cloud]
+    C --> D[Public HTTPS URL\nabc123.ngrok-free.app]
+    E[GitHub Pages\nbrowser] --> D
+```
+
+*ngrok tunnel architecture: RTX PC exposed via ngrok to any browser.*
+
 ## What The Words Mean
 
 - ngrok tunnel: an outbound connection from the RTX PC to ngrok that creates a public HTTPS URL.

@@ -9,6 +9,24 @@ Use this checklist when you want only approved Google accounts to access your RT
 - Firebase Admin service account JSON: private backend key used by Python to verify login tokens. Keep it outside GitHub.
 - Admin email: the email that can approve or block other users from the web admin panel.
 
+```mermaid
+sequenceDiagram
+    participant U as User browser
+    participant F as Firebase Auth
+    participant B as RTX Backend
+    participant DB as SQLite (RTX PC)
+    U->>F: Sign in with Google
+    F-->>U: Firebase ID token
+    U->>B: Connect + ID token
+    B->>F: Verify token (Admin SDK)
+    F-->>B: Token valid + email
+    B->>DB: Lookup email status
+    DB-->>B: pending / approved / blocked
+    B-->>U: Allow or deny WebSocket
+```
+
+*Firebase auth sequence: token issued by Google, verified by RTX backend.*
+
 ## Before You Start
 
 - You have a Firebase project.
@@ -114,6 +132,20 @@ For normal daily startup, copy `translator-stack.local.example.psd1` to `transla
 8. The user reconnects and allows microphone permission.
 
 ## Security Notes
+
+```mermaid
+flowchart LR
+    subgraph Public ["Public (GitHub / GitHub Pages)"]
+        W[Firebase Web config\nAPI key, auth domain,\nproject ID, app ID]
+    end
+    subgraph Private ["Private (RTX PC only)"]
+        J[Firebase Admin JSON\nservice account key]
+        A[ADMIN_EMAILS env var]
+        DB[auth-users.sqlite3]
+    end
+```
+
+*Public vs private data: web config is safe to publish; Admin JSON must never leave the RTX PC.*
 
 - Safe to publish: Firebase Web config values.
 - Never publish: Firebase Admin service account JSON.

@@ -113,6 +113,19 @@ Set-Location C:\Users\n\source\repos\Transcribe_translate
 .\uninstall-startup-task.ps1
 ```
 
+## Restart Decision Tree
+
+```mermaid
+flowchart TD
+    Q{What changed?}
+    Q -- Python code only --> A[start-translator-stack.ps1\n-RestartBackend]
+    Q -- ngrok config / URL --> B[start-translator-stack.ps1\n-RestartBackend -RestartNgrok]
+    Q -- Persistent trouble --> C[stop-translator-stack.ps1]
+    C --> D[start-translator-stack.ps1]
+```
+
+*When to restart backend only vs. both backend and ngrok.*
+
 ## Troubleshooting
 
 - Port `8443` already used: run `.\stop-translator-stack.ps1`, then start again.

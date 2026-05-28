@@ -41,6 +41,15 @@ Use this order when the RTX PC is the server and a phone or laptop is the microp
 4. Put HTTPS in front of FastAPI: use Caddy or another reverse proxy from `https://192.168.0.20:8443` to `http://127.0.0.1:8000`.
 5. Open the HTTPS URL on the phone: allow microphone permission, speak Korean, and let the PC GPU return English subtitles.
 
+```mermaid
+flowchart LR
+    A[localhost\nhttp :8000] --> B[LAN HTTP\n:8000]
+    B --> C[LAN HTTPS\n:8443]
+    C --> D[Public ngrok\nhttps URL]
+```
+
+*Deployment progression: local → LAN → HTTPS → public.*
+
 Current standalone project path:
 
 ```powershell
@@ -118,6 +127,21 @@ For that reason, this app defaults to `medium` for better translation quality, w
 4. Each utterance is translated from the selected source language to the selected target language.
 5. Whisper handles speech recognition and direct speech-to-English translation. Non-English targets can use an optional local text translation model after the English pivot.
 6. The browser renders source transcript and target translation in two scrollable, copyable text boxes.
+
+```mermaid
+flowchart LR
+    A[Browser mic] --> B[16 kHz PCM]
+    B --> C[WebSocket /ws]
+    C --> D[VAD segmenter]
+    D --> E[faster-whisper]
+    E --> F{Non-English\ntarget?}
+    F -- Yes --> G[Text translation\nmodel]
+    F -- No --> H[WebSocket event]
+    G --> H
+    H --> I[Transcript boxes]
+```
+
+*Full audio pipeline: browser to GPU to transcript UI.*
 
 ## Quick start
 

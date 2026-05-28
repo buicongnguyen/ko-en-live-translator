@@ -17,6 +17,22 @@ Use this checklist when the RTX PC backend and ngrok tunnel are already running.
 
 ## Steps
 
+```mermaid
+sequenceDiagram
+    participant U as User browser
+    participant F as Firebase Auth
+    participant B as RTX Backend
+    U->>F: Sign in with Google
+    F-->>U: ID token
+    U->>B: Connect + ID token
+    B-->>U: Approved / Pending
+    U->>U: Allow mic permission
+    U->>B: Audio stream (WebSocket)
+    B-->>U: Transcript + translation
+```
+
+*Connection flow from sign-in to live transcript.*
+
 1. Open the app:
 
    ```text
@@ -39,6 +55,18 @@ Use this checklist when the RTX PC backend and ngrok tunnel are already running.
 10. Speak and check that source transcript and translation appear.
 
 ## Admin User Test
+
+```mermaid
+stateDiagram-v2
+    [*] --> Unknown: User signs in
+    Unknown --> Pending: Backend records email
+    Pending --> Approved: Admin approves
+    Pending --> Blocked: Admin blocks
+    Approved --> Active: User reconnects
+    Blocked --> [*]
+```
+
+*User approval lifecycle from first sign-in to active session.*
 
 If you are the admin:
 

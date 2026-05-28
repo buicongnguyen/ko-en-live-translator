@@ -13,6 +13,30 @@ User browser anywhere
 
 GitHub Pages does not forward traffic to the GPU. The browser connects directly from the GitHub Pages frontend to a separate HTTPS backend URL.
 
+```mermaid
+flowchart LR
+    subgraph Public zone
+        U[User browser\nanywhere]
+        GH[GitHub Pages\nfrontend]
+        FB[Firebase Auth\nGoogle / Facebook]
+    end
+    subgraph Private zone
+        NG[ngrok / DuckDNS\npublic URL]
+        B[RTX Backend\nFastAPI :8443]
+        W[faster-whisper\nlarge-v3 GPU]
+        DB[SQLite\napproval DB]
+    end
+    U --> GH
+    GH --> FB
+    FB --> U
+    U --> NG --> B
+    B --> DB
+    B --> W
+    W --> B --> U
+```
+
+*Full public auth architecture: public frontend talks to private GPU backend via ngrok.*
+
 ## What Is Public And What Must Stay Private
 
 | Item | Where it lives | Safe to publish? | Notes |
@@ -166,6 +190,18 @@ Unknown user signs in
   -> admin clicks Approve
   -> user reconnects and can translate
 ```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Unknown user signs in
+    Pending --> Approved: Admin clicks Approve
+    Pending --> Blocked: Admin clicks Block
+    Approved --> Active: User reconnects
+    Active --> [*]: User disconnects
+    Blocked --> [*]
+```
+
+*Admin approval state machine: pending → approved → active.*
 
 ## GPU Protection To Add Next
 

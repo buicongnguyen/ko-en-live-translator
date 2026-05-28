@@ -201,6 +201,16 @@ http://192.168.0.20:8000/api/health
 
 ## HTTPS Plan For Laptop Or Phone Microphone Access
 
+```mermaid
+flowchart LR
+    P[Phone / Laptop browser] --> |HTTPS :8443| C[Caddy reverse proxy]
+    C --> |HTTP :8000| F[FastAPI backend]
+    F --> |CUDA float16| G[RTX 4080 SUPER\nWhisper large-v3]
+    G --> F --> C --> P
+```
+
+*Network path for phone or laptop microphone access through Caddy to GPU.*
+
 For a browser on another laptop or smartphone to use its microphone, use HTTPS. The recommended local-network setup is:
 
 ```text
@@ -242,6 +252,16 @@ https://192.168.0.20:8443/api/health
 and receive a healthy `large-v3` CUDA response. If another laptop still says "site can't be reached", add the `8443` firewall rule from Administrator PowerShell.
 
 You can still use Caddy as a reverse proxy if it is installed. In that setup, keep FastAPI on port `8000` and let Caddy expose port `8443`.
+
+```mermaid
+flowchart TD
+    A[mkcert -install] --> B[mkcert -cert-file translate-local.pem\n-key-file translate-local-key.pem]
+    B --> C[Caddyfile\nhttps://192.168.0.20:8443]
+    C --> D[caddy run --config Caddyfile]
+    D --> E[HTTPS ready\nreverse_proxy → :8000]
+```
+
+*HTTPS setup: mkcert generates local cert, Caddy serves it on port 8443.*
 
 Install tools:
 

@@ -26,6 +26,24 @@ https://buicongnguyen.github.io/ko-en-live-translator/setup-guide.html#setup-hub
 4. Test with [Access and connect](setup-access-connect.md).
 5. Before sharing with other people, review [GPU and session safety](setup-gpu-safety.md).
 
+```mermaid
+flowchart TD
+    G{What is your goal?}
+    G --> A[Access & connect\nsetup-access-connect.md]
+    G --> B[Firebase login\nsetup-firebase-admin.md]
+    G --> C[ngrok tunnel\nsetup-ngrok-tunnel.md]
+    G --> D[Windows RTX backend\nsetup-windows-rtx-backend.md]
+    G --> E[GPU safety\nsetup-gpu-safety.md]
+
+    B -->|Step 1| O[Recommended order]
+    D -->|Step 2| O
+    C -->|Step 3| O
+    A -->|Step 4| O
+    E -->|Step 5| O
+```
+
+*Choose by goal, or follow the recommended order top-to-bottom.*
+
 ## Important Rule
 
 GitHub Pages is only the frontend. It cannot run the AI model, cannot use the RTX GPU, and cannot forward traffic to your PC by itself. The browser page must connect to a separate HTTPS/WSS backend URL that reaches the Windows RTX PC.

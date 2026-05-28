@@ -10,6 +10,21 @@ Use this checklist before allowing more than one person to test the translator.
 - Stale audio: old audio that should be dropped instead of translated late.
 - GPU temperature guard: blocks new sessions when `nvidia-smi` reports the GPU is too hot.
 
+```mermaid
+stateDiagram-v2
+    [*] --> New: Browser connects
+    New --> Approved: Email approved
+    New --> Rejected: Max sessions reached\nor GPU too hot
+    Approved --> Active: Mic audio received
+    Active --> Idle: No audio for a while
+    Idle --> Active: Audio resumes
+    Idle --> Disconnected: Idle timeout (5 min)
+    Active --> Disconnected: Admin stops session
+    Disconnected --> [*]
+```
+
+*Session lifecycle: from browser connect to disconnect.*
+
 ## Default Safe Settings
 
 The protected startup script uses these defaults:
@@ -77,6 +92,16 @@ nvidia-smi
 - Below 75C: comfortable.
 - 75C to 84C: usable, but watch it.
 - 85C or higher: stop adding sessions, improve airflow, or reduce load.
+
+```mermaid
+flowchart TD
+    T{GPU temperature}
+    T -- below 75C --> G[Comfortable\nnormal operation]
+    T -- 75C to 84C --> W[Usable\nmonitor closely]
+    T -- 85C or above --> H[Pause new sessions\nimprove airflow]
+```
+
+*GPU temperature decision guide.*
 
 ## Practical Advice
 

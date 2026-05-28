@@ -12,6 +12,22 @@ Browser anywhere
   -> RTX 4080 Super local translator
 ```
 
+```mermaid
+flowchart TD
+    S1[Step 1: Verify RTX backend on LAN] --> S2[Step 2: Install and configure ngrok]
+    S2 --> S3[Step 3: Start ngrok tunnel]
+    S3 --> S4[Step 4: Test GitHub Pages with ngrok]
+    S4 --> S5{Firebase configured?}
+    S5 -- No --> S6[Step 6: Configure Firebase Google login]
+    S5 -- Yes --> S8[Step 8: Restart backend with Firebase]
+    S6 --> S7[Step 7: Add Firebase Web config to GitHub]
+    S7 --> S8
+    S8 --> S9[Step 9: Create Admin key on RTX PC]
+    S9 --> S10[Step 10: Test admin approval workflow]
+```
+
+*End-to-end testing sequence for ngrok + Firebase integration.*
+
 GitHub Pages is only the frontend. The GPU work still runs on this PC.
 
 ## Current Test Links

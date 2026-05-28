@@ -31,6 +31,19 @@ This local config is ignored by Git.
 
 ## Daily Commands
 
+```mermaid
+flowchart TD
+    A[start-translator-stack.ps1] --> B[status-translator-stack.ps1]
+    B --> C{Action needed?}
+    C -- Code changed --> D[start-translator-stack.ps1\n-RestartBackend]
+    C -- ngrok URL changed --> E[start-translator-stack.ps1\n-RestartBackend -RestartNgrok]
+    C -- Done for the day --> F[stop-translator-stack.ps1]
+    D --> B
+    E --> B
+```
+
+*Daily operation flowchart: start, check status, restart if needed, stop.*
+
 Start everything:
 
 ```powershell
@@ -60,6 +73,16 @@ Set-Location C:\Users\n\source\repos\Transcribe_translate
 ```
 
 ## Install Auto Start At Windows Logon
+
+```mermaid
+flowchart LR
+    A[Windows user logs in] --> B[Scheduled Task\nLiveTranslatorProtectedStack]
+    B --> C[start-translator-stack.ps1]
+    C --> D[Backend running\nhttps://127.0.0.1:8443]
+    C --> E[ngrok tunnel running\npublic HTTPS URL]
+```
+
+*Auto-startup sequence via Windows Scheduled Task on logon.*
 
 This installs a Windows Scheduled Task. It starts when your Windows user logs in.
 

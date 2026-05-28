@@ -4,6 +4,26 @@ This note explains how the Galaxy S25 can be used with this live translator proj
 
 There are two realistic ways to use the S25:
 
+```mermaid
+flowchart TD
+    subgraph PathA ["Path A: S25 as client (Recommended)"]
+        A1[S25 browser\nChrome / Samsung Internet]
+        A2[HTTPS/WSS website]
+        A3[RTX 4080 Super\nfaster-whisper large-v3]
+        A1 --> A2 --> A3
+    end
+    subgraph PathB ["Path B: Native app (Research)"]
+        B1[S25 microphone]
+        B2[Kotlin Android app]
+        B3[ASR engine\nAndroid / ML Kit / WhisperKit]
+        B4[ML Kit Translation\nKorean → English]
+        B5[Two transcript boxes]
+        B1 --> B2 --> B3 --> B4 --> B5
+    end
+```
+
+*Two ways to use the Galaxy S25: browser client (best quality) vs. native app (portable).*
+
 1. **Phone as the microphone/browser client:** the Galaxy S25 opens the website, records microphone audio, and sends it to the RTX 4080 Super PC. This is the recommended quality path because the PC can run `large-v3`.
 2. **Phone-only native app:** the Galaxy S25 runs speech recognition and text translation directly on the phone. This is portable and private, but it should start with mobile-sized models such as Whisper Tiny/Base or Android system APIs, not desktop `large-v3`.
 
@@ -54,6 +74,17 @@ Galaxy S25 microphone
 ```
 
 ## Build Order
+
+```mermaid
+flowchart TD
+    B1[1. Native UI shell\nKotlin + Jetpack Compose] --> B2[2. Fast ASR prototype\nAndroid SpeechRecognizer\nor ML Kit GenAI]
+    B2 --> B3[3. Translation\nML Kit Korean → English]
+    B3 --> B4[4. Custom local ASR\nWhisperKit Tiny/Base]
+    B4 --> B5[5. Acceleration tuning\nCPU / GPU / NPU profiling]
+    B5 --> B6[6. Offline test\nairplane mode validation]
+```
+
+*Native app build order: start with UI and system APIs, then swap in custom models.*
 
 1. **Native UI shell:** Kotlin + Jetpack Compose, two transcript boxes, source/target language selectors, start/pause/clear/copy controls.
 2. **Fast prototype ASR:** test Android `SpeechRecognizer.createOnDeviceSpeechRecognizer()` or ML Kit GenAI Speech Recognition on the actual S25. Keep a fallback path because availability depends on the device software stack.

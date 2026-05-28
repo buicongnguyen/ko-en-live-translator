@@ -27,6 +27,22 @@ Browser microphone
 -> browser transcript boxes
 ```
 
+```mermaid
+flowchart LR
+    A[Browser mic] --> B[16 kHz PCM\nWebSocket /ws]
+    B --> C[TranslationSession\ninput queue]
+    C --> D[VadSegmenter\nWebRTC VAD]
+    D --> E[final utterance\nbuffer]
+    E --> F[faster-whisper\ntranscribe/translate]
+    F --> G{Non-English\ntarget?}
+    G -- Yes --> H[Text translation]
+    G -- No --> I[WebSocket event]
+    H --> I
+    I --> J[Browser\ntranscript boxes]
+```
+
+*Current audio pipeline from mic capture to transcript display.*
+
 Current important files:
 
 | Area | File | Current role |
@@ -200,6 +216,29 @@ Acceptance test:
 - Copy buttons copy final and partial visible text in order.
 
 ## Phase 3: Add Partial Transcription Worker
+
+```mermaid
+flowchart TD
+    subgraph Input thread
+        A[Receive audio frames] --> B[Feed VAD]
+        B --> C{Active speech?}
+        C -- Partial interval reached --> D[Snapshot active buffer]
+        D --> E[Queue partial job]
+        C -- VAD final flush --> F[Queue final job]
+    end
+    subgraph Partial worker
+        E --> G[beam_size=1\nfast transcribe]
+        G --> H[mode=partial event]
+    end
+    subgraph Final worker
+        F --> I{Final queue\nbusy?}
+        I -- empty --> J[Normal final inference]
+        I -- busy --> K[Drop partial / wait]
+        J --> L[mode=final event]
+    end
+```
+
+*Partial-final inference architecture: partial worker yields to final worker under GPU load.*
 
 Purpose: show text while the speaker is still talking.
 
@@ -405,6 +444,19 @@ Acceptance test:
 - Soft speech still works after tuning.
 
 ## Recommended Implementation Order
+
+```mermaid
+flowchart TD
+    P0[Phase 0: Runtime tuning\nno code changes] --> P1[Phase 1: Latency metrics\ntiming fields]
+    P1 --> P2[Phase 2: segment_id +\nupdateable UI lines]
+    P2 --> P3[Phase 3: Partial\ntranscription worker]
+    P3 --> P4[Phase 4: Final sentence\ncorrection]
+    P4 --> P5[Phase 5: Smarter\nsentence boundaries]
+    P5 --> P6[Phase 6: AudioWorklet\nlow-latency audio]
+    P6 --> P7[Phase 7: Adaptive noise\nfloor + Silero VAD]
+```
+
+*Implementation order: start with no-code tuning, then add metrics, UI, partial, and quality improvements.*
 
 1. Commit or set aside unrelated mobile CSS changes before starting backend work.
 2. Add latency metrics only.
