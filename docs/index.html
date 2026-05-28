@@ -8,7 +8,18 @@
       name="description"
       content="Focused web interface for live speech translation powered by a GPU backend."
     />
-    <link rel="stylesheet" href="./styles.css?v=20260529-mobile-conversation-scroll" />
+    <script>
+      (() => {
+        try {
+          if (window.localStorage.getItem("translator-theme") === "dark") {
+            document.documentElement.dataset.theme = "dark";
+          }
+        } catch {
+          // Keep the default light theme if storage is unavailable.
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="./styles.css?v=20260529-dark-mode" />
   </head>
   <body>
     <main class="translator-shell">
@@ -88,6 +99,14 @@
         </div>
 
         <nav class="top-links" aria-label="Project links">
+          <button
+            id="theme-toggle-button"
+            class="nav-link theme-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            Dark
+          </button>
           <a class="nav-link" href="./about.html">About</a>
           <a class="nav-link" href="./setup-guide.html">Setup</a>
         </nav>
@@ -261,6 +280,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-mobile-conversation-scroll"></script>
+    <script src="./app.js?v=20260529-dark-mode"></script>
   </body>
 </html>

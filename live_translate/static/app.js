@@ -1,3 +1,5 @@
+const THEME_STORAGE_KEY = "translator-theme";
+
 const state = {
   socket: null,
   audioContext: null,
@@ -34,6 +36,7 @@ const ui = {
   connectionPill: document.getElementById("connection-pill"),
   statePill: document.getElementById("state-pill"),
   modelPill: document.getElementById("model-pill"),
+  themeToggleButton: document.getElementById("theme-toggle-button"),
 };
 
 ui.startButton.addEventListener("click", startCapture);
@@ -44,6 +47,7 @@ ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
 ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.copyConversationButton.addEventListener("click", () => copyTranscript("conversation"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
+ui.themeToggleButton.addEventListener("click", toggleTheme);
 
 boot().catch((error) => {
   setStatus(`Startup error: ${error.message}`);
@@ -51,6 +55,7 @@ boot().catch((error) => {
 });
 
 async function boot() {
+  initializeTheme();
   restoreSourceLanguagePreference();
   restoreTargetLanguagePreference();
   updateLanguageUi();
@@ -58,6 +63,46 @@ async function boot() {
   await fetchHealth();
   connectSocket();
   updateMicrophoneHint();
+}
+
+function initializeTheme() {
+  let storedTheme = "";
+  try {
+    storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY) || "";
+  } catch {
+    storedTheme = "";
+  }
+  applyTheme(storedTheme === "dark" ? "dark" : "light");
+}
+
+function toggleTheme() {
+  const nextTheme =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme, { persist: true });
+}
+
+function applyTheme(theme, options = {}) {
+  const isDark = theme === "dark";
+  if (isDark) {
+    document.documentElement.dataset.theme = "dark";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+
+  if (options.persist) {
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+    } catch {
+      // Theme still changes for this page even if storage is unavailable.
+    }
+  }
+
+  ui.themeToggleButton.textContent = isDark ? "Light" : "Dark";
+  ui.themeToggleButton.setAttribute("aria-pressed", String(isDark));
+  ui.themeToggleButton.setAttribute(
+    "aria-label",
+    isDark ? "Switch to light mode" : "Switch to dark mode"
+  );
 }
 
 async function fetchHealth() {

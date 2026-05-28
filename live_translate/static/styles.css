@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #ecebe7;
   --panel: rgba(255, 255, 252, 0.92);
   --panel-strong: #ffffff;
@@ -11,6 +12,22 @@
   --source-bg: #f7faf5;
   --english-bg: #fffdf8;
   --shadow: 0 18px 42px rgba(28, 28, 24, 0.1);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07110f;
+  --panel: rgba(14, 22, 20, 0.92);
+  --panel-strong: #14211e;
+  --text: #f3efe4;
+  --muted: #b8b1a4;
+  --line: rgba(245, 238, 225, 0.14);
+  --primary: #66d7c5;
+  --primary-strong: #a8f4e8;
+  --accent: #ff9868;
+  --source-bg: #141917;
+  --english-bg: #101a17;
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
 }
 
 * {
@@ -34,6 +51,13 @@ body {
     radial-gradient(circle at 12% 0%, rgba(224, 97, 47, 0.14), transparent 28%),
     radial-gradient(circle at 92% 0%, rgba(18, 109, 98, 0.12), transparent 30%),
     var(--bg);
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 152, 104, 0.13), transparent 28%),
+    radial-gradient(circle at 92% 0%, rgba(102, 215, 197, 0.12), transparent 32%),
+    linear-gradient(180deg, #07110f 0%, #0b1413 100%);
 }
 
 button,
@@ -74,6 +98,10 @@ button:disabled {
   background: rgba(27, 27, 24, 0.07);
 }
 
+html[data-theme="dark"] .secondary {
+  background: rgba(245, 238, 225, 0.1);
+}
+
 .translator-shell {
   width: min(1440px, calc(100% - 20px));
   min-height: 100%;
@@ -92,6 +120,13 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, 0.72);
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+}
+
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .status-strip,
+html[data-theme="dark"] .backend-drawer,
+html[data-theme="dark"] .translation-column {
+  border-color: rgba(245, 238, 225, 0.1);
 }
 
 .topbar {
@@ -178,6 +213,11 @@ button:disabled {
   outline: none;
 }
 
+html[data-theme="dark"] .select-field,
+html[data-theme="dark"] .text-field {
+  background: rgba(4, 11, 10, 0.74);
+}
+
 .select-field {
   field-sizing: content;
   width: auto;
@@ -217,6 +257,14 @@ button:disabled {
   background: rgba(27, 27, 24, 0.06);
 }
 
+html[data-theme="dark"] .pill {
+  background: rgba(102, 215, 197, 0.14);
+}
+
+html[data-theme="dark"] .pill.subtle {
+  background: rgba(245, 238, 225, 0.08);
+}
+
 .compact-model {
   max-width: 230px;
   overflow: hidden;
@@ -236,6 +284,14 @@ button:disabled {
   font-size: 0.78rem;
   font-weight: 850;
   text-decoration: none;
+}
+
+.theme-toggle {
+  min-width: 58px;
+}
+
+html[data-theme="dark"] .nav-link {
+  background: rgba(245, 238, 225, 0.09);
 }
 
 .backend-drawer {
@@ -278,6 +334,10 @@ button:disabled {
   font-size: 0.8rem;
   line-height: 1.4;
   word-break: break-word;
+}
+
+html[data-theme="dark"] .endpoint-preview {
+  background: rgba(4, 11, 10, 0.52);
 }
 
 .status-strip {
@@ -365,6 +425,10 @@ button:disabled {
   background: #fffdf6;
 }
 
+html[data-theme="dark"] .conversation-body {
+  background: #0d1613;
+}
+
 .conversation-pair {
   display: grid;
   gap: 4px;
@@ -373,6 +437,11 @@ button:disabled {
   border: 1px solid rgba(27, 27, 24, 0.08);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.62);
+}
+
+html[data-theme="dark"] .conversation-pair {
+  border-color: rgba(245, 238, 225, 0.1);
+  background: rgba(245, 238, 225, 0.05);
 }
 
 .conversation-pair.latest {
@@ -401,6 +470,14 @@ button:disabled {
   background: #eef8e8;
 }
 
+html[data-theme="dark"] .conversation-line.source {
+  background: #18201d;
+}
+
+html[data-theme="dark"] .conversation-line.target {
+  background: #13241e;
+}
+
 .conversation-language {
   min-width: 28px;
   min-height: 22px;
@@ -414,6 +491,11 @@ button:disabled {
   font-weight: 950;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+html[data-theme="dark"] .conversation-language {
+  background: rgba(245, 238, 225, 0.08);
+  border-color: rgba(245, 238, 225, 0.11);
 }
 
 .conversation-text {
@@ -445,6 +527,11 @@ button:disabled {
   border-left: 4px solid var(--accent);
   background: rgba(224, 97, 47, 0.13);
   box-shadow: 0 8px 18px rgba(28, 28, 24, 0.07);
+}
+
+html[data-theme="dark"] .transcript-line.latest {
+  background: rgba(255, 152, 104, 0.14);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
 }
 
 .empty-copy {

@@ -4,7 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Speech Translator</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260529-mobile-conversation-scroll" />
+    <script>
+      (() => {
+        try {
+          if (window.localStorage.getItem("translator-theme") === "dark") {
+            document.documentElement.dataset.theme = "dark";
+          }
+        } catch {
+          // Keep the default light theme if storage is unavailable.
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/styles.css?v=20260529-dark-mode" />
   </head>
   <body>
     <main class="translator-shell">
@@ -85,6 +96,14 @@
         </div>
 
         <nav class="top-links" aria-label="Project links">
+          <button
+            id="theme-toggle-button"
+            class="nav-link theme-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            Dark
+          </button>
           <a class="nav-link" href="/static/about.html" target="_blank" rel="noreferrer">
             About
           </a>
@@ -167,6 +186,6 @@
       </section>
     </main>
 
-    <script src="/static/app.js?v=20260529-mobile-conversation-scroll"></script>
+    <script src="/static/app.js?v=20260529-dark-mode"></script>
   </body>
 </html>

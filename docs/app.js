@@ -81,6 +81,7 @@ const demoTargets = {
 };
 
 const DEFAULT_BACKEND_ORIGIN = "https://alone-catalog-rejoice.ngrok-free.dev";
+const THEME_STORAGE_KEY = "translator-theme";
 
 const state = {
   socket: null,
@@ -144,6 +145,7 @@ const ui = {
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
   backendSummaryStatus: document.getElementById("backend-summary-status"),
+  themeToggleButton: document.getElementById("theme-toggle-button"),
 };
 
 ui.demoButton.addEventListener("click", playDemo);
@@ -163,6 +165,7 @@ ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
 ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.copyConversationButton.addEventListener("click", () => copyTranscript("conversation"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
+ui.themeToggleButton.addEventListener("click", toggleTheme);
 
 boot().catch((error) => {
   setStatus(`Startup error: ${error.message}`);
@@ -170,6 +173,7 @@ boot().catch((error) => {
 });
 
 async function boot() {
+  initializeTheme();
   restoreSourceLanguagePreference();
   restoreTargetLanguagePreference();
   updateLanguageUi();
@@ -990,6 +994,46 @@ function applyRuntime(runtime) {
     renderAllTranscripts();
   }
   updateBackendSummaryStatus();
+}
+
+function initializeTheme() {
+  let storedTheme = "";
+  try {
+    storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY) || "";
+  } catch {
+    storedTheme = "";
+  }
+  applyTheme(storedTheme === "dark" ? "dark" : "light");
+}
+
+function toggleTheme() {
+  const nextTheme =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme, { persist: true });
+}
+
+function applyTheme(theme, options = {}) {
+  const isDark = theme === "dark";
+  if (isDark) {
+    document.documentElement.dataset.theme = "dark";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+
+  if (options.persist) {
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+    } catch {
+      // Theme still changes for this page even if storage is unavailable.
+    }
+  }
+
+  ui.themeToggleButton.textContent = isDark ? "Light" : "Dark";
+  ui.themeToggleButton.setAttribute("aria-pressed", String(isDark));
+  ui.themeToggleButton.setAttribute(
+    "aria-label",
+    isDark ? "Switch to light mode" : "Switch to dark mode"
+  );
 }
 
 function publishTranslation(payload) {
