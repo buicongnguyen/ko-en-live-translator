@@ -1415,6 +1415,9 @@ function selectedDemoScript() {
 }
 
 function refreshControls() {
+  const backendReady = state.backendConnected;
+  ui.demoButton.hidden = backendReady;
+  ui.connectionPill.hidden = backendReady;
   ui.demoButton.disabled = state.isDemoPlaying || state.isCapturing;
   ui.resetButton.disabled = state.isCapturing;
   ui.connectButton.disabled = state.isCapturing;

@@ -17,6 +17,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   height: 100%;
@@ -136,6 +140,18 @@ button:disabled {
   align-items: center;
   gap: 7px;
   flex-wrap: wrap;
+}
+
+#start-button::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  margin-left: 7px;
+  border-radius: 999px;
+  background: #d51f1f;
+  box-shadow: 0 0 0 3px rgba(213, 31, 31, 0.14);
+  vertical-align: middle;
 }
 
 .language-control {
