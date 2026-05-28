@@ -6,6 +6,7 @@ Use this file when you want a copyable setup checklist. Use the HTML page when y
 
 - Web app: <https://buicongnguyen.github.io/ko-en-live-translator/>
 - Setup guide HTML: <https://buicongnguyen.github.io/ko-en-live-translator/setup-guide.html>
+- Setup hub Markdown index: [setup-hub.md](setup-hub.md)
 - App with current backend filled in: <https://buicongnguyen.github.io/ko-en-live-translator/index.html?backend=https%3A%2F%2Falone-catalog-rejoice.ngrok-free.dev>
 
 ## What This Project Does
@@ -27,6 +28,14 @@ Main pieces:
 ## Quick Setup Hub
 
 Choose the part you need and follow it from top to bottom.
+
+Separate copyable checklists:
+
+- [Access and connect to backend](setup-access-connect.md)
+- [Firebase login and admin approval](setup-firebase-admin.md)
+- [ngrok public HTTPS tunnel](setup-ngrok-tunnel.md)
+- [Windows RTX backend service](setup-windows-rtx-backend.md)
+- [GPU and session safety](setup-gpu-safety.md)
 
 ### 1. Access: Sign In, Then Connect Backend
 

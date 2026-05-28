@@ -89,32 +89,17 @@ On the RTX 4080 Super PC:
 
 ```powershell
 Set-Location C:\Users\n\source\repos\Transcribe_translate
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
 
-$env:APP_HOST="127.0.0.1"
-$env:APP_PORT="8000"
-$env:WHISPER_MODEL="large-v3"
-$env:WHISPER_DEVICE="cuda"
-$env:WHISPER_COMPUTE_TYPE="float16"
-$env:WHISPER_BEAM_SIZE="1"
-$env:SHOW_SOURCE_TEXT="true"
-
-$env:AUTH_REQUIRED="true"
-$env:AUTH_PROVIDER="firebase"
-$env:FIREBASE_PROJECT_ID="your-firebase-project-id"
-$env:FIREBASE_CREDENTIALS_FILE="C:\Users\n\secrets\firebase-service-account.json"
-$env:ADMIN_EMAILS="your-email@gmail.com"
-$env:APPROVED_EMAILS=""
-$env:CORS_ALLOW_ORIGINS="https://buicongnguyen.github.io,http://127.0.0.1:8099"
-
-python main.py
+.\start-protected-https.ps1 `
+  -FirebaseProjectId "your-firebase-project-id" `
+  -AdminEmails "your-email@gmail.com" `
+  -FirebaseCredentialsFile "C:\Users\n\secrets\firebase-service-account.json"
 ```
 
 With auth on, this unauthenticated check should fail:
 
 ```powershell
-Invoke-WebRequest -Uri http://127.0.0.1:8000/api/health -UseBasicParsing
+Invoke-WebRequest -Uri https://127.0.0.1:8443/api/health -SkipCertificateCheck -UseBasicParsing
 ```
 
 That is expected. The browser must send a Firebase ID token.
@@ -124,7 +109,8 @@ That is expected. The browser must send a Firebase ID token.
 For the first free test, use ngrok:
 
 ```powershell
-ngrok http 8000
+$ngrok="$env:LOCALAPPDATA\Microsoft\WinGet\Links\ngrok.exe"
+& $ngrok http https://127.0.0.1:8443 --host-header=rewrite
 ```
 
 Copy the HTTPS forwarding URL, for example:
@@ -144,7 +130,11 @@ For a more stable no-monthly-cost setup later, use DuckDNS + router port forward
 
 ```caddyfile
 translate-yourname.duckdns.org {
-  reverse_proxy 127.0.0.1:8000
+  reverse_proxy https://127.0.0.1:8443 {
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
 }
 ```
 

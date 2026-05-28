@@ -17,6 +17,8 @@ This project is a local web app for near-real-time speech translation on a GPU-e
 
 There is now a static frontend in [docs/index.html](docs/index.html) that is ready to publish with GitHub Pages.
 The setup guide for the two app shapes is in [docs/setup-guide.html](docs/setup-guide.html).
+The setup hub Markdown index is in [docs/setup-hub.md](docs/setup-hub.md).
+Short setup checklists are available for [access/connect](docs/setup-access-connect.md), [Firebase/admin](docs/setup-firebase-admin.md), [ngrok tunnel](docs/setup-ngrok-tunnel.md), [Windows RTX backend](docs/setup-windows-rtx-backend.md), and [GPU safety](docs/setup-gpu-safety.md).
 The Windows RTX 4080 Super deployment runbook is in [docs/windows-rtx4080-deployment.md](docs/windows-rtx4080-deployment.md).
 The Windows startup and service management guide is in [docs/windows-service-management.md](docs/windows-service-management.md).
 The Galaxy S25 native-phone plan is in [docs/galaxy-s25-native.md](docs/galaxy-s25-native.md).

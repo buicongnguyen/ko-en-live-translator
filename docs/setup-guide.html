@@ -221,6 +221,33 @@
         font-size: 0.9rem;
       }
 
+      .hub-docs,
+      .topic-docs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .hub-docs {
+        padding: 14px;
+        border: 1px dashed rgba(15, 109, 102, 0.28);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .doc-chip {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 11px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--green-dark);
+        font-size: 0.82rem;
+        font-weight: 900;
+        text-decoration: none;
+      }
+
       .guide-accordion {
         display: grid;
         gap: 12px;
@@ -702,6 +729,7 @@
           <strong>Live Translator Guide</strong>
         </a>
         <a class="nav-link" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-guide.md" target="_blank" rel="noreferrer">Markdown version</a>
+        <a class="nav-link" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-hub.md" target="_blank" rel="noreferrer">Setup hub MD</a>
         <a class="nav-link" href="./index.html">Open demo app</a>
       </nav>
 
@@ -732,7 +760,8 @@
             The live translator has several moving parts. This top page keeps
             the common paths short: test the public app, configure Firebase
             login, expose the RTX backend with ngrok, start the protected
-            Windows server, and understand the safety settings.
+            Windows server, and understand the safety settings. Each path now
+            also has a copyable Markdown checklist.
           </p>
         </div>
 
@@ -769,6 +798,15 @@
           </a>
         </div>
 
+        <div class="hub-docs" aria-label="Markdown setup checklists">
+          <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-hub.md" target="_blank" rel="noreferrer">Setup hub MD</a>
+          <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-access-connect.md" target="_blank" rel="noreferrer">Access/connect MD</a>
+          <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-firebase-admin.md" target="_blank" rel="noreferrer">Firebase/admin MD</a>
+          <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-ngrok-tunnel.md" target="_blank" rel="noreferrer">ngrok tunnel MD</a>
+          <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-windows-rtx-backend.md" target="_blank" rel="noreferrer">Windows backend MD</a>
+          <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-gpu-safety.md" target="_blank" rel="noreferrer">GPU safety MD</a>
+        </div>
+
         <div class="guide-accordion">
           <details class="guide-topic" id="topic-test" open>
             <summary>
@@ -792,6 +830,9 @@
                   <strong>Admin approval</strong>
                   <p>Your admin account decides which signed-in emails can use the GPU.</p>
                 </article>
+              </div>
+              <div class="topic-docs">
+                <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-access-connect.md" target="_blank" rel="noreferrer">Open Markdown checklist</a>
               </div>
               <ol class="compact-steps">
                 <li>Open <a href="./index.html">the live translator app</a>.</li>
@@ -830,12 +871,15 @@
                   <p>Private backend key saved only on the RTX PC so Python can verify login tokens.</p>
                 </article>
               </div>
+              <div class="topic-docs">
+                <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-firebase-admin.md" target="_blank" rel="noreferrer">Open Markdown checklist</a>
+              </div>
               <ol class="compact-steps">
                 <li>Create or open the Firebase project, then enable <code>Authentication</code> and <code>Google</code> sign-in.</li>
                 <li>Add the GitHub Pages domain, for example <code>buicongnguyen.github.io</code>, to Firebase authorized domains.</li>
-                <li>Create a Firebase Web app and put its public config into GitHub Actions variables.</li>
+                <li>Create a Firebase Web app and copy its public config values into GitHub Actions variables such as <code>FIREBASE_API_KEY</code> and <code>FIREBASE_PROJECT_ID</code>.</li>
                 <li>Download the Firebase Admin SDK service account JSON and save it outside the repo, for example <code>C:\Users\n\secrets\firebase-service-account.json</code>.</li>
-                <li>Start the protected backend with <code>ADMIN_EMAILS="nguyenbuicong80@gmail.com"</code> so your email becomes admin.</li>
+                <li>Start the protected backend with <code>.\start-protected-https.ps1 -FirebaseProjectId "livetranslateai-local" -AdminEmails "nguyenbuicong80@gmail.com"</code> so your email becomes admin.</li>
                 <li>Approve other users from the web admin panel after they sign in once.</li>
               </ol>
               <div class="callout important">
@@ -867,6 +911,9 @@
                   <p>The ngrok URL you paste into the website, without <code>/api/health</code> or <code>/ws</code>.</p>
                 </article>
               </div>
+              <div class="topic-docs">
+                <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-ngrok-tunnel.md" target="_blank" rel="noreferrer">Open Markdown checklist</a>
+              </div>
               <ol class="compact-steps">
                 <li>Install or update ngrok and add your ngrok authtoken once on the RTX PC.</li>
                 <li>Start the protected local backend on <code>https://127.0.0.1:8443</code>.</li>
@@ -874,6 +921,9 @@
                 <li>Copy the forwarding URL, for example <code>https://alone-catalog-rejoice.ngrok-free.dev</code>.</li>
                 <li>Paste that URL into the app's <code>Backend origin</code> box and press <code>Connect backend</code>.</li>
               </ol>
+              <div class="callout">
+                Paste only the origin, for example <code>https://abc123.ngrok-free.app</code>. Do not paste <code>/api/health</code> or <code>/ws</code>.
+              </div>
               <pre><code>$ngrok="$env:LOCALAPPDATA\Microsoft\WinGet\Links\ngrok.exe"
 & $ngrok version
 & $ngrok http https://127.0.0.1:8443 --host-header=rewrite</code></pre>
@@ -902,6 +952,12 @@
                   <strong>Stack scripts</strong>
                   <p>PowerShell helpers that start the backend, start ngrok, show status, or stop everything.</p>
                 </article>
+              </div>
+              <div class="topic-docs">
+                <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-windows-rtx-backend.md" target="_blank" rel="noreferrer">Open Markdown checklist</a>
+              </div>
+              <div class="callout">
+                Before running the stack script, confirm the Python virtual environment, HTTPS certificate files, Firebase Admin JSON, and ngrok install are already present on the RTX PC.
               </div>
               <ol class="compact-steps">
                 <li>Open PowerShell 7 on the RTX PC.</li>
@@ -944,6 +1000,12 @@
                   <p>Blocks new sessions if <code>nvidia-smi</code> reports the GPU at or above 85C.</p>
                 </article>
               </div>
+              <div class="topic-docs">
+                <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-gpu-safety.md" target="_blank" rel="noreferrer">Open Markdown checklist</a>
+              </div>
+              <div class="callout">
+                These are backend startup settings. GitHub Pages only shows the UI; the RTX PC enforces session limits, idle timeout, queue drops, and GPU temperature checks.
+              </div>
               <ol class="compact-steps">
                 <li>Keep the default <code>MAX_ACTIVE_SESSIONS=4</code> for normal use.</li>
                 <li>Try <code>-MaxActiveSessions 8</code> only for mostly idle users after latency, queue drops, and GPU temperature stay stable.</li>
@@ -967,6 +1029,7 @@ nvidia-smi</code></pre>
             <a href="#topic-ngrok">3. ngrok public URL</a>
             <a href="#topic-backend">4. Windows backend</a>
             <a href="#topic-safety">5. Safety settings</a>
+            <a href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-hub.md" target="_blank" rel="noreferrer">Setup hub Markdown</a>
             <a href="#definitions-first">Definitions first</a>
             <a href="#deployment-process">Deployment process</a>
             <a href="#public-auth">Public login + GPU backend</a>
@@ -1239,7 +1302,7 @@ New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound
                   </tr>
                   <tr>
                     <td>Backend public URL</td>
-                    <td>Start with <code>ngrok http 8000</code>; later use DuckDNS + Caddy.</td>
+                    <td>Start with <code>ngrok http https://127.0.0.1:8443 --host-header=rewrite</code>; later use DuckDNS + Caddy.</td>
                     <td>The URL can be shared, but the backend still requires approved login.</td>
                   </tr>
                 </tbody>
@@ -1266,12 +1329,11 @@ New-NetFirewallRule -DisplayName "Live Translator HTTPS 8443" -Direction Inbound
                 <div class="step-number">02</div>
                 <div class="step-body">
                   <h3>Start the protected backend on the RTX PC</h3>
-                  <pre><code>$env:AUTH_REQUIRED="true"
-$env:FIREBASE_PROJECT_ID="your-firebase-project-id"
-$env:FIREBASE_CREDENTIALS_FILE="C:\Users\n\secrets\firebase-service-account.json"
-$env:ADMIN_EMAILS="your-email@gmail.com"
-$env:CORS_ALLOW_ORIGINS="https://buicongnguyen.github.io"
-python main.py</code></pre>
+                  <pre><code>Set-Location C:\Users\n\source\repos\Transcribe_translate
+.\start-protected-https.ps1 `
+  -FirebaseProjectId "your-firebase-project-id" `
+  -AdminEmails "your-email@gmail.com" `
+  -FirebaseCredentialsFile "C:\Users\n\secrets\firebase-service-account.json"</code></pre>
                 </div>
               </article>
 
@@ -1280,10 +1342,10 @@ python main.py</code></pre>
                 <div class="step-body">
                   <h3>Forward the backend with HTTPS/WSS</h3>
                   <p>
-                    For the first free test, run <code>ngrok http 8000</code>
-                    and paste the HTTPS ngrok origin into the GitHub Pages
-                    backend box. Later, use DuckDNS + Caddy for a stable
-                    no-monthly-cost URL.
+                    For the first free test, run
+                    <code>ngrok http https://127.0.0.1:8443 --host-header=rewrite</code>
+                    and paste the HTTPS ngrok origin into the GitHub Pages backend box.
+                    Later, use DuckDNS + Caddy for a stable no-monthly-cost URL.
                   </p>
                 </div>
               </article>
