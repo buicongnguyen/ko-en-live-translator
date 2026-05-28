@@ -65,10 +65,14 @@ After Firebase is configured, start the protected Google-login backend with:
 For normal daily operation after setup, use:
 
 ```powershell
+Copy-Item .\translator-stack.local.example.psd1 .\translator-stack.local.psd1
+# Edit translator-stack.local.psd1 with your Firebase project ID and admin email.
 .\start-translator-stack.ps1
 .\status-translator-stack.ps1
 .\stop-translator-stack.ps1
 ```
+
+`translator-stack.local.psd1` is ignored by Git, so local admin email and Firebase project values do not need to be committed.
 
 The protected startup uses safe defaults for one RTX 4080 Super:
 

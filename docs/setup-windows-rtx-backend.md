@@ -32,6 +32,14 @@ Confirm these are already prepared:
   ```
 
 - ngrok is installed and authenticated.
+- Local stack config exists:
+
+  ```powershell
+  Copy-Item .\translator-stack.local.example.psd1 .\translator-stack.local.psd1
+  notepad .\translator-stack.local.psd1
+  ```
+
+  Fill in your Firebase project ID, admin email, Firebase Admin JSON path, and backend origin. The local config file is ignored by Git.
 
 ## Daily Start
 
@@ -58,7 +66,8 @@ Expected protected-mode status:
 ```text
 Backend: running on port 8443
 Backend health: 401 auth required (expected for protected mode)
-ngrok: running
+ngrok: tracked process running (PID ...)
+ngrok target: https://127.0.0.1:8443
 ngrok public URL: https://...
 Open app: https://buicongnguyen.github.io/ko-en-live-translator/index.html?backend=...
 ```
@@ -107,7 +116,7 @@ Set-Location C:\Users\n\source\repos\Transcribe_translate
 ## Troubleshooting
 
 - Port `8443` already used: run `.\stop-translator-stack.ps1`, then start again.
-- ngrok already online: run `.\status-translator-stack.ps1` and reuse the printed URL.
+- ngrok already online: run `.\status-translator-stack.ps1` and reuse the printed URL if it targets `https://127.0.0.1:8443`. Otherwise stop the old ngrok endpoint manually or restart this stack with `.\start-translator-stack.ps1 -RestartNgrok`.
 - `503` from backend: install requirements and restart:
 
   ```powershell

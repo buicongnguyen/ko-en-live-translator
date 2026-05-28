@@ -1,6 +1,6 @@
 param(
-    [string]$FirebaseProjectId = "livetranslateai-local",
-    [string]$AdminEmails = "nguyenbuicong80@gmail.com",
+    [string]$FirebaseProjectId = $env:FIREBASE_PROJECT_ID,
+    [string]$AdminEmails = $env:ADMIN_EMAILS,
     [string]$FirebaseCredentialsFile = "$env:USERPROFILE\secrets\firebase-service-account.json",
     [string]$BackendOrigin = "https://127.0.0.1:8443",
     [int]$BackendPort = 8443,
@@ -8,6 +8,7 @@ param(
     [int]$IdleTimeoutSeconds = 300,
     [int]$MaxTranslationQueueSegments = 2,
     [int]$GpuMaxTemperatureC = 85,
+    [string]$ConfigFile = "",
     [switch]$RestartBackend,
     [switch]$RestartNgrok
 )
@@ -23,6 +24,7 @@ $BackendPidFile = Join-Path $LogsDir "backend.pid"
 $NgrokPidFile = Join-Path $LogsDir "ngrok.pid"
 $NgrokExe = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links\ngrok.exe"
 $DatabasePath = Join-Path $ProjectRoot "data\auth-users.sqlite3"
+$DefaultConfigFile = Join-Path $ProjectRoot "translator-stack.local.psd1"
 
 function Get-BackendListener {
     Get-NetTCPConnection -LocalPort $BackendPort -State Listen -ErrorAction SilentlyContinue |
@@ -36,6 +38,101 @@ function Stop-ProcessIfRunning {
     if ($process) {
         Stop-Process -Id $ProcessId -Force
     }
+}
+
+function Import-LocalConfig {
+    if (-not $ConfigFile -and (Test-Path -LiteralPath $DefaultConfigFile)) {
+        $script:ConfigFile = $DefaultConfigFile
+    }
+
+    if (-not $ConfigFile) {
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $ConfigFile)) {
+        throw "Config file was not found at $ConfigFile."
+    }
+
+    $config = Import-PowerShellDataFile -LiteralPath $ConfigFile
+    if (-not $FirebaseProjectId -and $config.FirebaseProjectId) {
+        $script:FirebaseProjectId = [string]$config.FirebaseProjectId
+    }
+    if (-not $AdminEmails -and $config.AdminEmails) {
+        $script:AdminEmails = [string]$config.AdminEmails
+    }
+    if ($FirebaseCredentialsFile -eq "$env:USERPROFILE\secrets\firebase-service-account.json" -and $config.FirebaseCredentialsFile) {
+        $script:FirebaseCredentialsFile = [string]$config.FirebaseCredentialsFile
+    }
+    if ($BackendOrigin -eq "https://127.0.0.1:8443" -and $config.BackendOrigin) {
+        $script:BackendOrigin = [string]$config.BackendOrigin
+    }
+}
+
+function Test-PlaceholderValue {
+    param([string]$Value)
+
+    return -not $Value -or $Value -match "your-|PASTE|example"
+}
+
+function Get-TrackedNgrokProcess {
+    if (-not (Test-Path -LiteralPath $NgrokPidFile)) {
+        return $null
+    }
+
+    $pidValue = Get-Content -LiteralPath $NgrokPidFile -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($pidValue -notmatch "^\d+$") {
+        return $null
+    }
+
+    $process = Get-Process -Id ([int]$pidValue) -ErrorAction SilentlyContinue
+    if ($process -and $process.ProcessName -eq "ngrok") {
+        return $process
+    }
+
+    return $null
+}
+
+function Get-ExpectedNgrokTunnel {
+    param([string]$ExpectedOrigin)
+
+    try {
+        $tunnels = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -TimeoutSec 8
+        $expected = $ExpectedOrigin.TrimEnd("/")
+        return $tunnels.tunnels |
+            Where-Object {
+                $_.proto -eq "https" -and
+                [string]$_.config.addr -and
+                ([string]$_.config.addr).TrimEnd("/") -eq $expected
+            } |
+            Select-Object -First 1
+    } catch {
+        return $null
+    }
+}
+
+function Get-NgrokApiProcess {
+    $listener = Get-NetTCPConnection -LocalPort 4040 -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $listener) {
+        return $null
+    }
+
+    $process = Get-Process -Id $listener.OwningProcess -ErrorAction SilentlyContinue
+    if ($process -and $process.ProcessName -eq "ngrok") {
+        return $process
+    }
+
+    return $null
+}
+
+Import-LocalConfig
+
+if ((Test-PlaceholderValue $FirebaseProjectId) -or (Test-PlaceholderValue $AdminEmails) -or $AdminEmails -notmatch "@") {
+    throw (
+        "FirebaseProjectId and AdminEmails must be configured. " +
+        "Pass -FirebaseProjectId/-AdminEmails or copy translator-stack.local.example.psd1 " +
+        "to translator-stack.local.psd1 and fill in local values."
+    )
 }
 
 if (-not (Test-Path -LiteralPath $Python)) {
@@ -108,25 +205,68 @@ if (-not $listener) {
     throw "Backend did not start on port $BackendPort. Check logs\backend.err.log."
 }
 
-$ngrokProcesses = @(Get-Process -Name ngrok -ErrorAction SilentlyContinue)
-if ($ngrokProcesses.Count -gt 0 -and $RestartNgrok) {
-    $ngrokProcesses | Stop-Process -Force
+$trackedNgrok = Get-TrackedNgrokProcess
+if ($trackedNgrok -and $RestartNgrok) {
+    Stop-ProcessIfRunning -ProcessId $trackedNgrok.Id
+    Remove-Item -LiteralPath $NgrokPidFile -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
-    $ngrokProcesses = @()
+    $trackedNgrok = $null
 }
 
-if ($ngrokProcesses.Count -eq 0) {
-    $ngrok = Start-Process `
-        -FilePath $NgrokExe `
-        -ArgumentList @("http", $BackendOrigin, "--host-header=rewrite", "--log", "stdout") `
-        -WorkingDirectory $ProjectRoot `
-        -RedirectStandardOutput (Join-Path $LogsDir "ngrok.out.log") `
-        -RedirectStandardError (Join-Path $LogsDir "ngrok.err.log") `
-        -PassThru `
-        -WindowStyle Hidden
+if ($trackedNgrok) {
+    $expectedTunnel = Get-ExpectedNgrokTunnel -ExpectedOrigin $BackendOrigin
+    if (-not $expectedTunnel) {
+        throw (
+            "Tracked ngrok process $($trackedNgrok.Id) is running, but no tunnel for $BackendOrigin was found. " +
+            "Run with -RestartNgrok to recreate this project's tunnel."
+        )
+    }
+    Write-Host "Reusing tracked ngrok tunnel (PID $($trackedNgrok.Id)) for $BackendOrigin."
+} else {
+    $untrackedNgrok = @(Get-Process -Name ngrok -ErrorAction SilentlyContinue)
+    $existingExpectedTunnel = Get-ExpectedNgrokTunnel -ExpectedOrigin $BackendOrigin
+    $ngrokApiProcess = Get-NgrokApiProcess
+    if ($existingExpectedTunnel -and $ngrokApiProcess -and -not $RestartNgrok) {
+        Set-Content -LiteralPath $NgrokPidFile -Value $ngrokApiProcess.Id
+        Write-Host "Adopted existing ngrok tunnel (PID $($ngrokApiProcess.Id)) for $BackendOrigin."
+    } else {
+        if ($untrackedNgrok.Count -gt 0) {
+            Write-Warning "Found untracked ngrok process(es); leaving unrelated tunnels alone and starting this project's tunnel separately."
+        }
 
-    Set-Content -LiteralPath $NgrokPidFile -Value $ngrok.Id
-    Start-Sleep -Seconds 5
+        if ($existingExpectedTunnel -and $ngrokApiProcess -and $RestartNgrok) {
+            Stop-ProcessIfRunning -ProcessId $ngrokApiProcess.Id
+            Start-Sleep -Seconds 2
+        }
+
+        $ngrok = Start-Process `
+            -FilePath $NgrokExe `
+            -ArgumentList @("http", $BackendOrigin, "--host-header=rewrite", "--log", "stdout") `
+            -WorkingDirectory $ProjectRoot `
+            -RedirectStandardOutput (Join-Path $LogsDir "ngrok.out.log") `
+            -RedirectStandardError (Join-Path $LogsDir "ngrok.err.log") `
+            -PassThru `
+            -WindowStyle Hidden
+
+        Set-Content -LiteralPath $NgrokPidFile -Value $ngrok.Id
+        Start-Sleep -Seconds 5
+
+        $ngrokProcess = Get-Process -Id $ngrok.Id -ErrorAction SilentlyContinue
+        $expectedTunnel = Get-ExpectedNgrokTunnel -ExpectedOrigin $BackendOrigin
+        if (-not $ngrokProcess -or -not $expectedTunnel) {
+            $ngrokErrorLog = Join-Path $LogsDir "ngrok.err.log"
+            $ngrokError = ""
+            if (Test-Path -LiteralPath $ngrokErrorLog) {
+                $ngrokError = (Get-Content -LiteralPath $ngrokErrorLog -Tail 8 -ErrorAction SilentlyContinue) -join " "
+            }
+
+            throw (
+                "ngrok did not create a tunnel for $BackendOrigin. " +
+                "If another ngrok endpoint is already online, stop that endpoint or run this script again with -RestartNgrok. " +
+                "ngrok error: $ngrokError"
+            )
+        }
+    }
 }
 
-& (Join-Path $ProjectRoot "status-translator-stack.ps1")
+& (Join-Path $ProjectRoot "status-translator-stack.ps1") -BackendPort $BackendPort -BackendOrigin $BackendOrigin

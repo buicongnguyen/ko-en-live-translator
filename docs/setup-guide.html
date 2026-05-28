@@ -879,7 +879,7 @@
                 <li>Add the GitHub Pages domain, for example <code>buicongnguyen.github.io</code>, to Firebase authorized domains.</li>
                 <li>Create a Firebase Web app and copy its public config values into GitHub Actions variables such as <code>FIREBASE_API_KEY</code> and <code>FIREBASE_PROJECT_ID</code>.</li>
                 <li>Download the Firebase Admin SDK service account JSON and save it outside the repo, for example <code>C:\Users\n\secrets\firebase-service-account.json</code>.</li>
-                <li>Start the protected backend with <code>.\start-protected-https.ps1 -FirebaseProjectId "livetranslateai-local" -AdminEmails "nguyenbuicong80@gmail.com"</code> so your email becomes admin.</li>
+                <li>Start the protected backend with <code>.\start-protected-https.ps1 -FirebaseProjectId "your-firebase-project-id" -AdminEmails "your-email@gmail.com"</code> so your email becomes admin.</li>
                 <li>Approve other users from the web admin panel after they sign in once.</li>
               </ol>
               <div class="callout important">
@@ -957,17 +957,20 @@
                 <a class="doc-chip" href="https://github.com/buicongnguyen/ko-en-live-translator/blob/main/docs/setup-windows-rtx-backend.md" target="_blank" rel="noreferrer">Open Markdown checklist</a>
               </div>
               <div class="callout">
-                Before running the stack script, confirm the Python virtual environment, HTTPS certificate files, Firebase Admin JSON, and ngrok install are already present on the RTX PC.
+                Before running the stack script, confirm the Python virtual environment, HTTPS certificate files, Firebase Admin JSON, ngrok install, and local <code>translator-stack.local.psd1</code> config are already present on the RTX PC.
               </div>
               <ol class="compact-steps">
                 <li>Open PowerShell 7 on the RTX PC.</li>
                 <li>Run <code>Set-Location C:\Users\n\source\repos\Transcribe_translate</code>.</li>
+                <li>Copy <code>translator-stack.local.example.psd1</code> to <code>translator-stack.local.psd1</code>, then edit the local file with your Firebase project ID and admin email.</li>
                 <li>Start everything with <code>.\start-translator-stack.ps1</code>.</li>
                 <li>Check the public link with <code>.\status-translator-stack.ps1</code>.</li>
                 <li>Restart after code changes with <code>.\start-translator-stack.ps1 -RestartBackend</code>.</li>
                 <li>Stop public access and backend with <code>.\stop-translator-stack.ps1</code>.</li>
               </ol>
               <pre><code>Set-Location C:\Users\n\source\repos\Transcribe_translate
+Copy-Item .\translator-stack.local.example.psd1 .\translator-stack.local.psd1
+notepad .\translator-stack.local.psd1
 .\start-translator-stack.ps1
 .\status-translator-stack.ps1</code></pre>
             </div>

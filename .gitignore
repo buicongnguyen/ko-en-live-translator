@@ -8,5 +8,6 @@ https/*.crt
 https/*.log
 data/
 logs/
+translator-stack.local.psd1
 *.service-account.json
 firebase-service-account*.json

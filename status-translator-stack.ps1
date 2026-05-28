@@ -1,5 +1,6 @@
 param(
-    [int]$BackendPort = 8443
+    [int]$BackendPort = 8443,
+    [string]$BackendOrigin = "https://127.0.0.1:8443"
 )
 
 $ErrorActionPreference = "Continue"
@@ -7,6 +8,43 @@ $ErrorActionPreference = "Continue"
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backendUrl = "https://127.0.0.1:$BackendPort/api/health"
 $publicUrl = $null
+
+function Get-TrackedNgrokProcess {
+    $ngrokPidFile = Join-Path (Join-Path $ProjectRoot "logs") "ngrok.pid"
+    if (-not (Test-Path -LiteralPath $ngrokPidFile)) {
+        return $null
+    }
+
+    $pidValue = Get-Content -LiteralPath $ngrokPidFile -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($pidValue -notmatch "^\d+$") {
+        return $null
+    }
+
+    $process = Get-Process -Id ([int]$pidValue) -ErrorAction SilentlyContinue
+    if ($process -and $process.ProcessName -eq "ngrok") {
+        return $process
+    }
+
+    return $null
+}
+
+function Get-ExpectedNgrokTunnel {
+    param([string]$ExpectedOrigin)
+
+    try {
+        $tunnels = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -TimeoutSec 8
+        $expected = $ExpectedOrigin.TrimEnd("/")
+        return $tunnels.tunnels |
+            Where-Object {
+                $_.proto -eq "https" -and
+                [string]$_.config.addr -and
+                ([string]$_.config.addr).TrimEnd("/") -eq $expected
+            } |
+            Select-Object -First 1
+    } catch {
+        return $null
+    }
+}
 
 Write-Host "Live translator stack status"
 Write-Host "Project: $ProjectRoot"
@@ -39,24 +77,24 @@ if ($listener) {
 
 Write-Host ""
 
-$ngrok = Get-Process -Name ngrok -ErrorAction SilentlyContinue | Select-Object -First 1
+$ngrok = Get-TrackedNgrokProcess
 if ($ngrok) {
-    Write-Host "ngrok: running (PID $($ngrok.Id))"
-    try {
-        $tunnels = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -TimeoutSec 8
-        $publicUrl = $tunnels.tunnels |
-            Where-Object { $_.proto -eq "https" } |
-            Select-Object -First 1 -ExpandProperty public_url
-        if ($publicUrl) {
-            Write-Host "ngrok public URL: $publicUrl"
-        } else {
-            Write-Host "ngrok public URL: not found yet"
-        }
-    } catch {
-        Write-Host "ngrok API check failed: $($_.Exception.Message)"
-    }
+    Write-Host "ngrok: tracked process running (PID $($ngrok.Id))"
 } else {
-    Write-Host "ngrok: not running"
+    Write-Host "ngrok: no tracked process for this project"
+    $untrackedNgrok = @(Get-Process -Name ngrok -ErrorAction SilentlyContinue)
+    if ($untrackedNgrok.Count -gt 0) {
+        Write-Host "ngrok: untracked process(es) detected and ignored: $($untrackedNgrok.Id -join ', ')"
+    }
+}
+
+$tunnel = Get-ExpectedNgrokTunnel -ExpectedOrigin $BackendOrigin
+if ($tunnel) {
+    $publicUrl = $tunnel.public_url
+    Write-Host "ngrok target: $BackendOrigin"
+    Write-Host "ngrok public URL: $publicUrl"
+} else {
+    Write-Host "ngrok public URL for ${BackendOrigin}: not found"
 }
 
 if ($publicUrl) {

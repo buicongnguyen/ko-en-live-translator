@@ -13,6 +13,22 @@ C:\Users\n\secrets\firebase-service-account.json
 
 The ngrok token is stored by ngrok in the user's local ngrok config, not in this repo.
 
+The daily startup script reads local Firebase/admin values from:
+
+```text
+translator-stack.local.psd1
+```
+
+Create it once from the example and edit it on the RTX PC:
+
+```powershell
+Set-Location C:\Users\n\source\repos\Transcribe_translate
+Copy-Item .\translator-stack.local.example.psd1 .\translator-stack.local.psd1
+notepad .\translator-stack.local.psd1
+```
+
+This local config is ignored by Git.
+
 ## Daily Commands
 
 Start everything:
@@ -160,8 +176,10 @@ If `Connect backend` returns `503`, install requirements and restart:
 .\start-translator-stack.ps1 -RestartBackend
 ```
 
-If you want to temporarily stop public access but keep the local backend running:
+If you want to temporarily stop public access, stop this project's stack:
 
 ```powershell
-Get-Process -Name ngrok | Stop-Process
+.\stop-translator-stack.ps1
 ```
+
+The stop script no longer kills unrelated ngrok processes from other projects. It stops only the tracked ngrok PID started by this project.

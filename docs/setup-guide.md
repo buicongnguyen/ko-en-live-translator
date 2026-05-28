@@ -138,9 +138,13 @@ Daily commands:
 
 ```powershell
 Set-Location C:\Users\n\source\repos\Transcribe_translate
+Copy-Item .\translator-stack.local.example.psd1 .\translator-stack.local.psd1
+notepad .\translator-stack.local.psd1
 .\start-translator-stack.ps1
 .\status-translator-stack.ps1
 ```
+
+The local `translator-stack.local.psd1` file stores your Firebase project ID and admin email on the RTX PC. It is ignored by Git.
 
 Restart only the backend after code changes:
 
@@ -168,7 +172,8 @@ Check expected status:
 ```text
 Backend: running on port 8443
 Backend health: 401 auth required (expected for protected mode)
-ngrok: running
+ngrok: tracked process running (PID ...)
+ngrok target: https://127.0.0.1:8443
 ngrok public URL: https://...
 ```
 

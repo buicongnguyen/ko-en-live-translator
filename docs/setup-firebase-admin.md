@@ -100,7 +100,7 @@ Set-Location C:\Users\n\source\repos\Transcribe_translate
   -FirebaseCredentialsFile "C:\Users\n\secrets\firebase-service-account.json"
 ```
 
-For normal daily startup, use `start-translator-stack.ps1` after Firebase and ngrok are configured.
+For normal daily startup, copy `translator-stack.local.example.psd1` to `translator-stack.local.psd1`, fill in your local Firebase/admin values, then use `start-translator-stack.ps1`. The local config file is ignored by Git.
 
 ## Approve Users
 

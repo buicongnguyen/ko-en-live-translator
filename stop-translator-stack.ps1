@@ -1,5 +1,6 @@
 param(
     [int]$BackendPort = 8443,
+    [string]$BackendOrigin = "https://127.0.0.1:8443",
     [switch]$KeepNgrok
 )
 
@@ -20,6 +21,24 @@ function Stop-ByPid {
     }
 }
 
+function Get-ExpectedNgrokTunnel {
+    param([string]$ExpectedOrigin)
+
+    try {
+        $tunnels = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -TimeoutSec 8
+        $expected = $ExpectedOrigin.TrimEnd("/")
+        return $tunnels.tunnels |
+            Where-Object {
+                $_.proto -eq "https" -and
+                [string]$_.config.addr -and
+                ([string]$_.config.addr).TrimEnd("/") -eq $expected
+            } |
+            Select-Object -First 1
+    } catch {
+        return $null
+    }
+}
+
 if (Test-Path -LiteralPath $BackendPidFile) {
     $pidValue = Get-Content -LiteralPath $BackendPidFile -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($pidValue -match "^\d+$") {
@@ -36,14 +55,24 @@ foreach ($listener in $listeners) {
 }
 
 if (-not $KeepNgrok) {
+    $stoppedTrackedNgrok = $false
     if (Test-Path -LiteralPath $NgrokPidFile) {
         $pidValue = Get-Content -LiteralPath $NgrokPidFile -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($pidValue -match "^\d+$") {
-            Stop-ByPid -ProcessId ([int]$pidValue)
+            $process = Get-Process -Id ([int]$pidValue) -ErrorAction SilentlyContinue
+            if ($process -and $process.ProcessName -eq "ngrok") {
+                Stop-ByPid -ProcessId ([int]$pidValue)
+                $stoppedTrackedNgrok = $true
+            }
         }
     }
 
-    Get-Process -Name ngrok -ErrorAction SilentlyContinue | Stop-Process -Force
+    if (-not $stoppedTrackedNgrok) {
+        $matchingTunnel = Get-ExpectedNgrokTunnel -ExpectedOrigin $BackendOrigin
+        if ($matchingTunnel) {
+            Write-Warning "A tunnel for $BackendOrigin is still online, but it is not tracked by this project. It was not stopped automatically."
+        }
+    }
 }
 
 Remove-Item -LiteralPath $BackendPidFile, $NgrokPidFile -Force -ErrorAction SilentlyContinue
