@@ -446,11 +446,16 @@ flowchart TD
 Noise and hallucination filters:
 
 ```powershell
-$env:MIN_AUDIO_RMS="0.0035"
+$env:MIN_SPEECH_MS="500"
+$env:MIN_AUDIO_RMS="0.0025"
 $env:NO_SPEECH_THRESHOLD="0.55"
 $env:LOG_PROB_THRESHOLD="-1.0"
 $env:COMPRESSION_RATIO_THRESHOLD="2.4"
 ```
+
+This balanced default skips speech bursts shorter than about half a second,
+but allows quieter speech to reach Whisper. If silence or fan noise creates
+fake text, tighten the filters below.
 
 If silence creates fake text such as `Thanks for watching`, try:
 

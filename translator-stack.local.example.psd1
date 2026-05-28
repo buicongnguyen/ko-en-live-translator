@@ -3,7 +3,7 @@
     AdminEmails = "your-email@gmail.com"
     FirebaseCredentialsFile = "C:\Users\n\secrets\firebase-service-account.json"
     BackendOrigin = "https://127.0.0.1:8443"
-    MinSpeechMs = 450
-    MinAudioRms = 0.0035
+    MinSpeechMs = 500
+    MinAudioRms = 0.0025
     VadAggressiveness = 2
 }

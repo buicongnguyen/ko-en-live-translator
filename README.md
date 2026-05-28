@@ -200,7 +200,8 @@ $env:WHISPER_COMPUTE_TYPE="auto"
 $env:SOURCE_LANGUAGE="ko"
 $env:TARGET_LANGUAGE="en"
 $env:SHOW_SOURCE_TEXT="true"
-$env:MIN_AUDIO_RMS="0.0035"
+$env:MIN_SPEECH_MS="500"
+$env:MIN_AUDIO_RMS="0.0025"
 $env:NO_SPEECH_THRESHOLD="0.55"
 python main.py
 ```
@@ -217,6 +218,8 @@ python main.py
 - If your GPU runtime cannot load the selected compute mode, the app will automatically fall back to a safer mode.
 - `SOURCE_LANGUAGE=ko` and `TARGET_LANGUAGE=en` are startup defaults, but the browser can change the language pair per session.
 - `SHOW_SOURCE_TEXT=true` is the default because the UI is designed to show source text beside the translation. Set it to `false` only when you need the lowest possible latency.
+- `MIN_SPEECH_MS=500` skips very short voice bursts before Whisper. This avoids many low-confidence chunks while still allowing normal short phrases.
+- `MIN_AUDIO_RMS=0.0025` allows quieter speech through to Whisper. If silence or fan noise creates fake text again, raise it toward `0.0035` or `0.005`.
 - `MIN_AUDIO_RMS`, `NO_SPEECH_THRESHOLD`, `LOG_PROB_THRESHOLD`, and `COMPRESSION_RATIO_THRESHOLD` help reject silence/noise chunks that Whisper may otherwise turn into fake phrases such as "thanks for watching".
 
 ## Optional non-English targets

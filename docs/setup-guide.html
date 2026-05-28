@@ -2695,6 +2695,10 @@ $env:WHISPER_BEAM_SIZE="1"</code></pre>
             </ul>
 
             <div class="callout">
+              Balanced default: <code>MIN_SPEECH_MS=500</code> skips very
+              short voice bursts, while <code>MIN_AUDIO_RMS=0.0025</code>
+              lets quieter speech reach Whisper.
+              <br />
               If silence still creates fake text, tighten the runtime filters:
               <code>MIN_AUDIO_RMS=0.005</code>,
               <code>NO_SPEECH_THRESHOLD=0.45</code>,
