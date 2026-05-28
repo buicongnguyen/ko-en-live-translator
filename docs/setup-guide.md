@@ -45,7 +45,7 @@ Steps:
 3. In `1 Access`, press `Sign in with Google`.
 4. In `2 Backend`, paste the backend origin, for example `https://alone-catalog-rejoice.ngrok-free.dev`.
 5. Press `Connect backend`.
-6. If your email is approved, the app enables `Start mic`.
+6. If your email is approved, the app asks for microphone permission and starts listening automatically.
 7. If you are admin, press `Refresh admin` to see active sessions and approve pending users.
 
 Current test link:

@@ -162,7 +162,7 @@ Then:
 2. Enter the backend origin, for example `https://abc123.ngrok-free.app`.
 3. Click Connect.
 4. If your email is an admin email, open the admin panel and approve pending users.
-5. Approved users can press Start mic and use the RTX GPU translator.
+5. Approved users allow microphone permission and the app starts the RTX GPU translator automatically.
 
 ## Admin Approval Flow
 

@@ -143,9 +143,9 @@ https://abc123.ngrok-free.app
 
 Click `Connect backend`.
 
-Click `Start mic`.
+The app should automatically request microphone permission.
 
-Allow microphone permission.
+Allow microphone permission when the browser asks.
 
 Speak Korean and confirm:
 
@@ -291,6 +291,8 @@ Enter the ngrok backend origin.
 
 Click `Connect backend`.
 
+If your email is approved, the app automatically requests microphone permission and starts listening.
+
 If you are admin, the admin panel appears.
 
 For another user:
@@ -300,7 +302,7 @@ For another user:
 3. You sign in as admin.
 4. Click `Refresh users`.
 5. Click `Approve`.
-6. The user reconnects and can use `Start mic`.
+6. The user reconnects, allows microphone permission, and the app starts listening automatically.
 
 ## Common Problems
 

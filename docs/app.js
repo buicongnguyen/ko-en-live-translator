@@ -430,8 +430,10 @@ async function connectBackend() {
     setConnection("Backend Connected");
     setBackendStatus(backendLabel());
     setState("Backend Ready");
-    setStatus("Backend connected. You can now start microphone capture.");
+    setStatus("Backend connected. Starting microphone capture.");
+    refreshControls();
     await loadAdminUsers();
+    await startCapture();
   } catch (error) {
     state.backendConnected = false;
     state.runtime = null;

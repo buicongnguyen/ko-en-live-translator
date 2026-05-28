@@ -455,7 +455,7 @@ Basic local test:
 1. Start the protected backend.
 2. Open the GitHub Pages app or local preview.
 3. Connect backend.
-4. Start mic.
+4. Allow microphone permission when the browser asks.
 5. Speak one short Korean sentence.
 6. Confirm one final line appears.
 7. Speak one long Korean sentence for 4 to 6 seconds.
