@@ -386,6 +386,20 @@ html[data-theme="dark"] .nav-link {
   vertical-align: middle;
 }
 
+.backend-detail-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+html[data-theme="dark"] .backend-detail-strip {
+  background: rgba(245, 238, 225, 0.06);
+}
+
 .backend-summary-status {
   min-width: 0;
   margin-left: auto;

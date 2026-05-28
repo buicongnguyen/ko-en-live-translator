@@ -338,6 +338,36 @@ html[data-theme="dark"] .pill.subtle {
   white-space: nowrap;
 }
 
+.connection-details {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.connection-details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.connection-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.connection-detail-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: min(360px, calc(100vw - 28px));
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel-strong);
+  box-shadow: var(--shadow);
+}
+
 .nav-link {
   display: inline-flex;
   align-items: center;

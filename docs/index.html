@@ -19,7 +19,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css?v=20260529-transcript-actions" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-compact-connect" />
   </head>
   <body>
     <main class="translator-shell">
@@ -124,11 +124,15 @@
       <details class="backend-drawer">
         <summary>
           <span class="backend-summary-line">
-            <span>Connect to server</span>
-            <span class="backend-summary-status" id="backend-summary-status">Demo Mode</span>
+            <span id="backend-summary-label">Connect</span>
           </span>
         </summary>
         <div class="backend-content">
+          <div class="backend-detail-strip" aria-label="Backend connection details">
+            <span class="field-label">Connection detail</span>
+            <span class="backend-summary-status" id="backend-summary-status">Demo Mode</span>
+          </div>
+
           <section class="auth-card setup-step" aria-label="Step 1 account access">
             <div class="step-heading">
               <span class="step-number">1</span>
@@ -293,6 +297,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-transcript-actions"></script>
+    <script src="./app.js?v=20260529-compact-connect"></script>
   </body>
 </html>

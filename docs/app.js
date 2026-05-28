@@ -146,6 +146,7 @@ const ui = {
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
+  backendSummaryLabel: document.getElementById("backend-summary-label"),
   backendSummaryStatus: document.getElementById("backend-summary-status"),
   themeToggleButton: document.getElementById("theme-toggle-button"),
   backendDrawer: document.querySelector(".backend-drawer"),
@@ -1493,6 +1494,7 @@ function refreshControls() {
   ui.refreshUsersButton.disabled = state.backendUser?.role !== "admin";
   ui.startButton.disabled = !state.backendConnected || state.isCapturing;
   ui.stopButton.disabled = !state.isCapturing;
+  updateBackendSummaryStatus();
 }
 
 function normalizeOrigin(value) {
@@ -1535,6 +1537,7 @@ function updateBackendSummaryStatus() {
     state.backendConnected && state.runtime
       ? `${runtimeSummaryLabel()} · ${state.connectionStatus}`
       : state.connectionStatus;
+  ui.backendSummaryLabel.textContent = state.backendConnected ? "Connected" : "Connect";
   ui.backendSummaryStatus.textContent = label;
   ui.backendSummaryStatus.title = label;
   ui.backendSummaryStatus.classList.toggle("online", state.backendConnected);
