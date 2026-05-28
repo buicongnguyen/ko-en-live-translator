@@ -798,6 +798,11 @@ html[data-theme="dark"] .info-card {
     width: 100%;
   }
 
+  .button-row .status-cluster {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
   .toolbar {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -915,6 +920,10 @@ html[data-theme="dark"] .info-card {
   .pill {
     flex: 1 1 auto;
     justify-content: center;
+  }
+
+  .button-row .connection-details .pill {
+    flex: 0 0 auto;
   }
 
   .status-strip {

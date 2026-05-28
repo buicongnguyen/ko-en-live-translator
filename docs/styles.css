@@ -128,7 +128,6 @@ html[data-theme="dark"] .secondary {
 
 .topbar,
 .status-strip,
-.backend-drawer,
 .translation-column {
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.72);
@@ -138,7 +137,6 @@ html[data-theme="dark"] .secondary {
 
 html[data-theme="dark"] .topbar,
 html[data-theme="dark"] .status-strip,
-html[data-theme="dark"] .backend-drawer,
 html[data-theme="dark"] .translation-column {
   border-color: rgba(245, 238, 225, 0.1);
 }
@@ -218,6 +216,7 @@ html[data-theme="dark"] .language-menu summary {
 }
 
 .toolbar {
+  position: relative;
   flex: 1;
   display: flex;
   justify-content: flex-end;
@@ -366,23 +365,41 @@ html[data-theme="dark"] .nav-link {
 }
 
 .backend-drawer {
+  position: static;
+  flex: 0 0 auto;
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .backend-drawer summary {
-  padding: 9px 12px;
+  min-height: 30px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
   color: var(--primary-strong);
+  background: rgba(18, 109, 98, 0.12);
   font-size: 0.82rem;
   font-weight: 900;
   cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.backend-drawer summary::-webkit-details-marker {
+  display: none;
+}
+
+html[data-theme="dark"] .backend-drawer summary {
+  background: rgba(102, 215, 197, 0.14);
 }
 
 .backend-summary-line {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: calc(100% - 18px);
+  width: auto;
   vertical-align: middle;
 }
 
@@ -429,10 +446,20 @@ html[data-theme="dark"] .backend-summary-status.online {
 }
 
 .backend-content {
-  padding: 0 12px 12px;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  width: min(760px, calc(100vw - 28px));
+  padding: 12px;
   display: grid;
   gap: 10px;
   align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .field-label {
@@ -1098,6 +1125,10 @@ html[data-theme="dark"] .info-card {
     overflow: hidden;
   }
 
+  .button-row .backend-drawer {
+    flex: 0 0 auto;
+  }
+
   .backend-drawer summary {
     padding: 6px 9px;
     font-size: 0.76rem;
@@ -1131,10 +1162,17 @@ html[data-theme="dark"] .info-card {
   }
 
   .backend-drawer[open] .backend-content {
+    position: static;
     flex: 1 1 auto;
     min-height: 0;
+    width: auto;
     max-height: none;
     padding: 6px 6px max(14px, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   .backend-connect-card,

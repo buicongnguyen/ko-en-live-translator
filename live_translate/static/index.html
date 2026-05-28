@@ -15,7 +15,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="/static/styles.css?v=20260529-compact-connect" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260529-connect-in-actions" />
   </head>
   <body>
     <main class="translator-shell">
@@ -98,15 +98,14 @@
           <div class="button-row">
             <button id="start-button" class="primary">Start mic</button>
             <button id="stop-button" class="secondary" disabled>Stop</button>
+            <details class="status-cluster connection-details" aria-label="Translator status">
+              <summary class="pill" id="connection-pill">Connecting</summary>
+              <div class="connection-detail-panel">
+                <span class="pill subtle" id="state-pill">Idle</span>
+                <span class="pill subtle compact-model" id="model-pill">Model: loading</span>
+              </div>
+            </details>
           </div>
-
-          <details class="status-cluster connection-details" aria-label="Translator status">
-            <summary class="pill" id="connection-pill">Connecting</summary>
-            <div class="connection-detail-panel">
-              <span class="pill subtle" id="state-pill">Idle</span>
-              <span class="pill subtle compact-model" id="model-pill">Model: loading</span>
-            </div>
-          </details>
 
         </div>
 
@@ -205,6 +204,6 @@
       </section>
     </main>
 
-    <script src="/static/app.js?v=20260529-compact-connect"></script>
+    <script src="/static/app.js?v=20260529-connect-in-actions"></script>
   </body>
 </html>

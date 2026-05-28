@@ -19,7 +19,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css?v=20260529-compact-connect" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-connect-in-actions" />
   </head>
   <body>
     <main class="translator-shell">
@@ -102,6 +102,100 @@
           <div class="button-row">
             <button id="demo-button" class="primary">Demo</button>
             <button id="reset-button" class="secondary">Reset</button>
+            <details class="backend-drawer">
+              <summary>
+                <span class="backend-summary-line">
+                  <span id="backend-summary-label">Connect</span>
+                </span>
+              </summary>
+              <div class="backend-content">
+                <div class="backend-detail-strip" aria-label="Backend connection details">
+                  <span class="field-label">Connection detail</span>
+                  <span class="backend-summary-status" id="backend-summary-status">Demo Mode</span>
+                </div>
+
+                <section class="auth-card setup-step" aria-label="Step 1 account access">
+                  <div class="step-heading">
+                    <span class="step-number">1</span>
+                    <div>
+                      <div class="field-label">Access</div>
+                      <strong>Sign in with Google</strong>
+                      <p class="step-copy">Use your approved Google account before connecting to the RTX backend.</p>
+                    </div>
+                  </div>
+                  <div id="auth-status" class="endpoint-preview">
+                    Firebase login is optional until the protected backend is configured.
+                  </div>
+                  <div class="button-row compact">
+                    <button id="google-login-button" class="secondary" disabled>
+                      Sign in with Google
+                    </button>
+                    <button id="facebook-login-button" class="secondary" disabled>
+                      Facebook
+                    </button>
+                    <button id="sign-out-button" class="secondary" disabled>
+                      Sign out
+                    </button>
+                  </div>
+                  <div id="user-card" class="endpoint-preview" hidden></div>
+                </section>
+
+                <section class="backend-connect-card setup-step" aria-label="Step 2 backend server connection">
+                  <div class="step-heading">
+                    <span class="step-number">2</span>
+                    <div>
+                      <div class="field-label">Backend</div>
+                      <strong>Connect backend</strong>
+                      <p class="step-copy">Use the ngrok or HTTPS origin from the RTX 4080 Super host PC.</p>
+                    </div>
+                  </div>
+                  <div class="connection-field">
+                    <label class="field-label" for="backend-origin">Backend origin</label>
+                    <input
+                      id="backend-origin"
+                      class="text-field"
+                      type="text"
+                      placeholder="https://alone-catalog-rejoice.ngrok-free.dev"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <div id="endpoint-preview" class="endpoint-preview">
+                      Health: /api/health · Socket: /ws
+                    </div>
+                  </div>
+                  <div class="button-row compact connection-actions">
+                    <button id="connect-button" class="primary">Connect backend</button>
+                    <button id="disconnect-button" class="secondary" disabled>
+                      Disconnect
+                    </button>
+                  </div>
+                </section>
+
+                <section id="admin-panel" class="admin-panel" aria-label="Admin approvals" hidden>
+                  <div class="admin-panel-head">
+                    <div>
+                      <div class="field-label">Admin</div>
+                      <strong>Users and live sessions</strong>
+                    </div>
+                    <button id="refresh-users-button" class="secondary compact-button">
+                      Refresh admin
+                    </button>
+                  </div>
+                  <div class="admin-section">
+                    <div class="admin-section-title">Active sessions</div>
+                    <div id="admin-sessions" class="admin-users">
+                      Connect an authenticated backend to view active sessions.
+                    </div>
+                  </div>
+                  <div class="admin-section">
+                    <div class="admin-section-title">Approved users</div>
+                    <div id="admin-users" class="admin-users">
+                      Connect an authenticated backend to manage users.
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </details>
             <button id="start-button" class="secondary" disabled>Start mic</button>
             <button id="stop-button" class="secondary" disabled>Stop</button>
           </div>
@@ -120,101 +214,6 @@
           <a class="nav-link" href="./about.html">Guide</a>
         </nav>
       </header>
-
-      <details class="backend-drawer">
-        <summary>
-          <span class="backend-summary-line">
-            <span id="backend-summary-label">Connect</span>
-          </span>
-        </summary>
-        <div class="backend-content">
-          <div class="backend-detail-strip" aria-label="Backend connection details">
-            <span class="field-label">Connection detail</span>
-            <span class="backend-summary-status" id="backend-summary-status">Demo Mode</span>
-          </div>
-
-          <section class="auth-card setup-step" aria-label="Step 1 account access">
-            <div class="step-heading">
-              <span class="step-number">1</span>
-              <div>
-                <div class="field-label">Access</div>
-                <strong>Sign in with Google</strong>
-                <p class="step-copy">Use your approved Google account before connecting to the RTX backend.</p>
-              </div>
-            </div>
-            <div id="auth-status" class="endpoint-preview">
-              Firebase login is optional until the protected backend is configured.
-            </div>
-            <div class="button-row compact">
-              <button id="google-login-button" class="secondary" disabled>
-                Sign in with Google
-              </button>
-              <button id="facebook-login-button" class="secondary" disabled>
-                Facebook
-              </button>
-              <button id="sign-out-button" class="secondary" disabled>
-                Sign out
-              </button>
-            </div>
-            <div id="user-card" class="endpoint-preview" hidden></div>
-          </section>
-
-          <section class="backend-connect-card setup-step" aria-label="Step 2 backend server connection">
-            <div class="step-heading">
-              <span class="step-number">2</span>
-              <div>
-                <div class="field-label">Backend</div>
-                <strong>Connect backend</strong>
-                <p class="step-copy">Use the ngrok or HTTPS origin from the RTX 4080 Super host PC.</p>
-              </div>
-            </div>
-            <div class="connection-field">
-              <label class="field-label" for="backend-origin">Backend origin</label>
-              <input
-                id="backend-origin"
-                class="text-field"
-                type="text"
-                placeholder="https://alone-catalog-rejoice.ngrok-free.dev"
-                autocomplete="off"
-                spellcheck="false"
-              />
-              <div id="endpoint-preview" class="endpoint-preview">
-                Health: /api/health · Socket: /ws
-              </div>
-            </div>
-            <div class="button-row compact connection-actions">
-              <button id="connect-button" class="primary">Connect backend</button>
-              <button id="disconnect-button" class="secondary" disabled>
-                Disconnect
-              </button>
-            </div>
-          </section>
-
-          <section id="admin-panel" class="admin-panel" aria-label="Admin approvals" hidden>
-            <div class="admin-panel-head">
-              <div>
-                <div class="field-label">Admin</div>
-                <strong>Users and live sessions</strong>
-              </div>
-              <button id="refresh-users-button" class="secondary compact-button">
-                Refresh admin
-              </button>
-            </div>
-            <div class="admin-section">
-              <div class="admin-section-title">Active sessions</div>
-              <div id="admin-sessions" class="admin-users">
-                Connect an authenticated backend to view active sessions.
-              </div>
-            </div>
-            <div class="admin-section">
-              <div class="admin-section-title">Approved users</div>
-              <div id="admin-users" class="admin-users">
-                Connect an authenticated backend to manage users.
-              </div>
-            </div>
-          </section>
-        </div>
-      </details>
 
       <section class="status-strip" aria-live="polite">
         <span id="status-text">Demo ready.</span>
@@ -297,6 +296,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-compact-connect"></script>
+    <script src="./app.js?v=20260529-connect-in-actions"></script>
   </body>
 </html>
