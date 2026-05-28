@@ -19,75 +19,86 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css?v=20260529-compact-server-drawer" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-compact-language-chip" />
   </head>
   <body>
     <main class="translator-shell">
       <header class="topbar">
-        <a class="brand" href="./">
-          <span class="brand-name">LiveTranslate AI</span>
-        </a>
+        <div class="brand-cluster">
+          <a class="brand" href="./">
+            <span class="brand-name">LiveTrans</span>
+          </a>
+
+          <details class="language-menu">
+            <summary aria-label="Change translation languages">
+              <span id="source-language-badge">KO</span>
+              <span class="language-arrow" aria-hidden="true">-&gt;</span>
+              <span id="target-language-badge">EN</span>
+            </summary>
+            <div class="language-menu-panel">
+              <div class="language-pair" aria-label="Translation language pair">
+                <label class="language-control" for="source-language">
+                  <span>Source</span>
+                  <select id="source-language" class="select-field">
+                    <option value="auto">Auto detect</option>
+                    <option value="ko" selected>Korean</option>
+                    <option value="ja">Japanese</option>
+                    <option value="zh">Chinese</option>
+                    <option value="vi">Vietnamese</option>
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="ru">Russian</option>
+                    <option value="ar">Arabic</option>
+                    <option value="hi">Hindi</option>
+                    <option value="th">Thai</option>
+                    <option value="id">Indonesian</option>
+                    <option value="ms">Malay</option>
+                    <option value="tl">Tagalog</option>
+                    <option value="tr">Turkish</option>
+                    <option value="pl">Polish</option>
+                    <option value="nl">Dutch</option>
+                    <option value="uk">Ukrainian</option>
+                  </select>
+                </label>
+
+                <span class="language-arrow" aria-hidden="true">-&gt;</span>
+
+                <label class="language-control" for="target-language">
+                  <span>Target</span>
+                  <select id="target-language" class="select-field">
+                    <option value="en" selected>English</option>
+                    <option value="vi">Vietnamese</option>
+                    <option value="ko">Korean</option>
+                    <option value="ja">Japanese</option>
+                    <option value="zh">Chinese</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="ru">Russian</option>
+                    <option value="ar">Arabic</option>
+                    <option value="hi">Hindi</option>
+                    <option value="th">Thai</option>
+                    <option value="id">Indonesian</option>
+                    <option value="ms">Malay</option>
+                    <option value="tl">Tagalog</option>
+                    <option value="tr">Turkish</option>
+                    <option value="pl">Polish</option>
+                    <option value="nl">Dutch</option>
+                    <option value="uk">Ukrainian</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+          </details>
+        </div>
 
         <div class="toolbar">
-          <div class="language-pair" aria-label="Translation language pair">
-            <label class="language-control" for="source-language">
-              <span class="visually-hidden">Source language</span>
-              <select id="source-language" class="select-field">
-                <option value="auto">Auto detect</option>
-                <option value="ko" selected>Korean</option>
-                <option value="ja">Japanese</option>
-                <option value="zh">Chinese</option>
-                <option value="vi">Vietnamese</option>
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="it">Italian</option>
-                <option value="pt">Portuguese</option>
-                <option value="ru">Russian</option>
-                <option value="ar">Arabic</option>
-                <option value="hi">Hindi</option>
-                <option value="th">Thai</option>
-                <option value="id">Indonesian</option>
-                <option value="ms">Malay</option>
-                <option value="tl">Tagalog</option>
-                <option value="tr">Turkish</option>
-                <option value="pl">Polish</option>
-                <option value="nl">Dutch</option>
-                <option value="uk">Ukrainian</option>
-              </select>
-            </label>
-
-            <span class="language-arrow" aria-hidden="true">-&gt;</span>
-
-            <label class="language-control" for="target-language">
-              <span class="visually-hidden">Target language</span>
-              <select id="target-language" class="select-field">
-                <option value="en" selected>English</option>
-                <option value="vi">Vietnamese</option>
-                <option value="ko">Korean</option>
-                <option value="ja">Japanese</option>
-                <option value="zh">Chinese</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="it">Italian</option>
-                <option value="pt">Portuguese</option>
-                <option value="ru">Russian</option>
-                <option value="ar">Arabic</option>
-                <option value="hi">Hindi</option>
-                <option value="th">Thai</option>
-                <option value="id">Indonesian</option>
-                <option value="ms">Malay</option>
-                <option value="tl">Tagalog</option>
-                <option value="tr">Turkish</option>
-                <option value="pl">Polish</option>
-                <option value="nl">Dutch</option>
-                <option value="uk">Ukrainian</option>
-              </select>
-            </label>
-          </div>
-
           <div class="button-row">
             <button id="demo-button" class="primary">Play demo</button>
             <button id="reset-button" class="secondary">Reset</button>
@@ -107,8 +118,7 @@
           >
             Dark
           </button>
-          <a class="nav-link" href="./about.html">About</a>
-          <a class="nav-link" href="./setup-guide.html">Setup</a>
+          <a class="nav-link" href="./about.html">Guide</a>
         </nav>
       </header>
 
@@ -279,6 +289,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-connected-main-view"></script>
+    <script src="./app.js?v=20260529-compact-language-chip"></script>
   </body>
 </html>

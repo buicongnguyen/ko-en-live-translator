@@ -130,6 +130,8 @@ const ui = {
   stopButton: document.getElementById("stop-button"),
   sourceLanguage: document.getElementById("source-language"),
   targetLanguage: document.getElementById("target-language"),
+  sourceLanguageBadge: document.getElementById("source-language-badge"),
+  targetLanguageBadge: document.getElementById("target-language-badge"),
   sourceLanguageLabel: document.getElementById("source-language-label"),
   targetLanguageLabel: document.getElementById("target-language-label"),
   backendOrigin: document.getElementById("backend-origin"),
@@ -1385,7 +1387,7 @@ function targetLanguageName() {
 
 function languageBadge(languageCode) {
   const badges = {
-    auto: "SRC",
+    auto: "AU",
     ko: "KO",
     vi: "VN",
     en: "EN",
@@ -1413,6 +1415,8 @@ function languageBadge(languageCode) {
 
 function updateLanguageUi() {
   const label = state.sourceLanguage === "auto" ? "Source" : sourceLanguageName();
+  ui.sourceLanguageBadge.textContent = languageBadge(state.sourceLanguage);
+  ui.targetLanguageBadge.textContent = languageBadge(state.targetLanguage);
   ui.sourceLanguageLabel.textContent = label;
   ui.copySourceButton.textContent = `Copy ${label}`;
   ui.targetLanguageLabel.textContent = targetLanguageName();

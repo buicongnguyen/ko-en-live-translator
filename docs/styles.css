@@ -152,17 +152,69 @@ html[data-theme="dark"] .translation-column {
   gap: 14px;
 }
 
+.brand-cluster {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-width: 0;
+}
+
 .brand {
-  min-width: 168px;
+  flex: 0 0 auto;
   color: var(--text);
   text-decoration: none;
 }
 
 .brand-name {
   display: block;
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 950;
   letter-spacing: -0.03em;
+}
+
+.language-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.language-menu summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  gap: 4px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: var(--primary-strong);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.76rem;
+  font-weight: 950;
+  cursor: pointer;
+  user-select: none;
+}
+
+.language-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+html[data-theme="dark"] .language-menu summary {
+  background: rgba(245, 238, 225, 0.08);
+}
+
+.language-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  width: min(320px, calc(100vw - 28px));
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel-strong);
+  box-shadow: var(--shadow);
 }
 
 .toolbar {
@@ -195,12 +247,10 @@ html[data-theme="dark"] .translation-column {
 }
 
 .language-pair {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  width: fit-content;
-  flex: 0 0 auto;
-  padding: 2px;
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.42);
   border: 1px solid rgba(27, 27, 24, 0.06);
@@ -212,10 +262,16 @@ html[data-theme="dark"] .language-pair {
 }
 
 .language-control {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px;
   align-items: center;
-  width: fit-content;
-  flex: 0 0 auto;
+  width: 100%;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
 .language-arrow {
@@ -242,9 +298,9 @@ html[data-theme="dark"] .text-field {
 
 .select-field {
   field-sizing: content;
-  width: auto;
-  min-width: 6.8rem;
-  max-width: 8.6rem;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   padding: 8px 30px 8px 10px;
   font-size: 0.9rem;
   font-weight: 800;
@@ -836,6 +892,10 @@ html[data-theme="dark"] .info-card {
     flex-direction: column;
   }
 
+  .brand-cluster {
+    width: 100%;
+  }
+
   .toolbar {
     width: 100%;
     justify-content: flex-start;
@@ -890,7 +950,7 @@ html[data-theme="dark"] .info-card {
     border-radius: 15px;
   }
 
-  .brand {
+  .brand-cluster {
     grid-column: 1;
     grid-row: 1;
     min-width: 0;
@@ -925,14 +985,32 @@ html[data-theme="dark"] .info-card {
     gap: 5px;
   }
 
-  .language-control {
-    width: fit-content;
+  .language-menu {
+    min-width: 0;
+  }
+
+  .language-menu summary {
+    min-height: 28px;
+    padding: 4px 7px;
+    font-size: 0.7rem;
+  }
+
+  .language-menu-panel {
+    top: calc(100% + 6px);
+    width: min(292px, calc(100vw - 24px));
+    padding: 8px;
   }
 
   .language-pair {
-    gap: 4px;
-    padding: 1px;
+    gap: 6px;
+    padding: 6px;
     border-radius: 12px;
+  }
+
+  .language-control {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 6px;
+    font-size: 0.64rem;
   }
 
   .language-arrow {
@@ -940,8 +1018,8 @@ html[data-theme="dark"] .info-card {
   }
 
   .select-field {
-    min-width: 6.8rem;
-    max-width: 8rem;
+    min-width: 0;
+    max-width: none;
     padding: 7px 26px 7px 9px;
     border-radius: 10px;
     font-size: 0.82rem;
@@ -1251,8 +1329,7 @@ html[data-theme="dark"] .info-card {
 
 @media (max-width: 380px) {
   .language-control {
-    width: fit-content;
-    align-items: center;
+    grid-template-columns: 50px minmax(0, 1fr);
   }
 
   .language-pair {

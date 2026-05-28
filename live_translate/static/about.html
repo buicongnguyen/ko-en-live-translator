@@ -3,18 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>About LiveTranslate AI</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <title>LiveTrans Guide</title>
+    <script>
+      (() => {
+        try {
+          if (window.localStorage.getItem("translator-theme") === "dark") {
+            document.documentElement.dataset.theme = "dark";
+          }
+        } catch {
+          // Keep the default light theme if storage is unavailable.
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/styles.css?v=20260529-compact-language-chip" />
   </head>
   <body>
     <main class="content-shell">
-      <a class="nav-link back-link" href="/">Back to translator</a>
+      <nav class="content-nav" aria-label="Guide page navigation">
+        <a class="nav-link" href="/">Back to translator</a>
+        <a
+          class="nav-link"
+          href="https://buicongnguyen.github.io/ko-en-live-translator/setup-guide.html"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Setup
+        </a>
+        <button
+          class="nav-link theme-toggle"
+          type="button"
+          data-theme-toggle
+          aria-pressed="false"
+        >
+          Dark
+        </button>
+      </nav>
 
       <section class="about-hero">
-        <div class="block-label">About</div>
-        <h1>Local live speech translation</h1>
+        <div class="block-label">Guide</div>
+        <h1>LiveTrans guide</h1>
         <p>
-          LiveTranslate AI is a local-network web app for translating speech
+          LiveTrans is a local-network web app for translating speech
           between selected languages with a GPU-backed speech model. The main page stays
           focused on the two pieces people need during a conversation: source
           transcript and target translation.
@@ -58,7 +87,62 @@
             translation service.
           </p>
         </article>
+
+        <article class="info-card">
+          <h2>Setup guide</h2>
+          <p>
+            For ngrok, Firebase, GitHub Pages, and RTX host setup, open the full
+            setup guide.
+          </p>
+          <p>
+            <a
+              class="nav-link"
+              href="https://buicongnguyen.github.io/ko-en-live-translator/setup-guide.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open setup guide
+            </a>
+          </p>
+        </article>
       </section>
     </main>
+    <script>
+      (() => {
+        const buttons = document.querySelectorAll("[data-theme-toggle]");
+
+        function isDark() {
+          return document.documentElement.dataset.theme === "dark";
+        }
+
+        function applyTheme(theme, persist = false) {
+          if (theme === "dark") {
+            document.documentElement.dataset.theme = "dark";
+          } else {
+            delete document.documentElement.dataset.theme;
+          }
+
+          if (persist) {
+            try {
+              window.localStorage.setItem("translator-theme", theme);
+            } catch {
+              // Ignore storage failures; the visible theme still updates.
+            }
+          }
+
+          buttons.forEach((button) => {
+            button.textContent = isDark() ? "Light" : "Dark";
+            button.setAttribute("aria-pressed", String(isDark()));
+          });
+        }
+
+        applyTheme(isDark() ? "dark" : "light");
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            applyTheme(isDark() ? "light" : "dark", true);
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
