@@ -562,6 +562,23 @@ html[data-theme="dark"] .admin-user-row {
   line-height: 1.35;
 }
 
+.status-strip span {
+  min-width: 0;
+}
+
+#status-text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#latency-text,
+#audio-text {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .translation-workspace {
   flex: 1;
   min-height: 0;
@@ -1055,9 +1072,9 @@ html[data-theme="dark"] .transcript-line.latest {
   }
 
   .status-strip {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
     min-height: 0;
     padding: 6px 9px;
     border-radius: 12px;

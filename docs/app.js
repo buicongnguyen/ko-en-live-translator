@@ -380,7 +380,7 @@ function resetShowcase() {
   setStatus(
     state.backendConnected
       ? "Backend connected. Start microphone capture when you're ready."
-      : "Demo mode works on GitHub Pages without any server."
+      : "Demo ready."
   );
   setConnection(state.backendConnected ? "Backend Ready" : "Demo Mode");
   refreshControls();
@@ -425,6 +425,8 @@ async function connectBackend() {
     state.isDemoPlaying = false;
     window.localStorage.setItem("backend-origin", origin);
     setConnection("Backend Ready");
+    ui.latencyText.textContent = "Latency: -";
+    ui.audioText.textContent = "Audio: -";
     setStatus("Backend connected. Starting microphone capture.");
     refreshControls();
     await loadAdminUsers();
