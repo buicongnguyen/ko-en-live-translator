@@ -699,9 +699,9 @@ html[data-theme="dark"] .transcript-line.latest {
 
   .backend-drawer[open] {
     position: fixed;
-    inset: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
+    inset: max(4px, env(safe-area-inset-top)) 4px max(4px, env(safe-area-inset-bottom));
     z-index: 20;
-    max-height: calc(100dvh - 12px);
+    max-height: calc(100dvh - 8px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -721,7 +721,8 @@ html[data-theme="dark"] .transcript-line.latest {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    gap: 6px;
+    padding: 6px 6px max(14px, env(safe-area-inset-bottom));
   }
 
   .connection-actions {
@@ -730,6 +731,31 @@ html[data-theme="dark"] .transcript-line.latest {
     z-index: 1;
     padding-top: 4px;
     background: linear-gradient(180deg, transparent, var(--panel) 34%);
+  }
+
+  .backend-drawer[open] .auth-card,
+  .backend-drawer[open] .backend-connect-card,
+  .backend-drawer[open] .admin-panel {
+    gap: 5px;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .backend-drawer[open] .step-copy {
+    display: none;
+  }
+
+  .backend-drawer[open] .field-label {
+    gap: 3px;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+
+  .backend-drawer[open] .endpoint-preview {
+    padding: 5px 6px;
+    border-radius: 9px;
+    font-size: 0.67rem;
+    line-height: 1.25;
   }
 
   .language-control {

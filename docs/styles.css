@@ -983,16 +983,16 @@ html[data-theme="dark"] .transcript-line.latest {
 
   .backend-drawer[open] {
     position: fixed;
-    inset: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
+    inset: max(4px, env(safe-area-inset-top)) 4px max(4px, env(safe-area-inset-bottom));
     z-index: 20;
-    max-height: calc(100dvh - 12px);
+    max-height: calc(100dvh - 8px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
   .backend-drawer summary {
-    padding: 7px 10px;
+    padding: 6px 9px;
     font-size: 0.76rem;
   }
 
@@ -1019,23 +1019,23 @@ html[data-theme="dark"] .transcript-line.latest {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    padding: 0 8px 8px;
-    gap: 8px;
+    padding: 0 6px 6px;
+    gap: 6px;
   }
 
   .backend-drawer[open] .backend-content {
     flex: 1 1 auto;
     min-height: 0;
     max-height: none;
-    padding: 8px 8px max(14px, env(safe-area-inset-bottom));
+    padding: 6px 6px max(14px, env(safe-area-inset-bottom));
   }
 
   .backend-connect-card,
   .auth-card,
   .admin-panel {
-    gap: 8px;
-    padding: 8px;
-    border-radius: 12px;
+    gap: 5px;
+    padding: 6px;
+    border-radius: 10px;
   }
 
   .backend-connect-card {
@@ -1046,29 +1046,93 @@ html[data-theme="dark"] .transcript-line.latest {
     position: sticky;
     bottom: 0;
     z-index: 1;
-    padding-top: 4px;
+    padding-top: 3px;
     background: linear-gradient(180deg, transparent, var(--panel) 34%);
   }
 
   .step-heading {
-    gap: 8px;
+    gap: 6px;
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .step-heading strong {
-    font-size: 0.9rem;
+    font-size: 0.84rem;
   }
 
   .step-number {
-    width: 28px;
-    height: 28px;
-    font-size: 0.82rem;
+    width: 23px;
+    height: 23px;
+    font-size: 0.72rem;
+    box-shadow: none;
+  }
+
+  .step-copy {
+    display: none;
+  }
+
+  .field-label {
+    gap: 3px;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+
+  .connection-field {
+    gap: 5px;
+  }
+
+  .backend-drawer[open] .button-row.compact {
+    gap: 5px;
   }
 
   .step-copy,
   .endpoint-preview,
   .admin-session-summary,
   .admin-user-detail {
-    font-size: 0.72rem;
+    font-size: 0.67rem;
+  }
+
+  .endpoint-preview,
+  .admin-session-summary {
+    padding: 5px 6px;
+    border-radius: 9px;
+    line-height: 1.25;
+  }
+
+  .admin-panel-head,
+  .admin-user-row,
+  .admin-user-actions {
+    gap: 5px;
+  }
+
+  .admin-panel-head strong {
+    font-size: 0.84rem;
+  }
+
+  .admin-section {
+    gap: 4px;
+  }
+
+  .admin-section-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+
+  .admin-users {
+    gap: 5px;
+  }
+
+  .admin-user-row {
+    padding: 5px;
+    border-radius: 9px;
+  }
+
+  .admin-user-email {
+    font-size: 0.78rem;
+  }
+
+  .admin-user-actions .compact-button {
+    padding: 5px 6px;
+    font-size: 0.66rem;
   }
 
   .status-strip {
