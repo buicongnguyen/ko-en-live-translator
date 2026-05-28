@@ -1098,7 +1098,7 @@ function renderAllTranscripts() {
   renderTranscriptBox(
     ui.targetTranscript,
     state.targetLines,
-    `Press “Play demo” to see ${targetLanguageName()} here.`
+    `Press “Demo” to see ${targetLanguageName()} here.`
   );
 }
 

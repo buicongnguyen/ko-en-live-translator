@@ -19,7 +19,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css?v=20260529-compact-language-chip" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-transcript-actions" />
   </head>
   <body>
     <main class="translator-shell">
@@ -100,11 +100,10 @@
 
         <div class="toolbar">
           <div class="button-row">
-            <button id="demo-button" class="primary">Play demo</button>
+            <button id="demo-button" class="primary">Demo</button>
             <button id="reset-button" class="secondary">Reset</button>
             <button id="start-button" class="secondary" disabled>Start mic</button>
             <button id="stop-button" class="secondary" disabled>Stop</button>
-            <button id="clear-transcript-button" class="secondary">Clear</button>
           </div>
 
         </div>
@@ -225,9 +224,14 @@
             <div>
               <div class="block-label">Live conversation</div>
             </div>
-            <button id="copy-conversation-button" class="secondary compact-button">
-              Copy all
-            </button>
+            <div class="transcript-actions">
+              <button id="copy-conversation-button" class="secondary compact-button">
+                Copy all
+              </button>
+              <button id="clear-transcript-button" class="secondary compact-button">
+                Clear
+              </button>
+            </div>
           </div>
           <div
             id="conversation-transcript"
@@ -282,13 +286,13 @@
             aria-label="Target translation"
             tabindex="0"
           >
-            <p class="empty-copy">Press “Play demo” to see translation here.</p>
+            <p class="empty-copy">Press “Demo” to see translation here.</p>
           </div>
         </article>
       </section>
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-compact-language-chip"></script>
+    <script src="./app.js?v=20260529-transcript-actions"></script>
   </body>
 </html>

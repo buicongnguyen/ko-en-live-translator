@@ -469,6 +469,14 @@ html[data-theme="dark"] .endpoint-preview {
   letter-spacing: -0.03em;
 }
 
+.transcript-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
 .block-label {
   color: var(--primary);
   font-size: 0.66rem;

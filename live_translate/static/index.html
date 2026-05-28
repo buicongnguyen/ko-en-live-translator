@@ -15,7 +15,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="/static/styles.css?v=20260529-compact-language-chip" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260529-transcript-actions" />
   </head>
   <body>
     <main class="translator-shell">
@@ -98,7 +98,6 @@
           <div class="button-row">
             <button id="start-button" class="primary">Start mic</button>
             <button id="stop-button" class="secondary" disabled>Stop</button>
-            <button id="clear-transcript-button" class="secondary">Clear</button>
           </div>
 
           <div class="status-cluster" aria-label="Translator status">
@@ -136,9 +135,14 @@
             <div>
               <div class="block-label">Live conversation</div>
             </div>
-            <button id="copy-conversation-button" class="secondary compact-button">
-              Copy all
-            </button>
+            <div class="transcript-actions">
+              <button id="copy-conversation-button" class="secondary compact-button">
+                Copy all
+              </button>
+              <button id="clear-transcript-button" class="secondary compact-button">
+                Clear
+              </button>
+            </div>
           </div>
           <div
             id="conversation-transcript"
