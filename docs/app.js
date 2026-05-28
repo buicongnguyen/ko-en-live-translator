@@ -143,8 +143,6 @@ const ui = {
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
   connectionPill: document.getElementById("connection-pill"),
-  backendPill: document.getElementById("backend-pill"),
-  statePill: document.getElementById("state-pill"),
 };
 
 ui.demoButton.addEventListener("click", playDemo);
@@ -335,8 +333,6 @@ async function playDemo() {
   refreshControls();
 
   setConnection("Demo Running");
-  setBackendStatus("Backend Optional");
-  setState("Simulating");
   setStatus("Running the GitHub Pages subtitle demo.");
 
   clearTranscript({ silent: true });
@@ -360,7 +356,6 @@ async function playDemo() {
 
   if (state.isDemoPlaying) {
     setConnection("Demo Mode");
-    setState("Showcase Ready");
     setStatus("Demo finished. Connect a backend to enable live microphone translation.");
   }
 
@@ -381,9 +376,7 @@ function resetShowcase() {
       ? "Backend connected. Start microphone capture when you're ready."
       : "Demo mode works on GitHub Pages without any server."
   );
-  setState(state.backendConnected ? "Backend Ready" : "Showcase Ready");
   setConnection(state.backendConnected ? "Backend Connected" : "Demo Mode");
-  setBackendStatus(state.backendConnected ? backendLabel() : "Backend Optional");
   refreshControls();
 }
 
@@ -400,8 +393,6 @@ async function connectBackend() {
   refreshControls();
 
   setConnection("Connecting");
-  setBackendStatus("Checking Backend");
-  setState("Connecting");
   setStatus("Checking the backend health endpoint.");
 
   const healthUrl = new URL("/api/health", origin).toString();
@@ -428,8 +419,6 @@ async function connectBackend() {
     state.isDemoPlaying = false;
     window.localStorage.setItem("backend-origin", origin);
     setConnection("Backend Connected");
-    setBackendStatus(backendLabel());
-    setState("Backend Ready");
     setStatus("Backend connected. Starting microphone capture.");
     refreshControls();
     await loadAdminUsers();
@@ -442,8 +431,6 @@ async function connectBackend() {
     closeSocket();
     renderAdminPanel();
     setConnection("Demo Mode");
-    setBackendStatus("Backend Offline");
-    setState("Showcase Ready");
     setStatus(`Backend connection failed: ${error.message}`);
   }
 
@@ -460,8 +447,6 @@ async function disconnectBackend() {
   closeSocket();
   renderAdminPanel();
   setConnection("Demo Mode");
-  setBackendStatus("Backend Optional");
-  setState("Showcase Ready");
   setStatus("Disconnected from the backend. Demo mode is still available.");
   refreshControls();
 }
@@ -508,10 +493,8 @@ async function startCapture() {
     state.mutedNode = mutedNode;
     state.isCapturing = true;
 
-    setState("Listening");
     setStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
   } catch (error) {
-    setState("Mic Blocked");
     setStatus(`Microphone could not start: ${error.message}`);
   } finally {
     refreshControls();
@@ -608,10 +591,7 @@ async function stopCapture() {
   state.mutedNode = null;
 
   if (state.backendConnected) {
-    setState("Backend Ready");
     setStatus("Microphone stopped.");
-  } else {
-    setState("Showcase Ready");
   }
 
   refreshControls();
@@ -958,14 +938,12 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "ready") {
-    setState("Backend Ready");
     setMicrophoneAwareStatus("Backend model is ready. Start microphone capture when you want.");
     return;
   }
 
   if (payload.type === "status") {
     const stateName = payload.state ?? "working";
-    setState(toTitleCase(stateName));
 
     if (payload.message) {
       setStatus(payload.message);
@@ -992,7 +970,6 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "error") {
-    setState("Error");
     setStatus(payload.message);
   }
 }
@@ -1009,7 +986,6 @@ function applyRuntime(runtime) {
   if (state.sourceLines.length === 0) {
     renderAllTranscripts();
   }
-  setBackendStatus(backendLabel());
 }
 
 function publishTranslation(payload) {
@@ -1455,24 +1431,8 @@ function toWebSocketUrl(origin) {
   return url.toString();
 }
 
-function backendLabel() {
-  if (!state.runtime) {
-    return "Backend Connected";
-  }
-  const device = state.runtime.device ?? "auto";
-  return `${state.runtime.model} · ${device}`;
-}
-
 function setConnection(text) {
   ui.connectionPill.textContent = text;
-}
-
-function setBackendStatus(text) {
-  ui.backendPill.textContent = text;
-}
-
-function setState(text) {
-  ui.statePill.textContent = text;
 }
 
 function setStatus(text) {
@@ -1538,10 +1498,4 @@ function floatTo16BitPcm(float32Array) {
 function clamp16(value) {
   const sample = Math.max(-1, Math.min(1, value));
   return sample < 0 ? sample * 0x8000 : sample * 0x7fff;
-}
-
-function toTitleCase(text) {
-  return text
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (match) => match.toUpperCase());
 }
