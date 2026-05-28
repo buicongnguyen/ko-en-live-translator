@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 import time
+import unicodedata
 import wave
 from dataclasses import dataclass
 from pathlib import Path
@@ -40,7 +41,23 @@ HALLUCINATION_PHRASES = (
     "subscribe to",
     "subscribe cho",
     "la la school",
-    "hãy subscribe",
+    "hay subscribe",
+    "register channel",
+    "register the channel",
+    "register my channel",
+    "support my channel",
+    "support the channel",
+    "like and subscribe",
+    "hit the subscribe",
+    "turn on notifications",
+    "dang ky kenh",
+    "ung ho kenh",
+    "ung ho minh",
+)
+
+HALLUCINATION_TOKEN_GROUPS = (
+    ("channel", ("subscribe", "register")),
+    ("kenh", ("dang ky", "subscribe", "ung ho")),
 )
 
 
@@ -285,8 +302,23 @@ class WhisperTranslator:
 
     @staticmethod
     def _text_has_hallucination_phrase(text: str) -> bool:
-        normalized = " ".join(text.lower().split())
-        return any(phrase in normalized for phrase in HALLUCINATION_PHRASES)
+        normalized = WhisperTranslator._normalize_hallucination_text(text)
+        if any(phrase in normalized for phrase in HALLUCINATION_PHRASES):
+            return True
+        return any(
+            anchor in normalized
+            and any(part in normalized for part in related_parts)
+            for anchor, related_parts in HALLUCINATION_TOKEN_GROUPS
+        )
+
+    @staticmethod
+    def _normalize_hallucination_text(text: str) -> str:
+        lower_text = text.lower().replace("đ", "d")
+        folded = unicodedata.normalize("NFKD", lower_text)
+        ascii_text = "".join(
+            character for character in folded if not unicodedata.combining(character)
+        )
+        return " ".join(ascii_text.split())
 
 
 class NoSpeechDetectedError(RuntimeError):
