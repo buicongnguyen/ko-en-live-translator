@@ -134,6 +134,7 @@ const ui = {
   targetLanguageBadge: document.getElementById("target-language-badge"),
   sourceLanguageLabel: document.getElementById("source-language-label"),
   targetLanguageLabel: document.getElementById("target-language-label"),
+  topbarDetails: Array.from(document.querySelectorAll(".topbar details")),
   backendOrigin: document.getElementById("backend-origin"),
   endpointPreview: document.getElementById("endpoint-preview"),
   statusText: document.getElementById("status-text"),
@@ -170,6 +171,9 @@ ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.copyConversationButton.addEventListener("click", () => copyTranscript("conversation"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 ui.themeToggleButton.addEventListener("click", toggleTheme);
+ui.topbarDetails.forEach((details) => {
+  details.addEventListener("toggle", () => handleTopbarDetailsToggle(details));
+});
 
 boot().catch((error) => {
   setStatus(`Startup error: ${error.message}`);
@@ -1290,6 +1294,7 @@ function handleSourceLanguageChange() {
   state.sourceLanguage = selectedSourceLanguage();
   window.localStorage.setItem("source-language", state.sourceLanguage);
   updateLanguageUi();
+  closeTopbarDetails();
 
   if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
     state.socket.send(JSON.stringify({ type: "flush" }));
@@ -1303,6 +1308,7 @@ function handleTargetLanguageChange() {
   state.targetLanguage = selectedTargetLanguage();
   window.localStorage.setItem("target-language", state.targetLanguage);
   updateLanguageUi();
+  closeTopbarDetails();
 
   if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
     state.socket.send(JSON.stringify({ type: "flush" }));
@@ -1324,6 +1330,24 @@ function sendLanguageSetting() {
       target_language: state.targetLanguage,
     })
   );
+}
+
+function handleTopbarDetailsToggle(openedDetails) {
+  if (!openedDetails.open) {
+    return;
+  }
+
+  ui.topbarDetails.forEach((details) => {
+    if (details !== openedDetails) {
+      details.open = false;
+    }
+  });
+}
+
+function closeTopbarDetails() {
+  ui.topbarDetails.forEach((details) => {
+    details.open = false;
+  });
 }
 
 function restoreSourceLanguagePreference() {

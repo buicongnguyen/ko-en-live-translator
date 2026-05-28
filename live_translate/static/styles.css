@@ -130,6 +130,8 @@ html[data-theme="dark"] .translation-column {
 }
 
 .topbar {
+  position: relative;
+  z-index: 60;
   min-height: 58px;
   padding: 8px 10px;
   border-radius: 18px;
@@ -202,7 +204,7 @@ html[data-theme="dark"] .language-menu summary {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  z-index: 40;
+  z-index: 80;
   width: min(248px, calc(100vw - 28px));
   padding: 10px;
   border: 1px solid var(--line);
