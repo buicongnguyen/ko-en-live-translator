@@ -964,9 +964,25 @@ html[data-theme="dark"] .transcript-line.latest {
     border-radius: 13px;
   }
 
+  .backend-drawer[open] {
+    position: fixed;
+    inset: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
+    z-index: 20;
+    max-height: calc(100dvh - 12px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
   .backend-drawer summary {
     padding: 7px 10px;
     font-size: 0.76rem;
+  }
+
+  .backend-drawer[open] summary {
+    flex: 0 0 auto;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
   }
 
   .backend-summary-line {
@@ -984,8 +1000,17 @@ html[data-theme="dark"] .transcript-line.latest {
     max-height: min(58vh, 560px);
     overflow-y: auto;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding: 0 8px 8px;
     gap: 8px;
+  }
+
+  .backend-drawer[open] .backend-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    padding: 8px 8px max(14px, env(safe-area-inset-bottom));
   }
 
   .backend-connect-card,
@@ -994,6 +1019,18 @@ html[data-theme="dark"] .transcript-line.latest {
     gap: 8px;
     padding: 8px;
     border-radius: 12px;
+  }
+
+  .backend-connect-card {
+    scroll-margin-bottom: 18px;
+  }
+
+  .connection-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding-top: 4px;
+    background: linear-gradient(180deg, transparent, var(--panel) 34%);
   }
 
   .step-heading {

@@ -680,6 +680,41 @@ html[data-theme="dark"] .transcript-line.latest {
     gap: 4px;
   }
 
+  .backend-drawer[open] {
+    position: fixed;
+    inset: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
+    z-index: 20;
+    max-height: calc(100dvh - 12px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .backend-drawer[open] summary {
+    flex: 0 0 auto;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .backend-drawer[open] .backend-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .connection-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding-top: 4px;
+    background: linear-gradient(180deg, transparent, var(--panel) 34%);
+  }
+
   .language-control {
     width: fit-content;
     grid-template-columns: auto max-content;
