@@ -41,7 +41,7 @@ Definitions:
 Steps:
 
 1. Open the live translator app: <https://buicongnguyen.github.io/ko-en-live-translator/>
-2. Open `Setup steps`.
+2. Open `Connect to server`.
 3. In `1 Access`, press `Sign in with Google`.
 4. In `2 Backend`, paste the backend origin, for example `https://alone-catalog-rejoice.ngrok-free.dev`.
 5. Press `Connect backend`.

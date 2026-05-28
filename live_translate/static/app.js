@@ -314,8 +314,8 @@ function appendTranscript(payload) {
     state.conversationLines.push({
       sourceText,
       targetText,
-      sourceLabel: sourceLanguageName(),
-      targetLabel: targetLanguageName(),
+      sourceLabel: languageBadge(state.sourceLanguage),
+      targetLabel: languageBadge(state.targetLanguage),
     });
   }
   renderAllTranscripts();
@@ -623,6 +623,34 @@ function sourceLanguageName() {
 function targetLanguageName() {
   const option = targetLanguageOption(state.targetLanguage);
   return option ? option.textContent : "English";
+}
+
+function languageBadge(languageCode) {
+  const badges = {
+    auto: "SRC",
+    ko: "KO",
+    vi: "VN",
+    en: "EN",
+    ja: "JA",
+    zh: "ZH",
+    es: "ES",
+    fr: "FR",
+    de: "DE",
+    it: "IT",
+    pt: "PT",
+    ru: "RU",
+    ar: "AR",
+    hi: "HI",
+    th: "TH",
+    id: "ID",
+    ms: "MS",
+    tl: "TL",
+    tr: "TR",
+    pl: "PL",
+    nl: "NL",
+    uk: "UK",
+  };
+  return badges[languageCode] || languageCode.toUpperCase();
 }
 
 function updateLanguageUi() {
