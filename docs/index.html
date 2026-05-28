@@ -8,7 +8,7 @@
       name="description"
       content="Focused web interface for live speech translation powered by a GPU backend."
     />
-    <link rel="stylesheet" href="./styles.css?v=20260528-live-controls" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-server-summary" />
   </head>
   <body>
     <main class="translator-shell">
@@ -82,10 +82,6 @@
             <button id="clear-transcript-button" class="secondary">Clear</button>
           </div>
 
-          <div class="status-cluster" aria-label="Connection status">
-            <span class="pill" id="connection-pill">Demo Mode</span>
-          </div>
-
         </div>
 
         <nav class="top-links" aria-label="Project links">
@@ -95,7 +91,12 @@
       </header>
 
       <details class="backend-drawer">
-        <summary>Connect to server</summary>
+        <summary>
+          <span class="backend-summary-line">
+            <span>Connect to server</span>
+            <span class="backend-summary-status" id="backend-summary-status">Demo Mode</span>
+          </span>
+        </summary>
         <div class="backend-content">
           <section class="auth-card setup-step" aria-label="Step 1 account access">
             <div class="step-heading">
@@ -257,6 +258,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-clean-header-pills"></script>
+    <script src="./app.js?v=20260529-server-summary"></script>
   </body>
 </html>

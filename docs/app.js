@@ -92,6 +92,7 @@ const state = {
   isCapturing: false,
   isDemoPlaying: false,
   backendConnected: false,
+  connectionStatus: "Demo Mode",
   showSourceText: true,
   runtime: null,
   backendUser: null,
@@ -142,7 +143,7 @@ const ui = {
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
-  connectionPill: document.getElementById("connection-pill"),
+  backendSummaryStatus: document.getElementById("backend-summary-status"),
 };
 
 ui.demoButton.addEventListener("click", playDemo);
@@ -186,6 +187,7 @@ async function boot() {
   updateEndpointPreview();
   updateMicrophoneHint();
   await initializeAuth();
+  updateBackendSummaryStatus();
   refreshControls();
 }
 
@@ -376,7 +378,7 @@ function resetShowcase() {
       ? "Backend connected. Start microphone capture when you're ready."
       : "Demo mode works on GitHub Pages without any server."
   );
-  setConnection(state.backendConnected ? "Backend Connected" : "Demo Mode");
+  setConnection(state.backendConnected ? "Backend Ready" : "Demo Mode");
   refreshControls();
 }
 
@@ -418,7 +420,7 @@ async function connectBackend() {
     state.backendConnected = true;
     state.isDemoPlaying = false;
     window.localStorage.setItem("backend-origin", origin);
-    setConnection("Backend Connected");
+    setConnection("Backend Ready");
     setStatus("Backend connected. Starting microphone capture.");
     refreshControls();
     await loadAdminUsers();
@@ -938,6 +940,7 @@ function handleServerEvent(payload) {
   }
 
   if (payload.type === "ready") {
+    setConnection("Backend Ready");
     setMicrophoneAwareStatus("Backend model is ready. Start microphone capture when you want.");
     return;
   }
@@ -986,6 +989,7 @@ function applyRuntime(runtime) {
   if (state.sourceLines.length === 0) {
     renderAllTranscripts();
   }
+  updateBackendSummaryStatus();
 }
 
 function publishTranslation(payload) {
@@ -1395,7 +1399,6 @@ function selectedDemoScript() {
 function refreshControls() {
   const backendReady = state.backendConnected;
   ui.demoButton.hidden = backendReady;
-  ui.connectionPill.hidden = backendReady;
   ui.demoButton.disabled = state.isDemoPlaying || state.isCapturing;
   ui.resetButton.disabled = state.isCapturing;
   ui.connectButton.disabled = state.isCapturing;
@@ -1432,7 +1435,28 @@ function toWebSocketUrl(origin) {
 }
 
 function setConnection(text) {
-  ui.connectionPill.textContent = text;
+  state.connectionStatus = text;
+  updateBackendSummaryStatus();
+}
+
+function updateBackendSummaryStatus() {
+  if (!ui.backendSummaryStatus) {
+    return;
+  }
+
+  const label =
+    state.backendConnected && state.runtime
+      ? `${runtimeSummaryLabel()} · ${state.connectionStatus}`
+      : state.connectionStatus;
+  ui.backendSummaryStatus.textContent = label;
+  ui.backendSummaryStatus.title = label;
+  ui.backendSummaryStatus.classList.toggle("online", state.backendConnected);
+}
+
+function runtimeSummaryLabel() {
+  const model = state.runtime?.model ?? "model";
+  const device = state.runtime?.device ?? "auto";
+  return `${model} · ${device}`;
 }
 
 function setStatus(text) {
