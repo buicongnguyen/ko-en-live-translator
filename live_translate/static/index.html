@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Speech Translator</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260528-conversation-mobile" />
   </head>
   <body>
     <main class="translator-shell">
@@ -95,6 +95,29 @@
       </section>
 
       <section class="translation-workspace" aria-label="Live translation">
+        <article class="translation-column conversation-box">
+          <div class="column-toolbar">
+            <div>
+              <div class="block-label">Live conversation</div>
+              <h1>Conversation</h1>
+            </div>
+            <button id="copy-conversation-button" class="secondary compact-button">
+              Copy all
+            </button>
+          </div>
+          <div
+            id="conversation-transcript"
+            class="transcript-body conversation-body"
+            role="textbox"
+            aria-label="Combined source and translation transcript"
+            tabindex="0"
+          >
+            <p class="empty-copy">
+              Speak to see source and translation together.
+            </p>
+          </div>
+        </article>
+
         <article class="translation-column source-box">
           <div class="column-toolbar">
             <div>
@@ -141,6 +164,6 @@
       </section>
     </main>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260528-conversation-mobile"></script>
   </body>
 </html>

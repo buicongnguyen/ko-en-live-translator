@@ -11,6 +11,7 @@ const state = {
   targetLanguage: "en",
   sourceLines: [],
   targetLines: [],
+  conversationLines: [],
 };
 
 const ui = {
@@ -23,8 +24,10 @@ const ui = {
   statusText: document.getElementById("status-text"),
   sourceTranscript: document.getElementById("source-transcript"),
   targetTranscript: document.getElementById("target-transcript"),
+  conversationTranscript: document.getElementById("conversation-transcript"),
   copySourceButton: document.getElementById("copy-source-button"),
   copyTargetButton: document.getElementById("copy-target-button"),
+  copyConversationButton: document.getElementById("copy-conversation-button"),
   clearTranscriptButton: document.getElementById("clear-transcript-button"),
   latencyText: document.getElementById("latency-text"),
   audioText: document.getElementById("audio-text"),
@@ -39,6 +42,7 @@ ui.sourceLanguage.addEventListener("change", handleSourceLanguageChange);
 ui.targetLanguage.addEventListener("change", handleTargetLanguageChange);
 ui.copySourceButton.addEventListener("click", () => copyTranscript("source"));
 ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
+ui.copyConversationButton.addEventListener("click", () => copyTranscript("conversation"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 
 boot().catch((error) => {
@@ -298,19 +302,34 @@ function handleServerEvent(payload) {
 
 function appendTranscript(payload) {
   const targetText = payload.translated_text || payload.english_text || "";
+  const sourceText = payload.source_text || "";
 
-  if (payload.source_text) {
-    state.sourceLines.push(payload.source_text);
+  if (sourceText) {
+    state.sourceLines.push(sourceText);
   }
   if (targetText) {
     state.targetLines.push(targetText);
   }
+  if (sourceText || targetText) {
+    state.conversationLines.push({
+      sourceText,
+      targetText,
+      sourceLabel: sourceLanguageName(),
+      targetLabel: targetLanguageName(),
+    });
+  }
   renderAllTranscripts();
   scrollTranscriptToBottom(ui.sourceTranscript);
   scrollTranscriptToBottom(ui.targetTranscript);
+  scrollTranscriptToBottom(ui.conversationTranscript);
 }
 
 function renderAllTranscripts() {
+  renderConversationBox(
+    ui.conversationTranscript,
+    state.conversationLines,
+    conversationEmptyText()
+  );
   renderTranscriptBox(
     ui.sourceTranscript,
     state.sourceLines,
@@ -323,12 +342,65 @@ function renderAllTranscripts() {
   );
 }
 
+function conversationEmptyText() {
+  return `Speak to see ${sourceLanguageName()} and ${targetLanguageName()} together.`;
+}
+
 function sourceEmptyText() {
   if (!state.showSourceText) {
     return "Source transcript is disabled on this backend. Set SHOW_SOURCE_TEXT=true to show source lines.";
   }
 
   return "Source transcript will appear here after you start listening.";
+}
+
+function renderConversationBox(container, lines, emptyText) {
+  container.innerHTML = "";
+
+  if (lines.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-copy";
+    empty.textContent = emptyText;
+    container.appendChild(empty);
+    return;
+  }
+
+  lines.forEach((line, index) => {
+    const pair = document.createElement("section");
+    pair.className = "conversation-pair";
+    if (index === lines.length - 1) {
+      pair.classList.add("latest");
+    }
+
+    if (line.sourceText) {
+      pair.appendChild(
+        createConversationLine("source", line.sourceLabel, line.sourceText)
+      );
+    }
+    if (line.targetText) {
+      pair.appendChild(
+        createConversationLine("target", line.targetLabel, line.targetText)
+      );
+    }
+
+    container.appendChild(pair);
+  });
+}
+
+function createConversationLine(kind, label, text) {
+  const row = document.createElement("p");
+  row.className = `conversation-line ${kind}`;
+
+  const language = document.createElement("span");
+  language.className = "conversation-language";
+  language.textContent = label;
+
+  const content = document.createElement("span");
+  content.className = "conversation-text";
+  content.textContent = text;
+
+  row.append(language, content);
+  return row;
 }
 
 function renderTranscriptBox(container, lines, emptyText) {
@@ -358,6 +430,11 @@ function scrollTranscriptToBottom(container) {
 }
 
 async function copyTranscript(language) {
+  if (language === "conversation") {
+    await copyConversationTranscript();
+    return;
+  }
+
   const isSource = language === "source";
   const lines = isSource ? state.sourceLines : state.targetLines;
   const label = isSource ? sourceLanguageName() : targetLanguageName();
@@ -373,6 +450,33 @@ async function copyTranscript(language) {
     setStatus(`${label} transcript copied to clipboard.`);
   } catch (error) {
     setStatus(`Could not copy ${label.toLowerCase()} transcript: ${error.message}`);
+  }
+}
+
+async function copyConversationTranscript() {
+  const text = state.conversationLines
+    .map((line) =>
+      [
+        line.sourceText ? `${line.sourceLabel}: ${line.sourceText}` : "",
+        line.targetText ? `${line.targetLabel}: ${line.targetText}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n")
+    )
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+
+  if (!text) {
+    setStatus("Conversation text box is empty.");
+    return;
+  }
+
+  try {
+    await writeClipboard(text);
+    setStatus("Conversation copied to clipboard.");
+  } catch (error) {
+    setStatus(`Could not copy conversation: ${error.message}`);
   }
 }
 
@@ -402,6 +506,7 @@ async function writeClipboard(text) {
 function clearTranscript() {
   state.sourceLines = [];
   state.targetLines = [];
+  state.conversationLines = [];
   ui.latencyText.textContent = "Latency: -";
   ui.audioText.textContent = "Audio: -";
   renderAllTranscripts();

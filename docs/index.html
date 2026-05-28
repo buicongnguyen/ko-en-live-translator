@@ -8,7 +8,7 @@
       name="description"
       content="Focused web interface for live speech translation powered by a GPU backend."
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260528-conversation-mobile" />
   </head>
   <body>
     <main class="translator-shell">
@@ -188,6 +188,29 @@
       </section>
 
       <section class="translation-workspace" aria-label="Live translation">
+        <article class="translation-column conversation-box">
+          <div class="column-toolbar">
+            <div>
+              <div class="block-label">Live conversation</div>
+              <h1>Conversation</h1>
+            </div>
+            <button id="copy-conversation-button" class="secondary compact-button">
+              Copy all
+            </button>
+          </div>
+          <div
+            id="conversation-transcript"
+            class="transcript-body conversation-body"
+            role="textbox"
+            aria-label="Combined source and translation transcript"
+            tabindex="0"
+          >
+            <p class="empty-copy">
+              Speak or play the demo to see source and translation together.
+            </p>
+          </div>
+        </article>
+
         <article class="translation-column source-box">
           <div class="column-toolbar">
             <div>
@@ -235,6 +258,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260528-backend-default"></script>
+    <script src="./app.js?v=20260528-conversation-mobile"></script>
   </body>
 </html>

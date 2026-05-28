@@ -335,6 +335,62 @@ button:disabled {
   background: var(--source-bg);
 }
 
+.conversation-box {
+  display: none;
+}
+
+.conversation-body {
+  background: #fffdf6;
+}
+
+.conversation-pair {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 6px;
+  border: 1px solid rgba(27, 27, 24, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.conversation-pair.latest {
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 8px 18px rgba(28, 28, 24, 0.07);
+}
+
+.conversation-line {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 8px 9px;
+  border-radius: 10px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.conversation-line.source {
+  background: #efefec;
+}
+
+.conversation-line.target {
+  background: #eef8e8;
+}
+
+.conversation-language {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.conversation-text {
+  color: var(--text);
+  font-size: 0.94rem;
+  font-weight: 720;
+}
+
 .transcript-line,
 .empty-copy {
   margin: 0 0 7px;
@@ -476,5 +532,35 @@ button:disabled {
   .status-strip {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .conversation-box {
+    display: flex;
+  }
+
+  .translation-workspace .source-box,
+  .translation-workspace .english-box {
+    display: none;
+  }
+
+  .conversation-body {
+    min-height: 520px;
+  }
+
+  .conversation-pair {
+    gap: 4px;
+    margin-bottom: 7px;
+    padding: 5px;
+    border-radius: 12px;
+  }
+
+  .conversation-line {
+    padding: 7px 8px;
+    border-radius: 9px;
+    line-height: 1.42;
+  }
+
+  .conversation-text {
+    font-size: 0.9rem;
   }
 }
