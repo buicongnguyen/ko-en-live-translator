@@ -1454,6 +1454,11 @@ function queueSummary(queue) {
     `VAD skipped ${queue.vad_rejected_segments ?? 0}`,
     `model skipped ${queue.model_rejected_segments ?? 0}`,
   ];
+  if (queue.consecutive_vad_rejects || queue.consecutive_model_rejects) {
+    details.push(
+      `skip streak VAD ${queue.consecutive_vad_rejects ?? 0} / model ${queue.consecutive_model_rejects ?? 0}`
+    );
+  }
   if (queue.last_skip_reason) {
     details.push(`last skip: ${queue.last_skip_reason}`);
   }

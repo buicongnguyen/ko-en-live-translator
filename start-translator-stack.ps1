@@ -8,7 +8,7 @@ param(
     [int]$IdleTimeoutSeconds = 300,
     [int]$MaxTranslationQueueSegments = 2,
     [int]$GpuMaxTemperatureC = 85,
-    [int]$MinSpeechMs = 360,
+    [int]$MinSpeechMs = 450,
     [double]$MinAudioRms = 0.0035,
     [int]$VadAggressiveness = 2,
     [string]$ConfigFile = "",

@@ -108,6 +108,8 @@ class TranslationSession:
         self._dropped_translation_segments = 0
         self._vad_rejected_segments = 0
         self._model_rejected_segments = 0
+        self._consecutive_vad_rejects = 0
+        self._consecutive_model_rejects = 0
         self._last_skip_reason = ""
         self._last_backpressure_warning = 0.0
         self._last_skip_warning = 0.0
@@ -156,6 +158,8 @@ class TranslationSession:
             dropped_translation_segments = self._dropped_translation_segments
             vad_rejected_segments = self._vad_rejected_segments
             model_rejected_segments = self._model_rejected_segments
+            consecutive_vad_rejects = self._consecutive_vad_rejects
+            consecutive_model_rejects = self._consecutive_model_rejects
             last_skip_reason = self._last_skip_reason
         return {
             "input_queue_size": self.input_queue.qsize(),
@@ -164,6 +168,8 @@ class TranslationSession:
             "dropped_translation_segments": dropped_translation_segments,
             "vad_rejected_segments": vad_rejected_segments,
             "model_rejected_segments": model_rejected_segments,
+            "consecutive_vad_rejects": consecutive_vad_rejects,
+            "consecutive_model_rejects": consecutive_model_rejects,
             "last_skip_reason": last_skip_reason,
         }
 
@@ -225,6 +231,8 @@ class TranslationSession:
         self._record_segmenter_reject()
 
     def _queue_translation(self, utterance: bytes) -> None:
+        with self._stats_lock:
+            self._consecutive_vad_rejects = 0
         job = (utterance, self.source_language, self.target_language)
         if self.settings.max_translation_queue_segments <= 0:
             self.translation_queue.put(job)
@@ -272,14 +280,37 @@ class TranslationSession:
             return
         with self._stats_lock:
             self._vad_rejected_segments += 1
+            self._consecutive_vad_rejects += 1
             self._last_skip_reason = reason
-        self._emit_skip_warning(reason)
+            consecutive_vad_rejects = self._consecutive_vad_rejects
+        if consecutive_vad_rejects >= 2:
+            self._emit_skip_warning(reason, min_interval=8)
 
     def _record_model_reject(self, reason: str) -> None:
         with self._stats_lock:
             self._model_rejected_segments += 1
+            self._consecutive_model_rejects += 1
             self._last_skip_reason = reason
-        self._emit_skip_warning(reason)
+            consecutive_model_rejects = self._consecutive_model_rejects
+        if consecutive_model_rejects >= 3:
+            self._emit_skip_warning(
+                self._model_reject_message(reason, consecutive_model_rejects),
+                min_interval=8,
+            )
+
+    def _reset_reject_streaks(self) -> None:
+        with self._stats_lock:
+            self._consecutive_vad_rejects = 0
+            self._consecutive_model_rejects = 0
+
+    @staticmethod
+    def _model_reject_message(reason: str, count: int) -> str:
+        if "without confident speech" in reason:
+            return (
+                f"Waiting for clearer speech; {count} recent audio chunks were too short, "
+                "quiet, or uncertain for the model. Try speaking a full phrase closer to the mic."
+            )
+        return reason
 
     def _emit_backpressure_warning(self, message: str) -> None:
         now = time.monotonic()
@@ -294,9 +325,9 @@ class TranslationSession:
             }
         )
 
-    def _emit_skip_warning(self, message: str) -> None:
+    def _emit_skip_warning(self, message: str, min_interval: float = 3) -> None:
         now = time.monotonic()
-        if now - self._last_skip_warning < 3:
+        if now - self._last_skip_warning < min_interval:
             return
         self._last_skip_warning = now
         self.result_queue.put(
@@ -331,6 +362,7 @@ class TranslationSession:
                 target_language=target_language,
             )
             if result.translated_text:
+                self._reset_reject_streaks()
                 self.result_queue.put(
                     {
                         "type": "translation",
