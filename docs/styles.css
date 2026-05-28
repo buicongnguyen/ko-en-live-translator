@@ -597,6 +597,26 @@ button:disabled {
   .translator-shell {
     width: min(100% - 12px, 1440px);
     padding: 6px 0;
+    gap: 6px;
+  }
+
+  .topbar {
+    min-height: 0;
+    padding: 7px;
+    gap: 8px;
+    border-radius: 15px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-name {
+    font-size: 0.94rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.66rem;
   }
 
   .toolbar,
@@ -606,20 +626,173 @@ button:disabled {
     width: 100%;
   }
 
+  .toolbar {
+    gap: 6px;
+  }
+
+  .button-row,
+  .status-cluster,
+  .top-links {
+    gap: 5px;
+  }
+
   .language-control {
-    width: 100%;
+    width: calc(50% - 3px);
     grid-template-columns: 1fr;
+    gap: 3px;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+
+  .select-field {
+    padding: 7px 26px 7px 9px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+  }
+
+  .text-field {
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  button {
+    padding: 7px 9px;
+    border-radius: 10px;
+    font-size: 0.8rem;
   }
 
   .button-row button,
   .nav-link,
   .pill {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     justify-content: center;
+    white-space: nowrap;
+  }
+
+  .compact-button {
+    padding: 6px 8px;
+    border-radius: 9px;
+    font-size: 0.72rem;
+  }
+
+  .pill {
+    min-height: 26px;
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
+  .nav-link {
+    min-height: 27px;
+    padding: 5px 9px;
+    font-size: 0.72rem;
+  }
+
+  .backend-drawer {
+    border-radius: 13px;
+  }
+
+  .backend-drawer summary {
+    padding: 7px 10px;
+    font-size: 0.76rem;
+  }
+
+  .backend-content {
+    padding: 0 8px 8px;
+    gap: 8px;
+  }
+
+  .backend-connect-card,
+  .auth-card,
+  .admin-panel {
+    gap: 8px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .step-heading {
+    gap: 8px;
+  }
+
+  .step-heading strong {
+    font-size: 0.9rem;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.82rem;
+  }
+
+  .step-copy,
+  .endpoint-preview,
+  .admin-session-summary,
+  .admin-user-detail {
+    font-size: 0.72rem;
   }
 
   .status-strip {
     align-items: flex-start;
     flex-direction: column;
+    gap: 4px;
+    min-height: 0;
+    padding: 6px 9px;
+    border-radius: 12px;
+    font-size: 0.76rem;
+  }
+
+  .translation-workspace {
+    gap: 8px;
+  }
+
+  .translation-column {
+    padding: 8px;
+    border-radius: 16px;
+  }
+
+  .column-toolbar {
+    min-height: 36px;
+    padding: 0 0 6px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .column-toolbar h1 {
+    font-size: 0.96rem;
+  }
+
+  .block-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+
+  .transcript-body {
+    min-height: 220px;
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .transcript-line,
+  .empty-copy {
+    margin-bottom: 5px;
+    line-height: 1.45;
+  }
+
+  .transcript-line {
+    padding: 5px 7px;
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .language-control {
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  button {
+    padding: 6px 7px;
+    font-size: 0.74rem;
   }
 }

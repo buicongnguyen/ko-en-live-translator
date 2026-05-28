@@ -80,6 +80,8 @@ const demoTargets = {
   ],
 };
 
+const DEFAULT_BACKEND_ORIGIN = "https://alone-catalog-rejoice.ngrok-free.dev";
+
 const state = {
   socket: null,
   audioContext: null,
@@ -171,7 +173,11 @@ async function boot() {
   renderAllTranscripts();
   const params = new URLSearchParams(window.location.search);
   const storedOrigin = window.localStorage.getItem("backend-origin") ?? "";
-  const initialOrigin = params.get("backend") ?? storedOrigin;
+  const initialOrigin =
+    params.get("backend") ??
+    (shouldUseDefaultBackendOrigin(storedOrigin)
+      ? DEFAULT_BACKEND_ORIGIN
+      : storedOrigin);
   if (initialOrigin) {
     ui.backendOrigin.value = initialOrigin;
   }
@@ -179,6 +185,24 @@ async function boot() {
   updateMicrophoneHint();
   await initializeAuth();
   refreshControls();
+}
+
+function shouldUseDefaultBackendOrigin(storedOrigin) {
+  if (!storedOrigin) {
+    return true;
+  }
+
+  try {
+    const origin = new URL(storedOrigin).origin;
+    return (
+      origin === "http://127.0.0.1:8000" ||
+      origin === "http://localhost:8000" ||
+      origin === "https://127.0.0.1:8443" ||
+      origin === "https://localhost:8443"
+    );
+  } catch {
+    return true;
+  }
 }
 
 async function initializeAuth() {
