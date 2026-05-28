@@ -1448,10 +1448,16 @@ function queueSummary(queue) {
   if (!queue) {
     return "";
   }
-  return [
+  const details = [
     `queue ${queue.translation_queue_size ?? 0}/${queue.max_translation_queue_segments ?? "unlimited"}`,
     `dropped ${queue.dropped_translation_segments ?? 0}`,
-  ].join(" · ");
+    `VAD skipped ${queue.vad_rejected_segments ?? 0}`,
+    `model skipped ${queue.model_rejected_segments ?? 0}`,
+  ];
+  if (queue.last_skip_reason) {
+    details.push(`last skip: ${queue.last_skip_reason}`);
+  }
+  return details.join(" · ");
 }
 
 function selectedDemoScript() {

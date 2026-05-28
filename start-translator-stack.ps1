@@ -8,6 +8,9 @@ param(
     [int]$IdleTimeoutSeconds = 300,
     [int]$MaxTranslationQueueSegments = 2,
     [int]$GpuMaxTemperatureC = 85,
+    [int]$MinSpeechMs = 360,
+    [double]$MinAudioRms = 0.0035,
+    [int]$VadAggressiveness = 2,
     [string]$ConfigFile = "",
     [switch]$RestartBackend,
     [switch]$RestartNgrok
@@ -65,6 +68,15 @@ function Import-LocalConfig {
     }
     if ($BackendOrigin -eq "https://127.0.0.1:8443" -and $config.BackendOrigin) {
         $script:BackendOrigin = [string]$config.BackendOrigin
+    }
+    if ($config.MinSpeechMs) {
+        $script:MinSpeechMs = [int]$config.MinSpeechMs
+    }
+    if ($config.MinAudioRms) {
+        $script:MinAudioRms = [double]$config.MinAudioRms
+    }
+    if ($config.VadAggressiveness) {
+        $script:VadAggressiveness = [int]$config.VadAggressiveness
     }
 }
 
@@ -170,6 +182,9 @@ if (-not $listener) {
     $env:MAX_TRANSLATION_QUEUE_SEGMENTS = "$MaxTranslationQueueSegments"
     $env:GPU_STATUS_ENABLED = "true"
     $env:GPU_MAX_TEMPERATURE_C = "$GpuMaxTemperatureC"
+    $env:MIN_SPEECH_MS = "$MinSpeechMs"
+    $env:MIN_AUDIO_RMS = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0}", $MinAudioRms)
+    $env:VAD_AGGRESSIVENESS = "$VadAggressiveness"
     $env:AUTH_REQUIRED = "true"
     $env:AUTH_PROVIDER = "firebase"
     $env:FIREBASE_PROJECT_ID = $FirebaseProjectId

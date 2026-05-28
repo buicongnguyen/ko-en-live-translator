@@ -57,7 +57,7 @@ class Settings:
     frame_ms: int = 30
     pre_roll_ms: int = int(os.getenv("PRE_ROLL_MS", "300"))
     end_silence_ms: int = int(os.getenv("END_SILENCE_MS", "700"))
-    min_speech_ms: int = int(os.getenv("MIN_SPEECH_MS", "520"))
+    min_speech_ms: int = int(os.getenv("MIN_SPEECH_MS", "360"))
     max_segment_ms: int = int(os.getenv("MAX_SEGMENT_MS", "7000"))
     vad_aggressiveness: int = int(os.getenv("VAD_AGGRESSIVENESS", "2"))
     model_cache_dir: Path | None = (

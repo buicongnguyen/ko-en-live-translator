@@ -26,6 +26,7 @@ class VadSegmenter:
         self.segment_frames = 0
         self.speech_frames = 0
         self.segment_buffer = bytearray()
+        self.last_reject_reason: str | None = None
 
     def accept(self, frame: bytes) -> bytes | None:
         is_speech = self.vad.is_speech(frame, self.settings.sample_rate)
@@ -65,6 +66,8 @@ class VadSegmenter:
 
     def _flush_active(self) -> bytes | None:
         payload = bytes(self.segment_buffer)
+        speech_ms = self.speech_frames * self.settings.frame_ms
+        total_ms = self.segment_frames * self.settings.frame_ms
         enough_speech = self.speech_frames >= self.min_speech_frames
         self.active = False
         self.silence_frames = 0
@@ -73,8 +76,19 @@ class VadSegmenter:
         self.segment_buffer.clear()
         self.pre_roll.clear()
         if enough_speech:
+            self.last_reject_reason = None
             return payload
+        self.last_reject_reason = (
+            f"Skipped very short speech ({speech_ms}ms voice in {total_ms}ms audio; "
+            f"minimum {self.settings.min_speech_ms}ms). Speak a little longer or closer "
+            "to the microphone."
+        )
         return None
+
+    def pop_reject_reason(self) -> str | None:
+        reason = self.last_reject_reason
+        self.last_reject_reason = None
+        return reason
 
 
 class TranslationSession:
@@ -92,7 +106,11 @@ class TranslationSession:
         self._pcm_buffer = bytearray()
         self._stats_lock = Lock()
         self._dropped_translation_segments = 0
+        self._vad_rejected_segments = 0
+        self._model_rejected_segments = 0
+        self._last_skip_reason = ""
         self._last_backpressure_warning = 0.0
+        self._last_skip_warning = 0.0
         self._stop_event = Event()
         self._thread = Thread(target=self._run, daemon=True)
         self._translation_thread = Thread(target=self._run_translation_worker, daemon=True)
@@ -133,14 +151,20 @@ class TranslationSession:
         self._translation_thread.join(timeout=5)
         self.result_queue.put(None)
 
-    def stats(self) -> dict[str, int]:
+    def stats(self) -> dict[str, object]:
         with self._stats_lock:
             dropped_translation_segments = self._dropped_translation_segments
+            vad_rejected_segments = self._vad_rejected_segments
+            model_rejected_segments = self._model_rejected_segments
+            last_skip_reason = self._last_skip_reason
         return {
             "input_queue_size": self.input_queue.qsize(),
             "translation_queue_size": self.translation_queue.qsize(),
             "max_translation_queue_segments": self.settings.max_translation_queue_segments,
             "dropped_translation_segments": dropped_translation_segments,
+            "vad_rejected_segments": vad_rejected_segments,
+            "model_rejected_segments": model_rejected_segments,
+            "last_skip_reason": last_skip_reason,
         }
 
     def _run(self) -> None:
@@ -167,6 +191,7 @@ class TranslationSession:
                 flushed = self.segmenter.flush()
                 if flushed:
                     self._queue_translation(flushed)
+                self._record_segmenter_reject()
             elif kind == "language":
                 self._set_languages(payload if isinstance(payload, dict) else {})
             elif kind == "stop":
@@ -174,6 +199,7 @@ class TranslationSession:
                 flushed = self.segmenter.flush()
                 if flushed:
                     self._queue_translation(flushed)
+                self._record_segmenter_reject()
                 break
 
     def _consume_audio(self, payload: bytes) -> None:
@@ -185,6 +211,7 @@ class TranslationSession:
             utterance = self.segmenter.accept(frame)
             if utterance:
                 self._queue_translation(utterance)
+            self._record_segmenter_reject()
 
     def _flush_partial_frame(self) -> None:
         if not self._pcm_buffer:
@@ -195,6 +222,7 @@ class TranslationSession:
         utterance = self.segmenter.accept(padded)
         if utterance:
             self._queue_translation(utterance)
+        self._record_segmenter_reject()
 
     def _queue_translation(self, utterance: bytes) -> None:
         job = (utterance, self.source_language, self.target_language)
@@ -238,6 +266,21 @@ class TranslationSession:
         with self._stats_lock:
             self._dropped_translation_segments += 1
 
+    def _record_segmenter_reject(self) -> None:
+        reason = self.segmenter.pop_reject_reason()
+        if not reason:
+            return
+        with self._stats_lock:
+            self._vad_rejected_segments += 1
+            self._last_skip_reason = reason
+        self._emit_skip_warning(reason)
+
+    def _record_model_reject(self, reason: str) -> None:
+        with self._stats_lock:
+            self._model_rejected_segments += 1
+            self._last_skip_reason = reason
+        self._emit_skip_warning(reason)
+
     def _emit_backpressure_warning(self, message: str) -> None:
         now = time.monotonic()
         if now - self._last_backpressure_warning < 8:
@@ -247,6 +290,19 @@ class TranslationSession:
             {
                 "type": "status",
                 "state": "backpressure",
+                "message": message,
+            }
+        )
+
+    def _emit_skip_warning(self, message: str) -> None:
+        now = time.monotonic()
+        if now - self._last_skip_warning < 3:
+            return
+        self._last_skip_warning = now
+        self.result_queue.put(
+            {
+                "type": "status",
+                "state": "listening",
                 "message": message,
             }
         )
@@ -266,6 +322,7 @@ class TranslationSession:
         target_language: str,
     ) -> None:
         self.result_queue.put({"type": "status", "state": "translating"})
+        skipped = False
         try:
             result = self.translator.translate_pcm16(
                 utterance,
@@ -288,17 +345,13 @@ class TranslationSession:
                     }
                 )
         except NoSpeechDetectedError as exc:
-            self.result_queue.put(
-                {
-                    "type": "status",
-                    "state": "listening",
-                    "message": str(exc),
-                }
-            )
+            skipped = True
+            self._record_model_reject(str(exc))
         except Exception as exc:
             self.result_queue.put({"type": "error", "message": str(exc)})
         finally:
-            self.result_queue.put({"type": "status", "state": "listening"})
+            if not skipped:
+                self.result_queue.put({"type": "status", "state": "listening"})
 
     def _set_languages(self, payload: dict[str, str | None]) -> None:
         self.source_language = normalize_source_language(

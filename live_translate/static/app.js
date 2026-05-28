@@ -315,7 +315,9 @@ function handleServerEvent(payload) {
   if (payload.type === "status") {
     const stateName = payload.state ?? "Working";
     setState(toTitleCase(stateName));
-    if (stateName === "warming_up") {
+    if (payload.message) {
+      setStatus(payload.message);
+    } else if (stateName === "warming_up") {
       setMicrophoneAwareStatus("Loading the local model. The first launch can take a while.");
     } else if (stateName === "translating") {
       setStatus(`Translating to ${targetLanguageName()}.`);
