@@ -657,6 +657,9 @@ button:disabled {
   }
 
   .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     min-height: 0;
     padding: 7px;
     gap: 8px;
@@ -664,6 +667,8 @@ button:disabled {
   }
 
   .brand {
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
   }
 
@@ -677,13 +682,23 @@ button:disabled {
 
   .toolbar,
   .button-row,
-  .status-cluster,
-  .top-links {
+  .status-cluster {
     width: 100%;
   }
 
   .toolbar {
+    grid-column: 1 / -1;
+    grid-row: 2;
     gap: 6px;
+  }
+
+  .top-links {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    justify-self: end;
+    align-self: start;
+    gap: 4px;
   }
 
   .button-row,
