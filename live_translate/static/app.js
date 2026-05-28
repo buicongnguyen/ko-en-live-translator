@@ -426,7 +426,16 @@ function renderTranscriptBox(container, lines, emptyText) {
 }
 
 function scrollTranscriptToBottom(container) {
-  container.scrollTop = container.scrollHeight;
+  if (!container) {
+    return;
+  }
+
+  const scroll = () => {
+    container.scrollTop = container.scrollHeight;
+  };
+
+  scroll();
+  window.requestAnimationFrame(scroll);
 }
 
 async function copyTranscript(language) {

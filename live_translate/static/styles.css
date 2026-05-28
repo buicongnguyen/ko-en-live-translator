@@ -538,7 +538,14 @@ button:disabled {
 @media (max-width: 620px) {
   .translator-shell {
     width: min(100% - 12px, 1440px);
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
     padding: 6px 0;
+    gap: 6px;
   }
 
   .topbar {
@@ -612,8 +619,16 @@ button:disabled {
     flex-direction: column;
   }
 
+  .translation-workspace {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
   .conversation-box {
     display: flex;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .translation-workspace .source-box,
@@ -621,8 +636,20 @@ button:disabled {
     display: none;
   }
 
+  .translation-column {
+    min-height: 0;
+  }
+
+  .transcript-body {
+    min-height: 0;
+  }
+
   .conversation-body {
-    min-height: 520px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .conversation-pair {

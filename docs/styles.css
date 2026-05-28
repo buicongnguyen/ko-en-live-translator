@@ -726,6 +726,12 @@ button:disabled {
 @media (max-width: 620px) {
   .translator-shell {
     width: min(100% - 12px, 1440px);
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
     padding: 6px 0;
     gap: 6px;
   }
@@ -855,6 +861,9 @@ button:disabled {
   }
 
   .backend-content {
+    max-height: min(58vh, 560px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 0 8px 8px;
     gap: 8px;
   }
@@ -899,11 +908,16 @@ button:disabled {
   }
 
   .translation-workspace {
+    flex: 1 1 auto;
     gap: 8px;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .conversation-box {
     display: flex;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .source-box,
@@ -912,6 +926,7 @@ button:disabled {
   }
 
   .translation-column {
+    min-height: 0;
     padding: 8px;
     border-radius: 16px;
   }
@@ -938,14 +953,18 @@ button:disabled {
   }
 
   .transcript-body {
-    min-height: 430px;
+    min-height: 0;
     margin-top: 8px;
     padding: 8px;
     border-radius: 12px;
   }
 
   .conversation-body {
-    min-height: 520px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .transcript-line,
