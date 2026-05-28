@@ -8,71 +8,74 @@
       name="description"
       content="Focused web interface for live speech translation powered by a GPU backend."
     />
-    <link rel="stylesheet" href="./styles.css?v=20260529-compact-language" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-language-pair" />
   </head>
   <body>
     <main class="translator-shell">
       <header class="topbar">
         <a class="brand" href="./">
           <span class="brand-name">LiveTranslate AI</span>
-          <span class="brand-subtitle">Choose source and target</span>
         </a>
 
         <div class="toolbar">
-          <label class="language-control" for="source-language">
-            <span>Source</span>
-            <select id="source-language" class="select-field">
-              <option value="auto">Auto detect</option>
-              <option value="ko" selected>Korean</option>
-              <option value="ja">Japanese</option>
-              <option value="zh">Chinese</option>
-              <option value="vi">Vietnamese</option>
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-              <option value="it">Italian</option>
-              <option value="pt">Portuguese</option>
-              <option value="ru">Russian</option>
-              <option value="ar">Arabic</option>
-              <option value="hi">Hindi</option>
-              <option value="th">Thai</option>
-              <option value="id">Indonesian</option>
-              <option value="ms">Malay</option>
-              <option value="tl">Tagalog</option>
-              <option value="tr">Turkish</option>
-              <option value="pl">Polish</option>
-              <option value="nl">Dutch</option>
-              <option value="uk">Ukrainian</option>
-            </select>
-          </label>
+          <div class="language-pair" aria-label="Translation language pair">
+            <label class="language-control" for="source-language">
+              <span class="visually-hidden">Source language</span>
+              <select id="source-language" class="select-field">
+                <option value="auto">Auto detect</option>
+                <option value="ko" selected>Korean</option>
+                <option value="ja">Japanese</option>
+                <option value="zh">Chinese</option>
+                <option value="vi">Vietnamese</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="th">Thai</option>
+                <option value="id">Indonesian</option>
+                <option value="ms">Malay</option>
+                <option value="tl">Tagalog</option>
+                <option value="tr">Turkish</option>
+                <option value="pl">Polish</option>
+                <option value="nl">Dutch</option>
+                <option value="uk">Ukrainian</option>
+              </select>
+            </label>
 
-          <label class="language-control" for="target-language">
-            <span>Target</span>
-            <select id="target-language" class="select-field">
-              <option value="en" selected>English</option>
-              <option value="vi">Vietnamese</option>
-              <option value="ko">Korean</option>
-              <option value="ja">Japanese</option>
-              <option value="zh">Chinese</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-              <option value="it">Italian</option>
-              <option value="pt">Portuguese</option>
-              <option value="ru">Russian</option>
-              <option value="ar">Arabic</option>
-              <option value="hi">Hindi</option>
-              <option value="th">Thai</option>
-              <option value="id">Indonesian</option>
-              <option value="ms">Malay</option>
-              <option value="tl">Tagalog</option>
-              <option value="tr">Turkish</option>
-              <option value="pl">Polish</option>
-              <option value="nl">Dutch</option>
-              <option value="uk">Ukrainian</option>
-            </select>
-          </label>
+            <span class="language-arrow" aria-hidden="true">-&gt;</span>
+
+            <label class="language-control" for="target-language">
+              <span class="visually-hidden">Target language</span>
+              <select id="target-language" class="select-field">
+                <option value="en" selected>English</option>
+                <option value="vi">Vietnamese</option>
+                <option value="ko">Korean</option>
+                <option value="ja">Japanese</option>
+                <option value="zh">Chinese</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="th">Thai</option>
+                <option value="id">Indonesian</option>
+                <option value="ms">Malay</option>
+                <option value="tl">Tagalog</option>
+                <option value="tr">Turkish</option>
+                <option value="pl">Polish</option>
+                <option value="nl">Dutch</option>
+                <option value="uk">Ukrainian</option>
+              </select>
+            </label>
+          </div>
 
           <div class="button-row">
             <button id="demo-button" class="primary">Play demo</button>
