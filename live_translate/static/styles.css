@@ -160,6 +160,12 @@ html[data-theme="dark"] .translation-column {
   letter-spacing: -0.03em;
 }
 
+.language-split {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .language-menu {
   position: relative;
   flex: 0 0 auto;
@@ -168,7 +174,9 @@ html[data-theme="dark"] .translation-column {
 .language-menu summary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 30px;
+  min-width: 36px;
   gap: 4px;
   list-style: none;
   border: 1px solid var(--line);
@@ -195,12 +203,17 @@ html[data-theme="dark"] .language-menu summary {
   top: calc(100% + 8px);
   left: 0;
   z-index: 40;
-  width: min(320px, calc(100vw - 28px));
+  width: min(248px, calc(100vw - 28px));
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--panel-strong);
   box-shadow: var(--shadow);
+}
+
+.target-language-menu .language-menu-panel {
+  right: auto;
+  left: 0;
 }
 
 .language-pair {
@@ -891,7 +904,7 @@ html[data-theme="dark"] .info-card {
 
   .language-menu-panel {
     top: calc(100% + 6px);
-    width: min(292px, calc(100vw - 24px));
+    width: min(220px, calc(100vw - 24px));
     padding: 8px;
   }
 

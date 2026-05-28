@@ -19,7 +19,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css?v=20260529-connect-in-actions" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-split-language-buttons" />
   </head>
   <body>
     <main class="translator-shell">
@@ -29,73 +29,82 @@
             <span class="brand-name">LiveTrans</span>
           </a>
 
-          <details class="language-menu">
-            <summary aria-label="Change translation languages">
-              <span id="source-language-badge">KO</span>
-              <span class="language-arrow" aria-hidden="true">-&gt;</span>
-              <span id="target-language-badge">EN</span>
-            </summary>
-            <div class="language-menu-panel">
-              <div class="language-pair" aria-label="Translation language pair">
-                <label class="language-control" for="source-language">
-                  <span>Source</span>
-                  <select id="source-language" class="select-field">
-                    <option value="auto">Auto detect</option>
-                    <option value="ko" selected>Korean</option>
-                    <option value="ja">Japanese</option>
-                    <option value="zh">Chinese</option>
-                    <option value="vi">Vietnamese</option>
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="it">Italian</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="ru">Russian</option>
-                    <option value="ar">Arabic</option>
-                    <option value="hi">Hindi</option>
-                    <option value="th">Thai</option>
-                    <option value="id">Indonesian</option>
-                    <option value="ms">Malay</option>
-                    <option value="tl">Tagalog</option>
-                    <option value="tr">Turkish</option>
-                    <option value="pl">Polish</option>
-                    <option value="nl">Dutch</option>
-                    <option value="uk">Ukrainian</option>
-                  </select>
-                </label>
-
-                <span class="language-arrow" aria-hidden="true">-&gt;</span>
-
-                <label class="language-control" for="target-language">
-                  <span>Target</span>
-                  <select id="target-language" class="select-field">
-                    <option value="en" selected>English</option>
-                    <option value="vi">Vietnamese</option>
-                    <option value="ko">Korean</option>
-                    <option value="ja">Japanese</option>
-                    <option value="zh">Chinese</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="it">Italian</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="ru">Russian</option>
-                    <option value="ar">Arabic</option>
-                    <option value="hi">Hindi</option>
-                    <option value="th">Thai</option>
-                    <option value="id">Indonesian</option>
-                    <option value="ms">Malay</option>
-                    <option value="tl">Tagalog</option>
-                    <option value="tr">Turkish</option>
-                    <option value="pl">Polish</option>
-                    <option value="nl">Dutch</option>
-                    <option value="uk">Ukrainian</option>
-                  </select>
-                </label>
+          <div class="language-split" aria-label="Translation language pair">
+            <details class="language-menu source-language-menu">
+              <summary aria-label="Change source language">
+                <span id="source-language-badge">KO</span>
+              </summary>
+              <div class="language-menu-panel">
+                <div class="language-pair">
+                  <label class="language-control" for="source-language">
+                    <span>Source</span>
+                    <select id="source-language" class="select-field">
+                      <option value="auto">Auto detect</option>
+                      <option value="ko" selected>Korean</option>
+                      <option value="ja">Japanese</option>
+                      <option value="zh">Chinese</option>
+                      <option value="vi">Vietnamese</option>
+                      <option value="en">English</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                      <option value="it">Italian</option>
+                      <option value="pt">Portuguese</option>
+                      <option value="ru">Russian</option>
+                      <option value="ar">Arabic</option>
+                      <option value="hi">Hindi</option>
+                      <option value="th">Thai</option>
+                      <option value="id">Indonesian</option>
+                      <option value="ms">Malay</option>
+                      <option value="tl">Tagalog</option>
+                      <option value="tr">Turkish</option>
+                      <option value="pl">Polish</option>
+                      <option value="nl">Dutch</option>
+                      <option value="uk">Ukrainian</option>
+                    </select>
+                  </label>
+                </div>
               </div>
-            </div>
-          </details>
+            </details>
+
+            <span class="language-arrow" aria-hidden="true">-&gt;</span>
+
+            <details class="language-menu target-language-menu">
+              <summary aria-label="Change target language">
+                <span id="target-language-badge">EN</span>
+              </summary>
+              <div class="language-menu-panel">
+                <div class="language-pair">
+                  <label class="language-control" for="target-language">
+                    <span>Target</span>
+                    <select id="target-language" class="select-field">
+                      <option value="en" selected>English</option>
+                      <option value="vi">Vietnamese</option>
+                      <option value="ko">Korean</option>
+                      <option value="ja">Japanese</option>
+                      <option value="zh">Chinese</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                      <option value="it">Italian</option>
+                      <option value="pt">Portuguese</option>
+                      <option value="ru">Russian</option>
+                      <option value="ar">Arabic</option>
+                      <option value="hi">Hindi</option>
+                      <option value="th">Thai</option>
+                      <option value="id">Indonesian</option>
+                      <option value="ms">Malay</option>
+                      <option value="tl">Tagalog</option>
+                      <option value="tr">Turkish</option>
+                      <option value="pl">Polish</option>
+                      <option value="nl">Dutch</option>
+                      <option value="uk">Ukrainian</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            </details>
+          </div>
         </div>
 
         <div class="toolbar">
@@ -296,6 +305,6 @@
     </main>
 
     <script src="./firebase-config.generated.js?v=20260526-firebase"></script>
-    <script src="./app.js?v=20260529-connect-in-actions"></script>
+    <script src="./app.js?v=20260529-split-language-buttons"></script>
   </body>
 </html>
