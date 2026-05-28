@@ -771,12 +771,24 @@ html[data-theme="dark"] .transcript-line.latest {
   padding: 22px 0 42px;
 }
 
+.content-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .about-hero,
 .info-card {
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 22px;
   box-shadow: var(--shadow);
+}
+
+html[data-theme="dark"] .about-hero,
+html[data-theme="dark"] .info-card {
+  border-color: rgba(245, 238, 225, 0.1);
 }
 
 .about-hero {
@@ -816,11 +828,6 @@ html[data-theme="dark"] .transcript-line.latest {
 .info-card ol {
   margin: 10px 0 0;
   padding-left: 20px;
-}
-
-.back-link {
-  display: inline-flex;
-  margin-bottom: 12px;
 }
 
 @media (max-width: 980px) {

@@ -8,11 +8,34 @@
       name="description"
       content="About the local live speech translator and GPU backend setup."
     />
+    <script>
+      (() => {
+        try {
+          if (window.localStorage.getItem("translator-theme") === "dark") {
+            document.documentElement.dataset.theme = "dark";
+          }
+        } catch {
+          // Keep the default light theme if storage is unavailable.
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="./styles.css" />
+    <script src="./theme.js" defer></script>
   </head>
   <body>
     <main class="content-shell">
-      <a class="nav-link back-link" href="./">Back to translator</a>
+      <nav class="content-nav" aria-label="About page navigation">
+        <a class="nav-link" href="./">Back to translator</a>
+        <a class="nav-link" href="./setup-guide.html">Setup</a>
+        <button
+          class="nav-link theme-toggle"
+          type="button"
+          data-theme-toggle
+          aria-pressed="false"
+        >
+          Dark
+        </button>
+      </nav>
 
       <section class="about-hero">
         <div class="block-label">About</div>
