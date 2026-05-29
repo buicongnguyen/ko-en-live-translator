@@ -151,6 +151,8 @@ const ui = {
   backendSummaryStatus: document.getElementById("backend-summary-status"),
   themeToggleButton: document.getElementById("theme-toggle-button"),
   backendDrawer: document.querySelector(".backend-drawer"),
+  backendContent: document.getElementById("backend-content"),
+  backendCloseButton: document.getElementById("backend-close-button"),
 };
 
 ui.demoButton.addEventListener("click", playDemo);
@@ -171,6 +173,7 @@ ui.copyTargetButton.addEventListener("click", () => copyTranscript("target"));
 ui.copyConversationButton.addEventListener("click", () => copyTranscript("conversation"));
 ui.clearTranscriptButton.addEventListener("click", clearTranscript);
 ui.themeToggleButton.addEventListener("click", toggleTheme);
+ui.backendCloseButton.addEventListener("click", closeBackendPanel);
 ui.topbarDetails.forEach((details) => {
   details.addEventListener("toggle", () => handleTopbarDetailsToggle(details));
 });
@@ -199,6 +202,7 @@ async function boot() {
   updateEndpointPreview();
   updateMicrophoneHint();
   await initializeAuth();
+  syncBackendPanelVisibility();
   updateBackendSummaryStatus();
   refreshControls();
 }
@@ -1048,7 +1052,7 @@ function applyTheme(theme, options = {}) {
 }
 
 function returnToConversationView() {
-  ui.backendDrawer?.removeAttribute("open");
+  closeBackendPanel();
   window.requestAnimationFrame(() => {
     ui.conversationTranscript?.scrollIntoView({
       block: "nearest",
@@ -1333,6 +1337,8 @@ function sendLanguageSetting() {
 }
 
 function handleTopbarDetailsToggle(openedDetails) {
+  syncBackendPanelVisibility();
+
   if (!openedDetails.open) {
     return;
   }
@@ -1342,12 +1348,32 @@ function handleTopbarDetailsToggle(openedDetails) {
       details.open = false;
     }
   });
+
+  syncBackendPanelVisibility();
 }
 
 function closeTopbarDetails() {
   ui.topbarDetails.forEach((details) => {
     details.open = false;
   });
+  syncBackendPanelVisibility();
+}
+
+function closeBackendPanel() {
+  if (ui.backendDrawer) {
+    ui.backendDrawer.open = false;
+  }
+  syncBackendPanelVisibility();
+}
+
+function syncBackendPanelVisibility() {
+  const isOpen = Boolean(ui.backendDrawer?.open);
+  if (ui.backendContent) {
+    ui.backendContent.hidden = !isOpen;
+  }
+  ui.backendDrawer
+    ?.querySelector("summary")
+    ?.setAttribute("aria-expanded", String(isOpen));
 }
 
 function restoreSourceLanguagePreference() {

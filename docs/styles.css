@@ -149,6 +149,7 @@ html[data-theme="dark"] .translation-column {
   border-radius: 18px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
 }
 
@@ -380,10 +381,15 @@ html[data-theme="dark"] .nav-link {
 }
 
 .backend-drawer {
-  position: static;
+  position: relative;
   flex: 0 0 auto;
   border-radius: 16px;
   overflow: visible;
+}
+
+.backend-drawer[open] summary {
+  border-color: rgba(224, 97, 47, 0.62);
+  box-shadow: 0 0 0 3px rgba(224, 97, 47, 0.12);
 }
 
 .backend-drawer summary {
@@ -461,11 +467,12 @@ html[data-theme="dark"] .backend-summary-status.online {
 }
 
 .backend-content {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 50;
-  width: min(760px, calc(100vw - 28px));
+  flex: 1 0 100%;
+  order: 4;
+  width: 100%;
+  max-height: min(68vh, 720px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 12px;
   display: grid;
   gap: 10px;
@@ -475,6 +482,21 @@ html[data-theme="dark"] .backend-summary-status.online {
   background: var(--panel);
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+}
+
+.backend-panel-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 2px 4px;
+}
+
+.backend-panel-head strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1rem;
 }
 
 .field-label {
@@ -1131,13 +1153,12 @@ html[data-theme="dark"] .info-card {
   }
 
   .backend-drawer[open] {
-    position: fixed;
-    inset: max(4px, env(safe-area-inset-top)) 4px max(4px, env(safe-area-inset-bottom));
-    z-index: 20;
-    max-height: calc(100dvh - 8px);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    max-height: none;
+    display: block;
+    overflow: visible;
   }
 
   .button-row .backend-drawer {
@@ -1150,9 +1171,7 @@ html[data-theme="dark"] .info-card {
   }
 
   .backend-drawer[open] summary {
-    flex: 0 0 auto;
-    background: var(--panel);
-    border-bottom: 1px solid var(--line);
+    background: rgba(18, 109, 98, 0.12);
   }
 
   .backend-summary-line {
@@ -1167,27 +1186,18 @@ html[data-theme="dark"] .info-card {
   }
 
   .backend-content {
-    max-height: min(58vh, 560px);
+    position: fixed;
+    inset: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
+    z-index: 120;
+    width: auto;
+    max-height: calc(100dvh - 12px);
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    padding: 0 6px 6px;
+    padding: 8px 8px max(14px, env(safe-area-inset-bottom));
     gap: 6px;
-  }
-
-  .backend-drawer[open] .backend-content {
-    position: static;
-    flex: 1 1 auto;
-    min-height: 0;
-    width: auto;
-    max-height: none;
-    padding: 6px 6px max(14px, env(safe-area-inset-bottom));
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
+    border-radius: 15px;
   }
 
   .backend-connect-card,
@@ -1240,8 +1250,16 @@ html[data-theme="dark"] .info-card {
     gap: 5px;
   }
 
-  .backend-drawer[open] .button-row.compact {
+  .backend-content .button-row.compact {
     gap: 5px;
+  }
+
+  .backend-panel-head {
+    padding: 0 1px 3px;
+  }
+
+  .backend-panel-head strong {
+    font-size: 0.86rem;
   }
 
   .step-copy,
