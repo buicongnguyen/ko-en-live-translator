@@ -1210,6 +1210,8 @@ html[data-theme="dark"] .info-card {
     inset: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
     z-index: 120;
     width: auto;
+    height: calc(100vh - 12px);
+    height: calc(100dvh - 12px);
     max-height: calc(100dvh - 12px);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1217,6 +1219,7 @@ html[data-theme="dark"] .info-card {
     touch-action: pan-y;
     padding: 8px 8px max(14px, env(safe-area-inset-bottom));
     gap: 6px;
+    align-content: start;
     border-radius: 15px;
   }
 
