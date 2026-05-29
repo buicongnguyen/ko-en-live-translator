@@ -376,6 +376,13 @@ html[data-theme="dark"] .pill.subtle {
   min-width: 58px;
 }
 
+#demo-button {
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
 html[data-theme="dark"] .nav-link {
   background: rgba(245, 238, 225, 0.09);
 }
@@ -1150,6 +1157,12 @@ html[data-theme="dark"] .info-card {
   }
 
   .nav-link {
+    min-height: 27px;
+    padding: 5px 9px;
+    font-size: 0.72rem;
+  }
+
+  #demo-button {
     min-height: 27px;
     padding: 5px 9px;
     font-size: 0.72rem;

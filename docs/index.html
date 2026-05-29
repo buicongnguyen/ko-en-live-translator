@@ -19,7 +19,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css?v=20260529-conversation-desktop" />
+    <link rel="stylesheet" href="./styles.css?v=20260529-toolbar-order" />
   </head>
   <body>
     <main class="translator-shell">
@@ -109,8 +109,6 @@
 
         <div class="toolbar">
           <div class="button-row">
-            <button id="demo-button" class="primary">Demo</button>
-            <button id="reset-button" class="secondary">Reset</button>
             <details class="backend-drawer">
               <summary aria-controls="backend-content" aria-expanded="false">
                 <span class="backend-summary-line">
@@ -118,6 +116,7 @@
                 </span>
               </summary>
             </details>
+            <button id="reset-button" class="secondary">Reset</button>
             <button id="start-button" class="secondary" disabled>Start mic</button>
             <button id="stop-button" class="secondary" disabled>Stop</button>
           </div>
@@ -231,6 +230,7 @@
           >
             Dark
           </button>
+          <button id="demo-button" class="primary" type="button">Demo</button>
           <a class="nav-link" href="./about.html">Guide</a>
         </nav>
       </header>
