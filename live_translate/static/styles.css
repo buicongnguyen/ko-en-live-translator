@@ -574,11 +574,11 @@ html[data-theme="dark"] .conversation-body {
 
 .conversation-pair {
   display: grid;
-  gap: 4px;
-  margin-bottom: 8px;
-  padding: 6px;
+  gap: 3px;
+  margin-bottom: 5px;
+  padding: 4px;
   border: 1px solid rgba(27, 27, 24, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.62);
 }
 
@@ -596,11 +596,11 @@ html[data-theme="dark"] .conversation-pair {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
-  padding: 8px 9px;
-  border-radius: 10px;
-  line-height: 1.45;
+  padding: 6px 8px;
+  border-radius: 9px;
+  line-height: 1.36;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -622,8 +622,8 @@ html[data-theme="dark"] .conversation-line.target {
 }
 
 .conversation-language {
-  min-width: 28px;
-  min-height: 22px;
+  min-width: 26px;
+  min-height: 20px;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -988,22 +988,23 @@ html[data-theme="dark"] .info-card {
   }
 
   .conversation-pair {
-    gap: 4px;
-    margin-bottom: 7px;
-    padding: 5px;
-    border-radius: 12px;
+    gap: 2px;
+    margin-bottom: 4px;
+    padding: 3px;
+    border-radius: 10px;
   }
 
   .conversation-line {
     grid-template-columns: auto minmax(0, 1fr);
-    padding: 7px 8px;
-    border-radius: 9px;
-    line-height: 1.42;
+    gap: 5px;
+    padding: 5px 6px;
+    border-radius: 8px;
+    line-height: 1.34;
   }
 
   .conversation-language {
-    min-width: 24px;
-    min-height: 20px;
+    min-width: 22px;
+    min-height: 18px;
     margin-top: 1px;
     font-size: 0.56rem;
   }
