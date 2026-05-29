@@ -103,6 +103,8 @@ class TranslationSession:
         self.result_queue: Queue[dict[str, object] | None] = Queue()
         self.source_language = normalize_source_language(settings.source_language)
         self.target_language = normalize_target_language(settings.target_language)
+        self._language_lock = Lock()
+        self._stream_lock = Lock()
         self._pcm_buffer = bytearray()
         self._stats_lock = Lock()
         self._dropped_translation_segments = 0
@@ -132,14 +134,22 @@ class TranslationSession:
         source_language: str | None = None,
         target_language: str | None = None,
     ) -> None:
-        self.input_queue.put(
-            (
-                "language",
-                {
-                    "source_language": source_language,
-                    "target_language": target_language,
-                },
-            )
+        source = normalize_source_language(source_language, self.settings.source_language)
+        target = normalize_target_language(target_language, self.settings.target_language)
+
+        with self._language_lock:
+            self.source_language = source
+            self.target_language = target
+
+        self._clear_pending_inputs()
+        self._reset_audio_stream()
+        self._clear_pending_translations()
+        self.result_queue.put(
+            {
+                "type": "language",
+                "source_language": source,
+                "target_language": target,
+            }
         )
 
     def stop(self) -> None:
@@ -209,31 +219,34 @@ class TranslationSession:
                 break
 
     def _consume_audio(self, payload: bytes) -> None:
-        self._pcm_buffer.extend(payload)
-        frame_bytes = self.settings.frame_bytes
-        while len(self._pcm_buffer) >= frame_bytes:
-            frame = bytes(self._pcm_buffer[:frame_bytes])
-            del self._pcm_buffer[:frame_bytes]
-            utterance = self.segmenter.accept(frame)
+        with self._stream_lock:
+            self._pcm_buffer.extend(payload)
+            frame_bytes = self.settings.frame_bytes
+            while len(self._pcm_buffer) >= frame_bytes:
+                frame = bytes(self._pcm_buffer[:frame_bytes])
+                del self._pcm_buffer[:frame_bytes]
+                utterance = self.segmenter.accept(frame)
+                if utterance:
+                    self._queue_translation(utterance)
+                self._record_segmenter_reject()
+
+    def _flush_partial_frame(self) -> None:
+        with self._stream_lock:
+            if not self._pcm_buffer:
+                return
+            frame_bytes = self.settings.frame_bytes
+            padded = bytes(self._pcm_buffer).ljust(frame_bytes, b"\x00")
+            self._pcm_buffer.clear()
+            utterance = self.segmenter.accept(padded)
             if utterance:
                 self._queue_translation(utterance)
             self._record_segmenter_reject()
 
-    def _flush_partial_frame(self) -> None:
-        if not self._pcm_buffer:
-            return
-        frame_bytes = self.settings.frame_bytes
-        padded = bytes(self._pcm_buffer).ljust(frame_bytes, b"\x00")
-        self._pcm_buffer.clear()
-        utterance = self.segmenter.accept(padded)
-        if utterance:
-            self._queue_translation(utterance)
-        self._record_segmenter_reject()
-
     def _queue_translation(self, utterance: bytes) -> None:
         with self._stats_lock:
             self._consecutive_vad_rejects = 0
-        job = (utterance, self.source_language, self.target_language)
+        with self._language_lock:
+            job = (utterance, self.source_language, self.target_language)
         if self.settings.max_translation_queue_segments <= 0:
             self.translation_queue.put(job)
             return
@@ -269,6 +282,23 @@ class TranslationSession:
                 self.translation_queue.get_nowait()
             except Empty:
                 return
+
+    def _clear_pending_inputs(self) -> None:
+        should_stop = False
+        while True:
+            try:
+                kind, _payload = self.input_queue.get_nowait()
+            except Empty:
+                if should_stop:
+                    self.input_queue.put(("stop", None))
+                return
+            if kind == "stop":
+                should_stop = True
+
+    def _reset_audio_stream(self) -> None:
+        with self._stream_lock:
+            self._pcm_buffer.clear()
+            self.segmenter = VadSegmenter(self.settings)
 
     def _record_dropped_translation(self) -> None:
         with self._stats_lock:
@@ -386,18 +416,21 @@ class TranslationSession:
                 self.result_queue.put({"type": "status", "state": "listening"})
 
     def _set_languages(self, payload: dict[str, str | None]) -> None:
-        self.source_language = normalize_source_language(
+        source_language = normalize_source_language(
             payload.get("source_language"),
             self.settings.source_language,
         )
-        self.target_language = normalize_target_language(
+        target_language = normalize_target_language(
             payload.get("target_language"),
             self.settings.target_language,
         )
+        with self._language_lock:
+            self.source_language = source_language
+            self.target_language = target_language
         self.result_queue.put(
             {
                 "type": "language",
-                "source_language": self.source_language,
-                "target_language": self.target_language,
+                "source_language": source_language,
+                "target_language": target_language,
             }
         )

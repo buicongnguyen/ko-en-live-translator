@@ -1086,8 +1086,8 @@ function appendTranscript(payload) {
     state.conversationLines.push({
       sourceText,
       targetText,
-      sourceLabel: languageBadge(state.sourceLanguage),
-      targetLabel: languageBadge(state.targetLanguage),
+      sourceLabel: languageBadge(payload.source_language || state.sourceLanguage),
+      targetLabel: languageBadge(payload.target_language || state.targetLanguage),
       createdAt: payload.created_at || timeStamp(),
     });
   }
@@ -1298,11 +1298,8 @@ function handleSourceLanguageChange() {
   state.sourceLanguage = selectedSourceLanguage();
   window.localStorage.setItem("source-language", state.sourceLanguage);
   updateLanguageUi();
+  refreshEmptyTranscriptPlaceholders();
   closeTopbarDetails();
-
-  if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
-    state.socket.send(JSON.stringify({ type: "flush" }));
-  }
 
   sendLanguageSetting();
   setStatus(`New speech will translate ${sourceLanguageName()} to ${targetLanguageName()}.`);
@@ -1312,11 +1309,8 @@ function handleTargetLanguageChange() {
   state.targetLanguage = selectedTargetLanguage();
   window.localStorage.setItem("target-language", state.targetLanguage);
   updateLanguageUi();
+  refreshEmptyTranscriptPlaceholders();
   closeTopbarDetails();
-
-  if (state.isCapturing && state.socket?.readyState === WebSocket.OPEN) {
-    state.socket.send(JSON.stringify({ type: "flush" }));
-  }
 
   sendLanguageSetting();
   setStatus(`New speech will translate ${sourceLanguageName()} to ${targetLanguageName()}.`);
@@ -1394,6 +1388,7 @@ function applySourceLanguage(sourceLanguage, options = {}) {
     window.localStorage.setItem("source-language", state.sourceLanguage);
   }
   updateLanguageUi();
+  refreshEmptyTranscriptPlaceholders();
 }
 
 function applyTargetLanguage(targetLanguage, options = {}) {
@@ -1404,6 +1399,17 @@ function applyTargetLanguage(targetLanguage, options = {}) {
     window.localStorage.setItem("target-language", state.targetLanguage);
   }
   updateLanguageUi();
+  refreshEmptyTranscriptPlaceholders();
+}
+
+function refreshEmptyTranscriptPlaceholders() {
+  if (
+    state.sourceLines.length === 0 &&
+    state.targetLines.length === 0 &&
+    state.conversationLines.length === 0
+  ) {
+    renderAllTranscripts();
+  }
 }
 
 function selectedSourceLanguage() {
