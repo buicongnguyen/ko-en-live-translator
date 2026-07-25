@@ -12,6 +12,8 @@ from .config import Settings
 from .languages import normalize_source_language, normalize_target_language
 from .translator import NoSpeechDetectedError, WhisperTranslator
 
+TranslationJob = tuple[bytes, str, str, int]
+
 
 class VadSegmenter:
     def __init__(self, settings: Settings) -> None:
@@ -97,12 +99,13 @@ class TranslationSession:
         self.settings = settings
         self.segmenter = VadSegmenter(settings)
         self.input_queue: Queue[tuple[str, bytes | dict[str, str | None] | None]] = Queue()
-        self.translation_queue: Queue[tuple[bytes, str, str] | None] = Queue(
+        self.translation_queue: Queue[TranslationJob | None] = Queue(
             maxsize=max(0, settings.max_translation_queue_segments)
         )
         self.result_queue: Queue[dict[str, object] | None] = Queue()
         self.source_language = normalize_source_language(settings.source_language)
         self.target_language = normalize_target_language(settings.target_language)
+        self._language_generation = 0
         self._language_lock = Lock()
         self._stream_lock = Lock()
         self._pcm_buffer = bytearray()
@@ -134,16 +137,23 @@ class TranslationSession:
         source_language: str | None = None,
         target_language: str | None = None,
     ) -> None:
+        if self._stop_event.is_set():
+            return
+
         source = normalize_source_language(source_language, self.settings.source_language)
         target = normalize_target_language(target_language, self.settings.target_language)
+
+        self._clear_pending_inputs()
+        with self._stream_lock:
+            self._pcm_buffer.clear()
+            self.segmenter = VadSegmenter(self.settings)
+            self._clear_pending_translations()
 
         with self._language_lock:
             self.source_language = source
             self.target_language = target
+            self._language_generation += 1
 
-        self._clear_pending_inputs()
-        self._reset_audio_stream()
-        self._clear_pending_translations()
         self.result_queue.put(
             {
                 "type": "language",
@@ -203,19 +213,11 @@ class TranslationSession:
             if kind == "audio" and payload:
                 self._consume_audio(payload)
             elif kind == "flush":
-                self._flush_partial_frame()
-                flushed = self.segmenter.flush()
-                if flushed:
-                    self._queue_translation(flushed)
-                self._record_segmenter_reject()
+                self._flush_audio_stream()
             elif kind == "language":
                 self._set_languages(payload if isinstance(payload, dict) else {})
             elif kind == "stop":
-                self._flush_partial_frame()
-                flushed = self.segmenter.flush()
-                if flushed:
-                    self._queue_translation(flushed)
-                self._record_segmenter_reject()
+                self._flush_audio_stream()
                 break
 
     def _consume_audio(self, payload: bytes) -> None:
@@ -230,14 +232,18 @@ class TranslationSession:
                     self._queue_translation(utterance)
                 self._record_segmenter_reject()
 
-    def _flush_partial_frame(self) -> None:
+    def _flush_audio_stream(self) -> None:
         with self._stream_lock:
-            if not self._pcm_buffer:
-                return
-            frame_bytes = self.settings.frame_bytes
-            padded = bytes(self._pcm_buffer).ljust(frame_bytes, b"\x00")
-            self._pcm_buffer.clear()
-            utterance = self.segmenter.accept(padded)
+            if self._pcm_buffer:
+                frame_bytes = self.settings.frame_bytes
+                padded = bytes(self._pcm_buffer).ljust(frame_bytes, b"\x00")
+                self._pcm_buffer.clear()
+                utterance = self.segmenter.accept(padded)
+                if utterance:
+                    self._queue_translation(utterance)
+                self._record_segmenter_reject()
+
+            utterance = self.segmenter.flush()
             if utterance:
                 self._queue_translation(utterance)
             self._record_segmenter_reject()
@@ -246,7 +252,12 @@ class TranslationSession:
         with self._stats_lock:
             self._consecutive_vad_rejects = 0
         with self._language_lock:
-            job = (utterance, self.source_language, self.target_language)
+            job = (
+                utterance,
+                self.source_language,
+                self.target_language,
+                self._language_generation,
+            )
         if self.settings.max_translation_queue_segments <= 0:
             self.translation_queue.put(job)
             return
@@ -373,17 +384,26 @@ class TranslationSession:
             job = self.translation_queue.get()
             if job is None:
                 return
-            utterance, source_language, target_language = job
-            self._translate_segment(utterance, source_language, target_language)
+            utterance, source_language, target_language, language_generation = job
+            if not self._is_language_generation_current(language_generation):
+                continue
+            self._translate_segment(
+                utterance,
+                source_language,
+                target_language,
+                language_generation,
+            )
 
     def _translate_segment(
         self,
         utterance: bytes,
         source_language: str,
         target_language: str,
+        language_generation: int,
     ) -> None:
         self.result_queue.put({"type": "status", "state": "translating"})
         skipped = False
+        is_current_language = True
         try:
             result = self.translator.translate_pcm16(
                 utterance,
@@ -392,6 +412,11 @@ class TranslationSession:
                 target_language=target_language,
             )
             if result.translated_text:
+                is_current_language = self._is_language_generation_current(
+                    language_generation
+                )
+                if not is_current_language:
+                    return
                 self._reset_reject_streaks()
                 self.result_queue.put(
                     {
@@ -408,29 +433,23 @@ class TranslationSession:
                 )
         except NoSpeechDetectedError as exc:
             skipped = True
-            self._record_model_reject(str(exc))
+            is_current_language = self._is_language_generation_current(language_generation)
+            if is_current_language:
+                self._record_model_reject(str(exc))
         except Exception as exc:
-            self.result_queue.put({"type": "error", "message": str(exc)})
+            is_current_language = self._is_language_generation_current(language_generation)
+            if is_current_language:
+                self.result_queue.put({"type": "error", "message": str(exc)})
         finally:
-            if not skipped:
+            if not skipped and is_current_language:
                 self.result_queue.put({"type": "status", "state": "listening"})
 
     def _set_languages(self, payload: dict[str, str | None]) -> None:
-        source_language = normalize_source_language(
-            payload.get("source_language"),
-            self.settings.source_language,
+        self.set_languages(
+            source_language=payload.get("source_language"),
+            target_language=payload.get("target_language"),
         )
-        target_language = normalize_target_language(
-            payload.get("target_language"),
-            self.settings.target_language,
-        )
+
+    def _is_language_generation_current(self, language_generation: int) -> bool:
         with self._language_lock:
-            self.source_language = source_language
-            self.target_language = target_language
-        self.result_queue.put(
-            {
-                "type": "language",
-                "source_language": source_language,
-                "target_language": target_language,
-            }
-        )
+            return language_generation == self._language_generation

@@ -442,7 +442,7 @@ async function connectBackend() {
     setStatus("Backend connected. Starting microphone capture.");
     refreshControls();
     returnToConversationView();
-    await loadAdminUsers();
+    void loadAdminUsers();
     await startCapture();
   } catch (error) {
     state.backendConnected = false;
@@ -477,12 +477,16 @@ async function startCapture() {
     return;
   }
 
+  let stream = null;
+  let audioContext = null;
+
   try {
     setStatus("Waiting for browser microphone permission.");
 
-    const stream = await requestMicrophoneStream();
+    stream = await requestMicrophoneStream();
 
-    const audioContext = new AudioContext();
+    audioContext = createAudioContext();
+    await resumeAudioContext(audioContext);
     const sourceNode = audioContext.createMediaStreamSource(stream);
     const processorNode = audioContext.createScriptProcessor(2048, 1, 1);
     const mutedNode = audioContext.createGain();
@@ -509,6 +513,8 @@ async function startCapture() {
 
     state.audioContext = audioContext;
     state.mediaStream = stream;
+    stream = null;
+    audioContext = null;
     state.sourceNode = sourceNode;
     state.processorNode = processorNode;
     state.mutedNode = mutedNode;
@@ -516,9 +522,40 @@ async function startCapture() {
 
     setStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
   } catch (error) {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    if (audioContext) {
+      await closeAudioContext(audioContext);
+    }
     setStatus(`Microphone could not start: ${error.message}`);
   } finally {
     refreshControls();
+  }
+}
+
+function createAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    throw new Error("Web Audio is not available in this browser.");
+  }
+  return new AudioContextClass();
+}
+
+async function resumeAudioContext(audioContext) {
+  if (audioContext.state === "suspended") {
+    await audioContext.resume();
+  }
+}
+
+async function closeAudioContext(audioContext) {
+  if (audioContext.state === "closed") {
+    return;
+  }
+  try {
+    await audioContext.close();
+  } catch {
+    // The browser may already be tearing down the audio context.
   }
 }
 
@@ -602,7 +639,7 @@ async function stopCapture() {
     state.mediaStream.getTracks().forEach((track) => track.stop());
   }
   if (state.audioContext) {
-    await state.audioContext.close();
+    await closeAudioContext(state.audioContext);
   }
 
   state.audioContext = null;

@@ -113,34 +113,60 @@ function applyTheme(theme, options = {}) {
 
 async function fetchHealth() {
   const response = await fetch("/api/health");
+  if (!response.ok) {
+    throw new Error(await readableHttpError(response));
+  }
   const data = await response.json();
-  applyRuntime(data.runtime);
+  if (data.runtime) {
+    applyRuntime(data.runtime);
+  }
 }
 
 function connectSocket() {
+  if (
+    state.socket &&
+    (state.socket.readyState === WebSocket.OPEN ||
+      state.socket.readyState === WebSocket.CONNECTING)
+  ) {
+    return state.socket;
+  }
+
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
   const url = `${protocol}://${window.location.host}/ws`;
   const socket = new WebSocket(url);
   socket.binaryType = "arraybuffer";
 
   socket.addEventListener("open", () => {
+    if (state.socket !== socket) {
+      return;
+    }
     setConnection("Connected");
     sendLanguageSetting();
   });
 
   socket.addEventListener("message", (event) => {
+    if (state.socket !== socket) {
+      return;
+    }
     const payload = JSON.parse(event.data);
     handleServerEvent(payload);
   });
 
   socket.addEventListener("close", () => {
+    if (state.socket !== socket) {
+      return;
+    }
     setConnection("Disconnected");
     if (state.isCapturing) {
       setStatus("Connection lost. Stop and restart the session.");
     }
+    state.socket = null;
   });
 
   socket.addEventListener("error", () => {
+    if (state.socket !== socket) {
+      return;
+    }
     setConnection("Error");
   });
 
@@ -152,6 +178,8 @@ async function startCapture() {
     return;
   }
 
+  let stream = null;
+
   try {
     if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
       connectSocket();
@@ -160,10 +188,14 @@ async function startCapture() {
 
     setStatus("Waiting for browser microphone permission.");
 
-    const stream = await requestMicrophoneStream();
+    stream = await requestMicrophoneStream();
 
     await startAudioPipeline(stream);
+    stream = null;
   } catch (error) {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
     setState("Mic Blocked");
     setStatus(`Microphone could not start: ${error.message}`);
   }
@@ -225,30 +257,41 @@ function microphoneUnavailableMessage() {
 }
 
 async function startAudioPipeline(stream) {
-  const audioContext = new AudioContext();
-  const sourceNode = audioContext.createMediaStreamSource(stream);
-  const processorNode = audioContext.createScriptProcessor(2048, 1, 1);
-  const mutedNode = audioContext.createGain();
-  mutedNode.gain.value = 0;
+  const audioContext = createAudioContext();
+  let sourceNode = null;
+  let processorNode = null;
+  let mutedNode = null;
 
-  processorNode.onaudioprocess = (event) => {
-    const output = event.outputBuffer.getChannelData(0);
-    output.fill(0);
+  try {
+    await resumeAudioContext(audioContext);
+    sourceNode = audioContext.createMediaStreamSource(stream);
+    processorNode = audioContext.createScriptProcessor(2048, 1, 1);
+    mutedNode = audioContext.createGain();
+    mutedNode.gain.value = 0;
 
-    if (!state.isCapturing || !state.socket || state.socket.readyState !== WebSocket.OPEN) {
-      return;
-    }
+    processorNode.onaudioprocess = (event) => {
+      const output = event.outputBuffer.getChannelData(0);
+      output.fill(0);
 
-    const channelData = event.inputBuffer.getChannelData(0);
-    const pcm16 = downsampleTo16BitPcm(channelData, audioContext.sampleRate, 16000);
-    if (pcm16.length > 0) {
-      state.socket.send(pcm16.buffer);
-    }
-  };
+      if (!state.isCapturing || !state.socket || state.socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
 
-  sourceNode.connect(processorNode);
-  processorNode.connect(mutedNode);
-  mutedNode.connect(audioContext.destination);
+      const channelData = event.inputBuffer.getChannelData(0);
+      const pcm16 = downsampleTo16BitPcm(channelData, audioContext.sampleRate, 16000);
+      if (pcm16.length > 0) {
+        state.socket.send(pcm16.buffer);
+      }
+    };
+
+    sourceNode.connect(processorNode);
+    processorNode.connect(mutedNode);
+    mutedNode.connect(audioContext.destination);
+  } catch (error) {
+    await closeAudioContext(audioContext);
+    throw error;
+  }
+
 
   state.audioContext = audioContext;
   state.mediaStream = stream;
@@ -261,6 +304,31 @@ async function startAudioPipeline(stream) {
   ui.stopButton.disabled = false;
   setState("Listening");
   setStatus(`Listening: ${sourceLanguageName()} to ${targetLanguageName()}.`);
+}
+
+function createAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    throw new Error("Web Audio is not available in this browser.");
+  }
+  return new AudioContextClass();
+}
+
+async function resumeAudioContext(audioContext) {
+  if (audioContext.state === "suspended") {
+    await audioContext.resume();
+  }
+}
+
+async function closeAudioContext(audioContext) {
+  if (audioContext.state === "closed") {
+    return;
+  }
+  try {
+    await audioContext.close();
+  } catch {
+    // The browser may already be tearing down the audio context.
+  }
 }
 
 async function stopCapture() {
@@ -289,7 +357,7 @@ async function stopCapture() {
     state.mediaStream.getTracks().forEach((track) => track.stop());
   }
   if (state.audioContext) {
-    await state.audioContext.close();
+    await closeAudioContext(state.audioContext);
   }
 
   state.audioContext = null;
@@ -573,6 +641,15 @@ function clearTranscript() {
   ui.audioText.textContent = "Audio: -";
   renderAllTranscripts();
   setStatus("Transcript cleared.");
+}
+
+async function readableHttpError(response) {
+  try {
+    const payload = await response.json();
+    return payload.detail || `Request failed with status ${response.status}.`;
+  } catch {
+    return `Request failed with status ${response.status}.`;
+  }
 }
 
 function applyRuntime(runtime) {
